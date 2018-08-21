@@ -31,3 +31,7 @@ Only once each time the messages change:
 ### Run
 
     go test -run TestMain
+
+## Wiki
+
+More information in [the wiki](https://github.com/skycoin/hardware-wallet-go/wiki)
