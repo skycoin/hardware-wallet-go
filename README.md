@@ -1,4 +1,6 @@
-# Go lang api for skycoin hardware wallet
+# Go bindings and CLI tool for the Skycoin hardware wallet
+
+[![Build Status](https://travis-ci.com/skycoin/hardware-wallet-go.svg?branch=master)](https://travis-ci.com/skycoin/hardware-wallet-go)
 
 ## Installation
 
