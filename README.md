@@ -25,8 +25,8 @@
 
 Only once each time the messages change:
 
-    cd device-wallet/ 
-    protoc -I../../tiny-firmware/vendor/nanopb/generator/proto/ -I ./protob  --go_out=./protob protob/messages.proto protob/types.proto
+    cd device-wallet/
+    protoc -I ./protob  --go_out=./protob protob/messages.proto protob/types.proto protob/descriptor.proto 
 
 ### Run
 
