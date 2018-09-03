@@ -4,7 +4,7 @@ import (
     "testing"
     "log"
 
-	messages "./protob"
+    messages "github.com/skycoin/hardware-wallet-go/device-wallet/messages"
 	"github.com/stretchr/testify/require"
 )
 
