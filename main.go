@@ -3,8 +3,8 @@ package main
 import(
     "fmt"
     "log"
-    deviceWallet "./device-wallet"
-	messages "./device-wallet/protob"
+    deviceWallet "github.com/skycoin/hardware-wallet-go/device-wallet"
+    messages "github.com/skycoin/hardware-wallet-go/device-wallet/messages"
 )
 
 

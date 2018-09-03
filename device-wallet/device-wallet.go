@@ -9,11 +9,11 @@ import (
 	"net"
 	"time"
 
-	"./usb"
-	"./wire"
+	"github.com/skycoin/hardware-wallet-go/device-wallet/usb"
+	"github.com/skycoin/hardware-wallet-go/device-wallet/wire"
 
 	proto "github.com/golang/protobuf/proto"
-	messages "./protob"
+	messages "github.com/skycoin/hardware-wallet-go/device-wallet/messages"
 )
 
 // DeviceType type of device: emulated or usb

@@ -6,7 +6,7 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"./usbhid"
+	"github.com/skycoin/hardware-wallet-go/device-wallet/usb/usbhid"
 )
 
 const (
