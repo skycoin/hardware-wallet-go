@@ -14,6 +14,12 @@
     
     go get github.com/skycoin/hardware-wallet-go
 
+### Dependancies management
+
+This project uses dep [dependancy manager](https://github.com/golang/dep).
+
+Don't modify anything under vendor/ directory without using [dep commands](https://github.com/golang/dep/blob/master/docs/Gopkg.toml.md).
+
 ### Generate protobuf files
 
 Only once each time the messages change:
