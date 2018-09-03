@@ -8,18 +8,11 @@
 
     https://github.com/golang/go/wiki/Ubuntu
 
-### Install google protobuf
-
-    sudo apt-get install protobuf-compiler python-protobuf golang-goprotobuf-dev
-    go get -u github.com/golang/protobuf/proto/proto
-    go get -u github.com/stretchr/testify/require
-
-## Compile the protobuf project dependencies
-
-    make -C vendor/nanopb/generator/proto/
-    make -C protob/
-
 ## Usage
+
+### Download source code
+    
+    go get github.com/skycoin/hardware-wallet-go
 
 ### Generate protobuf files
 
