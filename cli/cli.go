@@ -113,6 +113,7 @@ func NewApp() (*App, error) {
 		emulatorSignMessageCmd(),
 		emulatorCheckMessageSignatureCmd(),
 		emulatorSetPinCode(),
+		sandbox(),
 	}
 
 	app.Name = "skycoin-cli"

@@ -29,7 +29,9 @@ Only once each time the messages change:
 
 ### Run
 
-    go test -run TestMain
+    go run cli.go
+
+See also [CLI.md](https://github.com/skycoin/hardware-wallet-go/blob/master/CLI.md) for information about the Command Line Interface.
 
 ## Wiki
 
