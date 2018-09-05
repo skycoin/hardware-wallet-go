@@ -1,14 +1,14 @@
-package deviceWallet
+package devicewallet
 
 import (
-    "testing"
-    "log"
+	"log"
+	"testing"
 
-    messages "github.com/skycoin/hardware-wallet-go/device-wallet/messages"
+	messages "github.com/skycoin/hardware-wallet-go/device-wallet/messages"
 	"github.com/stretchr/testify/require"
 )
 
-func TestMain(t *testing.T) { 
+func TestMain(t *testing.T) {
 
 	var deviceType DeviceType
 	if DeviceConnected(DeviceTypeEmulator) {
@@ -20,35 +20,34 @@ func TestMain(t *testing.T) {
 		return
 	}
 
-    // var msg wire.Message
-    // var chunks [][64]byte
-    // var inputWord string
-    // var err error
+	// var msg wire.Message
+	// var chunks [][64]byte
+	// var inputWord string
+	// var err error
 
-    WipeDevice(deviceType)
+	WipeDevice(deviceType)
 
-    // Send ChangePin message
-    // chunks = MessageRecoveryDevice(12)
-    // msg = SendToDevice(dev, chunks)
-    // if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-    //     chunks = MessageButtonAck()
-    //     msg = SendToDevice(dev, chunks)
-    // }
-    // for msg.Kind == uint16(messages.MessageType_MessageType_WordRequest) {
-    //     fmt.Print("Word request: ")
-    //     fmt.Scanln(&inputWord)
-    //     chunks = MessageWordAck(strings.TrimSpace(inputWord))
-    //     msg = SendToDevice(dev, chunks)
-    // }
-    // fmt.Printf("Response: %s\n", messages.MessageType_name[int32(msg.Kind)])
-    // if msg.Kind == uint16(messages.MessageType_MessageType_Failure) {
-    //     failMsg := &messages.Failure{}
-    //     proto.Unmarshal(msg.Data, failMsg)
-    //     fmt.Printf("Code: %d\nMessage: %s\n", failMsg.GetCode(), failMsg.GetMessage());
-    // }
+	// Send ChangePin message
+	// chunks = MessageRecoveryDevice(12)
+	// msg = SendToDevice(dev, chunks)
+	// if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
+	//     chunks = MessageButtonAck()
+	//     msg = SendToDevice(dev, chunks)
+	// }
+	// for msg.Kind == uint16(messages.MessageType_MessageType_WordRequest) {
+	//     fmt.Print("Word request: ")
+	//     fmt.Scanln(&inputWord)
+	//     chunks = MessageWordAck(strings.TrimSpace(inputWord))
+	//     msg = SendToDevice(dev, chunks)
+	// }
+	// fmt.Printf("Response: %s\n", messages.MessageType_name[int32(msg.Kind)])
+	// if msg.Kind == uint16(messages.MessageType_MessageType_Failure) {
+	//     failMsg := &messages.Failure{}
+	//     proto.Unmarshal(msg.Data, failMsg)
+	//     fmt.Printf("Code: %d\nMessage: %s\n", failMsg.GetCode(), failMsg.GetMessage());
+	// }
 
-
-    DeviceSetMnemonic(deviceType, "cloud flower upset remain green metal below cup stem infant art thank")
+	DeviceSetMnemonic(deviceType, "cloud flower upset remain green metal below cup stem infant art thank")
 
 	kind, addresses := DeviceAddressGen(deviceType, 9, 15)
 	log.Print(addresses)
@@ -72,14 +71,13 @@ func TestMain(t *testing.T) {
 	require.Equal(t, addresses[i], "29pYKsirWo21ZPhEsdNmcCVExgAeK5ShpMF")
 	i++
 	require.Equal(t, addresses[i], "n6ou5D4hSGCXsAiVCJX6y6jc454xvcoSet")
-    // chunks = MessageBackupDevice()
-    // msg = SendToDevice(dev, chunks)
-    // for msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-    //     chunks = MessageButtonAck()
-    //     msg = SendToDevice(dev, chunks)
-    // }
+	// chunks = MessageBackupDevice()
+	// msg = SendToDevice(dev, chunks)
+	// for msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
+	//     chunks = MessageButtonAck()
+	//     msg = SendToDevice(dev, chunks)
+	// }
 	// fmt.Printf("Success %d! Answer is: %s\n", msg.Kind, msg.Data[2:])
-	
 
 	kind, addresses = DeviceAddressGen(deviceType, 1, 1)
 	log.Print(addresses)
@@ -87,7 +85,7 @@ func TestMain(t *testing.T) {
 	require.Equal(t, len(addresses), 1)
 	require.Equal(t, addresses[0], "zC8GAQGQBfwk7vtTxVoRG7iMperHNuyYPs")
 
-	message:= "Hello World!"
+	message := "Hello World!"
 	kind, signature := DeviceSignMessage(deviceType, 1, message)
 	log.Print(signature)
 	require.Equal(t, uint16(messages.MessageType_MessageType_ResponseSkycoinSignMessage), kind) //Success message
@@ -98,7 +96,7 @@ func TestMain(t *testing.T) {
 	require.Equal(t, "zC8GAQGQBfwk7vtTxVoRG7iMperHNuyYPs", string(data[2:]))
 }
 func TestGetAddressUsb(t *testing.T) {
-	if DeviceConnected(DeviceTypeUsb) == false {
+	if !DeviceConnected(DeviceTypeUsb) {
 		t.Skip("TestGetAddressUsb do not work if Usb device is not connected")
 		return
 	}
@@ -115,7 +113,7 @@ func TestGetAddressUsb(t *testing.T) {
 }
 
 func TestGetAddressEmulator(t *testing.T) {
-	if DeviceConnected(DeviceTypeEmulator) == false {
+	if !DeviceConnected(DeviceTypeEmulator) {
 		t.Skip("TestGetAddressEmulator do not work if Emulator device is not running")
 		return
 	}

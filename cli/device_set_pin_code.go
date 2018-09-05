@@ -5,8 +5,8 @@ import (
 
 	gcli "github.com/urfave/cli"
 
-	"github.com/skycoin/hardware-wallet-go/device-wallet/messages"
 	deviceWallet "github.com/skycoin/hardware-wallet-go/device-wallet"
+	"github.com/skycoin/hardware-wallet-go/device-wallet/messages"
 )
 
 func deviceSetPinCode() gcli.Command {

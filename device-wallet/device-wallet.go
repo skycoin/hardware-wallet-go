@@ -1,4 +1,4 @@
-package deviceWallet
+package devicewallet
 
 import (
 	"bytes"
@@ -49,17 +49,17 @@ func getUsbDevice() (usb.Device, error) {
 		return nil, err
 	}
 	tries := 0
-	dev, err := b.Connect(infos[0].Path)
-	if err != nil {
-		log.Panicf(err.Error())
-		if tries < 3 {
+	for tries < 3 {
+		dev, err := b.Connect(infos[0].Path)
+		if err != nil {
+			log.Panicf(err.Error())
 			tries++
 			time.Sleep(100 * time.Millisecond)
 		} else {
-			return nil, err
+			return dev, err
 		}
 	}
-	return dev, err
+	return nil, err
 }
 
 func sendToDeviceNoAnswer(dev io.ReadWriteCloser, chunks [][64]byte) error {
@@ -83,23 +83,21 @@ func sendToDevice(dev io.ReadWriteCloser, chunks [][64]byte) (wire.Message, erro
 	return msg, err
 }
 
-func makeTrezorHeader(data []byte, msgID messages.MessageType) []byte {
-	header := new(bytes.Buffer)
-	binary.Write(header, binary.BigEndian, []byte("?##"))
-	binary.Write(header, binary.BigEndian, uint16(msgID))
-	binary.Write(header, binary.BigEndian, uint32(len(data)))
-	binary.Write(header, binary.BigEndian, []byte("\n"))
-	return header.Bytes()
+func binaryWrite(message io.Writer, data interface{}) {
+	err := binary.Write(message, binary.BigEndian, data)
+	if err != nil {
+		log.Print(err.Error())
+	}
 }
 
 func makeTrezorMessage(data []byte, msgID messages.MessageType) [][64]byte {
 	message := new(bytes.Buffer)
-	binary.Write(message, binary.BigEndian, []byte("##"))
-	binary.Write(message, binary.BigEndian, uint16(msgID))
-	binary.Write(message, binary.BigEndian, uint32(len(data)))
-	binary.Write(message, binary.BigEndian, []byte("\n"))
+	binaryWrite(message, []byte("##"))
+	binaryWrite(message, uint16(msgID))
+	binaryWrite(message, uint32(len(data)))
+	binaryWrite(message, []byte("\n"))
 	if len(data) > 0 {
-		binary.Write(message, binary.BigEndian, data[1:])
+		binaryWrite(message, data[1:])
 	}
 
 	messageLen := message.Len()
@@ -122,12 +120,10 @@ func getDevice(deviceType DeviceType) (io.ReadWriteCloser, error) {
 	switch deviceType {
 	case DeviceTypeEmulator:
 		dev, err = getEmulatorDevice()
-		break
 	case DeviceTypeUsb:
 		dev, err = getUsbDevice()
-		break
 	}
-	if (dev == nil && err == nil) {
+	if dev == nil && err == nil {
 		err = errors.New("No device connected")
 	}
 	return dev, err
@@ -155,7 +151,7 @@ func DeviceCheckMessageSignature(deviceType DeviceType, message string, signatur
 	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_SkycoinCheckMessageSignature)
 	msg, err := sendToDevice(dev, chunks)
 	if err != nil {
-		log.Printf(err.Error())
+		log.Print(err.Error())
 		return msg.Kind, msg.Data
 	}
 	log.Printf("Success %d! address that issued the signature is: %s\n", msg.Kind, msg.Data)
@@ -293,6 +289,7 @@ func DeviceAddressGen(deviceType DeviceType, addressN int, startIndex int) (uint
 		log.Panicf("unmarshaling error: %s\n", err.Error())
 	}
 	log.Printf("Failure %d! Answer is: %s\n", failureMsg.GetCode(), failureMsg.GetMessage())
+	log.Printf("%x\n", msg.Data)
 	return msg.Kind, make([]string, 0)
 }
 
@@ -348,6 +345,9 @@ func DeviceConnected(deviceType DeviceType) bool {
 	}
 	msgRaw := &messages.Ping{}
 	data, err := proto.Marshal(msgRaw)
+	if err != nil {
+		log.Print(err.Error())
+	}
 	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_Ping)
 	for _, element := range chunks {
 		_, err = dev.Write(element[:])
@@ -419,7 +419,6 @@ func WipeDevice(deviceType DeviceType) {
 	initialize(dev)
 }
 
-
 // DeviceChangePin changes device's PIN code
 // The message that is sent contains an encoded form of the PIN.
 // The digits of the PIN are displayed in a 3x3 matrix on the Trezor,
@@ -444,24 +443,24 @@ func DeviceChangePin(deviceType DeviceType) (uint16, []byte) {
 	}
 	defer dev.Close()
 
-    changePin := &messages.ChangePin{}
-    data, _ := proto.Marshal(changePin)
+	changePin := &messages.ChangePin{}
+	data, _ := proto.Marshal(changePin)
 	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_ChangePin)
 	msg, err := sendToDevice(dev, chunks)
 	if err != nil {
 		log.Panicf(err.Error())
 		return msg.Kind, msg.Data
 	}
-    // Acknowledge that a button has been pressed
-    if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
+	// Acknowledge that a button has been pressed
+	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
 		chunks = MessageButtonAck()
 		err = sendToDeviceNoAnswer(dev, chunks)
 		if err != nil {
 			log.Panicf(err.Error())
 			return msg.Kind, msg.Data
 		}
-	
-		_, err = msg.ReadFrom(dev)
+
+		_, _ = msg.ReadFrom(dev)
 		time.Sleep(1 * time.Second)
 		log.Printf("MessageButtonAck Answer is: %d / %s\n", msg.Kind, msg.Data)
 	}
@@ -479,12 +478,12 @@ func DevicePinMatrixAck(deviceType DeviceType, p string) (uint16, []byte) {
 	defer dev.Close()
 	var msg wire.Message
 	log.Printf("Setting pin: %s\n", p)
-    pinAck := &messages.PinMatrixAck{
-        Pin: proto.String(p),
-    }
-    data, _ := proto.Marshal(pinAck)
+	pinAck := &messages.PinMatrixAck{
+		Pin: proto.String(p),
+	}
+	data, _ := proto.Marshal(pinAck)
 
-    chunks := makeTrezorMessage(data, messages.MessageType_MessageType_PinMatrixAck)
+	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_PinMatrixAck)
 	msg, err = sendToDevice(dev, chunks)
 	if err != nil {
 		log.Panicf(err.Error())

@@ -6,7 +6,6 @@ webrpc API to query a skycoin node's status.
 package cli
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -123,8 +122,7 @@ func NewApp() (*App, error) {
 	app.EnableBashCompletion = true
 	app.OnUsageError = func(context *gcli.Context, err error, isSubcommand bool) error {
 		fmt.Fprintf(context.App.Writer, "Error: %v\n\n", err)
-		gcli.ShowAppHelp(context)
-		return nil
+		return gcli.ShowAppHelp(context)
 	}
 	app.CommandNotFound = func(ctx *gcli.Context, command string) {
 		tmp := fmt.Sprintf("{{.HelpName}}: '%s' is not a {{.HelpName}} command. See '{{.HelpName}} --help'.\n", command)
@@ -143,30 +141,6 @@ func (app *App) Run(args []string) error {
 func onCommandUsageError(command string) gcli.OnUsageErrorFunc {
 	return func(c *gcli.Context, err error, isSubcommand bool) error {
 		fmt.Fprintf(c.App.Writer, "Error: %v\n\n", err)
-		gcli.ShowCommandHelp(c, command)
-		return nil
+		return gcli.ShowCommandHelp(c, command)
 	}
-}
-
-func errorWithHelp(c *gcli.Context, err error) {
-	fmt.Fprintf(c.App.Writer, "Error: %v. See '%s %s --help'\n\n", err, c.App.HelpName, c.Command.Name)
-}
-
-func formatJSON(obj interface{}) ([]byte, error) {
-	d, err := json.MarshalIndent(obj, "", "    ")
-	if err != nil {
-		return nil, ErrJSONMarshal
-	}
-	return d, nil
-}
-
-func printJSON(obj interface{}) error {
-	d, err := formatJSON(obj)
-	if err != nil {
-		return err
-	}
-
-	fmt.Println(string(d))
-
-	return nil
 }

@@ -6,8 +6,8 @@ import (
 	gcli "github.com/urfave/cli"
 
 	proto "github.com/golang/protobuf/proto"
-	"github.com/skycoin/hardware-wallet-go/device-wallet/messages"
 	deviceWallet "github.com/skycoin/hardware-wallet-go/device-wallet"
+	"github.com/skycoin/hardware-wallet-go/device-wallet/messages"
 )
 
 func deviceAddressGenCmd() gcli.Command {
