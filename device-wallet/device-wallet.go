@@ -33,12 +33,12 @@ func getEmulatorDevice() (net.Conn, error) {
 func getUsbDevice() (usb.Device, error) {
 	w, err := usb.InitWebUSB()
 	if err != nil {
-		log.Panicf("webusb: %s", err)
+		log.Printf("webusb: %s", err)
 		return nil, err
 	}
 	h, err := usb.InitHIDAPI()
 	if err != nil {
-		log.Panicf("hidapi: %s", err)
+		log.Printf("hidapi: %s", err)
 		return nil, err
 	}
 	b := usb.Init(w, h)
@@ -52,7 +52,7 @@ func getUsbDevice() (usb.Device, error) {
 	for tries < 3 {
 		dev, err := b.Connect(infos[0].Path)
 		if err != nil {
-			log.Panicf(err.Error())
+			log.Print(err.Error())
 			tries++
 			time.Sleep(100 * time.Millisecond)
 		} else {
