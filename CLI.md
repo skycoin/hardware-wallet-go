@@ -7,6 +7,7 @@ The CLI command APIs can be used directly from a Go application, see [Skycoin CL
 <!-- MarkdownTOC autolink="true" bracket="round" levels="1,2,3" -->
 
 - [Usage](#usage)
+    - [Update firmware](#update-firmware)
     - [Ask device to generate addresses](#ask-device-to-generate-addresses)
     - [Configure device mnemonic](#configure-device-mnemonic)
     - [Configure device PIN code](#configure-device-pin-code)
@@ -60,6 +61,22 @@ ENVIRONMENT VARIABLES:
     USE_CSRF: Set to 1 or true if the remote node has CSRF enabled. Default false (unset)
     WALLET_DIR: Directory where wallets are stored. This value is overriden by any subcommand flag specifying a wallet filename, if that filename includes a path. Default "$HOME/.$COIN/wallets"
     WALLET_NAME: Name of wallet file (without path). This value is overriden by any subcommand flag specifying a wallet filename. Default "$COIN_cli.wlt"
+```
+
+### Update firmware
+
+To update firmware from a usb message, the device needs to be in "bootloader mode". To turn on on "bootloader mode" unplug your device, hold both buttons at the same time and plug it back on.
+
+The use this command:
+
+
+```bash
+$skycoin-cli deviceFirmwareUpdate --file=[your firmware .bin file]
+```
+
+```
+OPTIONS:
+        --file string            Path to your firmware file
 ```
 
 ### Ask device to generate addresses
