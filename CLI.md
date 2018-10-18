@@ -44,6 +44,7 @@ VERSION:
 COMMANDS:
      deviceSetMnemonic              Configure the device with a mnemonic.
      deviceAddressGen               Generate skycoin addresses using the firmware
+     deviceFirmwareUpdate           Update device's firmware.
      deviceSignMessage              Ask the device to sign a message using the secret key at given index.
      deviceCheckMessageSignature    Check a message signature matches the given address.
      emulatorSetMnemonic            Configure an emulated device with a mnemonic.
