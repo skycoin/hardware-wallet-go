@@ -166,6 +166,62 @@ func MessageButtonAck() [][64]byte {
 	return chunks
 }
 
+// DeviceFirmwareUpload Updates device's firmware
+func DeviceFirmwareUpload(payload []byte, hash []byte) {
+	dev, err := getDevice(DeviceTypeUsb)
+	if err != nil {
+		log.Panicf(err.Error())
+		return
+	}
+	defer dev.Close()
+
+	initialize(dev)
+
+	log.Printf("Length of firmware %d", uint32(len(payload)))
+	deviceFirmwareErase := &messages.FirmwareErase{
+		Length: proto.Uint32(uint32(len(payload))),
+	}
+
+	erasedata, err := proto.Marshal(deviceFirmwareErase)
+	if err != nil {
+		log.Panicf(err.Error())
+		return
+	}
+	// log.Printf("Data: %s\n", data)
+	chunks := makeTrezorMessage(erasedata, messages.MessageType_MessageType_FirmwareErase)
+
+	erasemsg, err := sendToDevice(dev, chunks)
+	log.Printf("Success %d! FirmwareErase %s\n", erasemsg.Kind, erasemsg.Data)
+
+
+	deviceFirmwareUpload := &messages.FirmwareUpload{
+		Payload: payload,
+		Hash: hash,
+	}
+
+	uploaddata, err := proto.Marshal(deviceFirmwareUpload)
+	if err != nil {
+		log.Panicf(err.Error())
+		return
+	}
+	chunks = makeTrezorMessage(uploaddata, messages.MessageType_MessageType_FirmwareUpload)
+
+	uploadmsg, err := sendToDevice(dev, chunks)
+	if err != nil {
+		log.Panicf(err.Error())
+		return
+	}
+	log.Printf("Success %d! FirmwareUpload %s\n", uploadmsg.Kind, uploadmsg.Data)
+
+	// Send ButtonAck
+	chunks = MessageButtonAck()
+	err = sendToDeviceNoAnswer(dev, chunks)
+	if err != nil {
+		log.Panicf(err.Error())
+		return
+	}
+}
+
 // DeviceSetMnemonic Configure the device with a mnemonic.
 func DeviceSetMnemonic(deviceType DeviceType, mnemonic string) {
 
@@ -228,6 +284,7 @@ func DecodeFailMsg(kind uint16, data []byte) (uint16, string) {
 
 // DecodeResponseSkycoinAddress convert byte data into list of addresses, meant to be used after DevicePinMatrixAck
 func DecodeResponseSkycoinAddress(kind uint16, data []byte) (uint16, []string) {
+	log.Printf("%x\n", data);
 	if kind == uint16(messages.MessageType_MessageType_ResponseSkycoinAddress) {
 		responseSkycoinAddress := &messages.ResponseSkycoinAddress{}
 		err := proto.Unmarshal(data, responseSkycoinAddress)

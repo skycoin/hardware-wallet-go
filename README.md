@@ -25,7 +25,7 @@ Don't modify anything under vendor/ directory without using [dep commands](https
 Only once each time the messages change:
 
     cd device-wallet/
-    protoc -I ./protob  --go_out=./protob protob/messages.proto protob/types.proto protob/descriptor.proto 
+    protoc -I ./messages  --go_out=./messages messages/messages.proto messages/types.proto messages/descriptor.proto 
 
 ### Run
 

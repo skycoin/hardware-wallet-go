@@ -104,6 +104,7 @@ func NewApp() (*App, error) {
 	commands := []gcli.Command{
 		deviceSetMnemonicCmd(),
 		deviceAddressGenCmd(),
+		deviceFirmwareUpdate(),
 		deviceSignMessageCmd(),
 		deviceCheckMessageSignatureCmd(),
 		deviceSetPinCode(),
