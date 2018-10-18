@@ -2,7 +2,8 @@ package cli
 
 import (
 	"fmt"
-    "io/ioutil"
+	"io/ioutil"
+
 	gcli "github.com/urfave/cli"
 
 	deviceWallet "github.com/skycoin/hardware-wallet-go/device-wallet"
@@ -16,19 +17,19 @@ func deviceFirmwareUpdate() gcli.Command {
 		Description: "",
 		Flags: []gcli.Flag{
 			gcli.StringFlag{
-                Name:  "f, file",
-                Usage: "path to the firmware .bin file",
+				Name:  "f, file",
+				Usage: "path to the firmware .bin file",
 			},
 		},
 		OnUsageError: onCommandUsageError(name),
 		Action: func(c *gcli.Context) {
-            filePath := c.String("file")
-            fmt.Printf("File : %s\n", filePath)
-            firmware, err := ioutil.ReadFile(filePath)
-            if err != nil {
-                panic(err)
-            }
-            deviceWallet.DeviceFirmwareUpload(firmware, make([]byte, 0))
+			filePath := c.String("file")
+			fmt.Printf("File : %s\n", filePath)
+			firmware, err := ioutil.ReadFile(filePath)
+			if err != nil {
+				panic(err)
+			}
+			deviceWallet.DeviceFirmwareUpload(firmware, make([]byte, 0))
 		},
 	}
 }

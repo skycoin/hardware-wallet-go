@@ -190,13 +190,12 @@ func DeviceFirmwareUpload(payload []byte, hash []byte) {
 	// log.Printf("Data: %s\n", data)
 	chunks := makeTrezorMessage(erasedata, messages.MessageType_MessageType_FirmwareErase)
 
-	erasemsg, err := sendToDevice(dev, chunks)
+	erasemsg, _ := sendToDevice(dev, chunks)
 	log.Printf("Success %d! FirmwareErase %s\n", erasemsg.Kind, erasemsg.Data)
-
 
 	deviceFirmwareUpload := &messages.FirmwareUpload{
 		Payload: payload,
-		Hash: hash,
+		Hash:    hash,
 	}
 
 	uploaddata, err := proto.Marshal(deviceFirmwareUpload)
@@ -284,7 +283,7 @@ func DecodeFailMsg(kind uint16, data []byte) (uint16, string) {
 
 // DecodeResponseSkycoinAddress convert byte data into list of addresses, meant to be used after DevicePinMatrixAck
 func DecodeResponseSkycoinAddress(kind uint16, data []byte) (uint16, []string) {
-	log.Printf("%x\n", data);
+	log.Printf("%x\n", data)
 	if kind == uint16(messages.MessageType_MessageType_ResponseSkycoinAddress) {
 		responseSkycoinAddress := &messages.ResponseSkycoinAddress{}
 		err := proto.Unmarshal(data, responseSkycoinAddress)
