@@ -24,62 +24,6 @@ $ cd $GOPATH/src/github.com/skycoin/hardware-wallet-go/
 $ ./install.sh
 ```
 
-### Enable command autocomplete
-
-If you are in `bash`, run the following command:
-
-```bash
-$ PROG=skycoin-cli source $GOPATH/src/github.com/skycoin/skycoin/cmd/cli/autocomplete/bash_autocomplete
-```
-
-If you are in `zsh`, please replace the `bash_autocomplete` with `zsh_autocomplete` in the previous command.
-
-To avoid run the command everytime when you start a new terminal session, you can copy the script into
-you `~/.bashrc` or `~/.zshrc` file.
-
-## Environment Setting
-
-The CLI uses environment variable to manage the configurations.
-
-### RPC_ADDR
-
-CLI will connect to skycoin node rpc address `http://127.0.0.1:6420` by default.
-You can change the address by setting the `RPC_ADDR` environment variable
-with the following command:
-
-```bash
-$ export RPC_ADDR=http://127.0.0.1:6420
-```
-
-Note: `RPC_ADDR` must be in `scheme://host` format.
-
-### WALLET_DIR
-
-The default CLI wallet dir is located in `$HOME/.skycoin/wallets/`, change it by setting the
-`WALLET_DIR` environment variable.
-
-```bash
-$ export WALLET_DIR=$HOME/YOUR_WALLET_DIR
-```
-
-### WALLET_NAME
-
-The default CLI wallet file name is `skycoin_cli.wlt`, change it by setting the `WALLET_NAME` env.
-The wallet file name must have `.wlt` extension.
-
-```bash
-$ export WALLET_NAME=YOUR_WALLET_NAME
-```
-
-### USE_CSRF
-
-If the remote node to communicate with is not run with `-csrf-disabled`, set this variable.
-CSRF is enabled by default on nodes.
-
-```bash
-$ export USE_CSRF=1
-```
-
 ## Usage
 
 After the installation, you can run `skycoin-cli` to see the usage:
