@@ -276,8 +276,7 @@ func DeviceGenerateMnemonic(deviceType DeviceType) {
 	}
 	defer dev.Close()
 
-	skycoinGenerateMnemonic := &messages.GenerateMnemonic{
-	}
+	skycoinGenerateMnemonic := &messages.GenerateMnemonic{}
 
 	data, _ := proto.Marshal(skycoinGenerateMnemonic)
 	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_GenerateMnemonic)
