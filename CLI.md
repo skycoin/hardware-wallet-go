@@ -10,6 +10,7 @@ The CLI command APIs can be used directly from a Go application, see [Skycoin CL
     - [Update firmware](#update-firmware)
     - [Ask device to generate addresses](#ask-device-to-generate-addresses)
     - [Configure device mnemonic](#configure-device-mnemonic)
+    - [Ask device to generate mnemonic](#generate-mnemonic)
     - [Configure device PIN code](#configure-device-pin-code)
     - [Ask device to sign message](#ask-device-to-sign-message)
     - [Ask device to check signature](#ask-device-to-check-signature)
@@ -43,11 +44,13 @@ VERSION:
 
 COMMANDS:
      deviceSetMnemonic              Configure the device with a mnemonic.
+     deviceGenerateMnemonic         Ask the device to generate a mnemonic and configure itself with it.
      deviceAddressGen               Generate skycoin addresses using the firmware
      deviceFirmwareUpdate           Update device's firmware.
      deviceSignMessage              Ask the device to sign a message using the secret key at given index.
      deviceCheckMessageSignature    Check a message signature matches the given address.
      emulatorSetMnemonic            Configure an emulated device with a mnemonic.
+     emulatorGenerateMnemonic       Ask an emulated device to generate a mnemonic and configure itself with it.
      emulatorAddressGen             Generate skycoin addresses using an emulated device.
      emulatorSignMessage            Ask the emulated device to sign a message using the secret key at given index.
      emulatorCheckMessageSignature  Check a message signature matches the given address.
@@ -135,6 +138,29 @@ $skycoin-cli deviceSetMnemonic --mnemonic="cloud flower upset remain green metal
 ```
 MessageButtonAck Answer is: 2 / 
 Ecloud flower upset remain green metal below cup stem infant art thank
+```
+</details>
+
+### Generate mnemonic
+
+Ask the device to generate a mnemonic and configure itself with it.
+
+```bash
+$skycoin-cli deviceGenerateMnemonic
+```
+
+#### Examples
+##### Text output
+
+```bash
+$skycoin-cli deviceGenerateMnemonic
+```
+<details>
+ <summary>View Output</summary>
+
+```
+2018/11/06 14:41:50 MessageButtonAck Answer is: 2 /
+ Mnemonic successfully configured
 ```
 </details>
 

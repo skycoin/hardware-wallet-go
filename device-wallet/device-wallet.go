@@ -266,6 +266,46 @@ func DeviceSetMnemonic(deviceType DeviceType, mnemonic string) {
 	log.Printf("MessageButtonAck Answer is: %d / %s\n", msg.Kind, msg.Data)
 }
 
+// DeviceGenerateMnemonic Ask the device to generate a mnemonic and configure itself with it.
+func DeviceGenerateMnemonic(deviceType DeviceType) {
+
+	dev, err := getDevice(deviceType)
+	if err != nil {
+		log.Panicf(err.Error())
+		return
+	}
+	defer dev.Close()
+
+	skycoinGenerateMnemonic := &messages.GenerateMnemonic{
+	}
+
+	data, _ := proto.Marshal(skycoinGenerateMnemonic)
+	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_GenerateMnemonic)
+
+	msg, err := sendToDevice(dev, chunks)
+	if err != nil {
+		log.Panicf(err.Error())
+		return
+	}
+
+	// Send ButtonAck
+	chunks = MessageButtonAck()
+	err = sendToDeviceNoAnswer(dev, chunks)
+	if err != nil {
+		log.Panicf(err.Error())
+		return
+	}
+
+	time.Sleep(1 * time.Second)
+	_, err = msg.ReadFrom(dev)
+	if err != nil {
+		log.Panicf(err.Error())
+		return
+	}
+
+	log.Printf("MessageButtonAck Answer is: %d / %s\n", msg.Kind, msg.Data)
+}
+
 // DecodeFailMsg convert byte data into string containing the failure returned by the device
 func DecodeFailMsg(kind uint16, data []byte) (uint16, string) {
 	if kind == uint16(messages.MessageType_MessageType_Failure) {
