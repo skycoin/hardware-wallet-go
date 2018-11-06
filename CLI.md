@@ -14,6 +14,7 @@ The CLI command APIs can be used directly from a Go application, see [Skycoin CL
     - [Configure device PIN code](#configure-device-pin-code)
     - [Ask device to sign message](#ask-device-to-sign-message)
     - [Ask device to check signature](#ask-device-to-check-signature)
+    - [Wipe device](#wipe-device)
 - [Note](#note)
 
 <!-- /MarkdownTOC -->
@@ -49,11 +50,13 @@ COMMANDS:
      deviceFirmwareUpdate           Update device's firmware.
      deviceSignMessage              Ask the device to sign a message using the secret key at given index.
      deviceCheckMessageSignature    Check a message signature matches the given address.
+     deviceWipe                     Ask the device to wipe clean all the configuration it contains.
      emulatorSetMnemonic            Configure an emulated device with a mnemonic.
      emulatorGenerateMnemonic       Ask an emulated device to generate a mnemonic and configure itself with it.
      emulatorAddressGen             Generate skycoin addresses using an emulated device.
      emulatorSignMessage            Ask the emulated device to sign a message using the secret key at given index.
      emulatorCheckMessageSignature  Check a message signature matches the given address.
+     emulatorWipe                   Ask the emulator to wipe clean all the configuration it contains.
      help, h               Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
@@ -284,3 +287,28 @@ The right script should look like this:
 ```bash
 $ skycoin-cli send -c $CHANGE_ADDRESS $RECIPIENT_ADDRESS $AMOUNT
 ```
+
+### Wipe device
+
+Ask the device to generate a mnemonic and configure itself with it.
+
+```bash
+$skycoin-cli deviceWipe
+```
+
+#### Examples
+##### Text output
+
+```bash
+$skycoin-cli deviceWipe
+```
+<details>
+ <summary>View Output</summary>
+
+```
+2018/11/06 16:00:28 Wipe device 26! Answer is: 0806
+2018/11/06 16:00:31 MessageButtonAck Answer is: 2 /
+
+Device wiped
+```
+</details>
