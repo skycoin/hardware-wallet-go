@@ -103,6 +103,7 @@ func NewApp() (*App, error) {
 
 	commands := []gcli.Command{
 		deviceSetMnemonicCmd(),
+		deviceGenerateMnemonicCmd(),
 		deviceAddressGenCmd(),
 		deviceFirmwareUpdate(),
 		deviceSignMessageCmd(),
