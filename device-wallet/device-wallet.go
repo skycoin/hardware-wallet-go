@@ -166,7 +166,6 @@ func MessageButtonAck() [][64]byte {
 	return chunks
 }
 
-
 // MessageWordRequest send this message between each word of the seed (before user action) during device backup
 func MessageWordRequest() [][64]byte {
 	wordRequest := &messages.WordRequest{}
@@ -492,7 +491,7 @@ func BackupDevice(deviceType DeviceType) {
 	var msg wire.Message
 	var chunks [][64]byte
 	initialize(dev)
-	
+
 	backupDevice := &messages.BackupDevice{}
 	data, _ := proto.Marshal(backupDevice)
 	chunks = makeTrezorMessage(data, messages.MessageType_MessageType_BackupDevice)
@@ -503,7 +502,7 @@ func BackupDevice(deviceType DeviceType) {
 	}
 	log.Printf("Backup device %d! Answer is: %s\n", msg.Kind, msg.Data)
 	for msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-	    chunks = MessageButtonAck()
+		chunks = MessageButtonAck()
 		err = sendToDeviceNoAnswer(dev, chunks)
 		_, err = msg.ReadFrom(dev)
 		time.Sleep(1 * time.Second)
