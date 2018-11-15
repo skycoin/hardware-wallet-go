@@ -166,6 +166,15 @@ func MessageButtonAck() [][64]byte {
 	return chunks
 }
 
+
+// MessageWordRequest send this message between each word of the seed (before user action) during device backup
+func MessageWordRequest() [][64]byte {
+	wordRequest := &messages.WordRequest{}
+	data, _ := proto.Marshal(wordRequest)
+	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_WordRequest)
+	return chunks
+}
+
 // DeviceFirmwareUpload Updates device's firmware
 func DeviceFirmwareUpload(payload []byte, hash []byte) {
 	dev, err := getDevice(DeviceTypeUsb)
@@ -470,6 +479,40 @@ func initialize(dev io.ReadWriteCloser) {
 		log.Panicf(err.Error())
 		return
 	}
+}
+
+// BackupDevice ask the device to perform the seed backup
+func BackupDevice(deviceType DeviceType) {
+	dev, err := getDevice(deviceType)
+	if err != nil {
+		log.Panicf(err.Error())
+		return
+	}
+	defer dev.Close()
+	var msg wire.Message
+	var chunks [][64]byte
+	initialize(dev)
+	
+	backupDevice := &messages.BackupDevice{}
+	data, _ := proto.Marshal(backupDevice)
+	chunks = makeTrezorMessage(data, messages.MessageType_MessageType_BackupDevice)
+	msg, err = sendToDevice(dev, chunks)
+	if err != nil {
+		log.Panicf(err.Error())
+		return
+	}
+	log.Printf("Backup device %d! Answer is: %s\n", msg.Kind, msg.Data)
+	for msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
+	    chunks = MessageButtonAck()
+		err = sendToDeviceNoAnswer(dev, chunks)
+		_, err = msg.ReadFrom(dev)
+		time.Sleep(1 * time.Second)
+		if err != nil {
+			log.Panicf(err.Error())
+			return
+		}
+	}
+	log.Printf("Success %d! Answer is: %s\n", msg.Kind, msg.Data[2:])
 }
 
 // WipeDevice wipes out device configuration

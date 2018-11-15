@@ -110,6 +110,7 @@ func NewApp() (*App, error) {
 		deviceCheckMessageSignatureCmd(),
 		deviceSetPinCode(),
 		deviceWipeCmd(),
+		deviceBackupCmd(),
 		emulatorSetMnemonicCmd(),
 		emulatorGenerateMnemonicCmd(),
 		emulatorAddressGenCmd(),
@@ -117,6 +118,7 @@ func NewApp() (*App, error) {
 		emulatorCheckMessageSignatureCmd(),
 		emulatorSetPinCode(),
 		emulatorWipeCmd(),
+		emulatorBackupCmd(),
 		sandbox(),
 	}
 

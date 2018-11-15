@@ -15,6 +15,7 @@ The CLI command APIs can be used directly from a Go application, see [Skycoin CL
     - [Ask device to sign message](#ask-device-to-sign-message)
     - [Ask device to check signature](#ask-device-to-check-signature)
     - [Wipe device](#wipe-device)
+    - [Ask the emulator to perform the seed backup procedure](#backup-device)
 - [Note](#note)
 
 <!-- /MarkdownTOC -->
@@ -310,5 +311,29 @@ $skycoin-cli deviceWipe
 2018/11/06 16:00:31 MessageButtonAck Answer is: 2 /
 
 Device wiped
+```
+</details>
+
+
+### Backup device
+
+Ask the emulator to perform the seed backup procedure.
+
+```bash
+$skycoin-cli deviceBackup
+```
+
+#### Examples
+##### Text output
+
+```bash
+$skycoin-cli deviceBackup
+```
+<details>
+ <summary>View Output</summary>
+
+```
+2018/11/15 17:13:40 Backup device 26! Answer is:
+2018/11/15 17:14:58 Success 2! Answer is: Seed successfully backed up
 ```
 </details>
