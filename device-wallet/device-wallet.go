@@ -504,6 +504,10 @@ func BackupDevice(deviceType DeviceType) {
 	for msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
 		chunks = MessageButtonAck()
 		err = sendToDeviceNoAnswer(dev, chunks)
+		if err != nil {
+			log.Panicf(err.Error())
+			return
+		}
 		_, err = msg.ReadFrom(dev)
 		time.Sleep(1 * time.Second)
 		if err != nil {
