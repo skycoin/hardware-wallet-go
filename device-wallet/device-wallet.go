@@ -274,6 +274,30 @@ func DeviceSetMnemonic(deviceType DeviceType, mnemonic string) {
 	log.Printf("MessageButtonAck Answer is: %d / %s\n", msg.Kind, msg.Data)
 }
 
+// DeviceGetVersion Ask the firmware version
+func DeviceGetVersion(deviceType DeviceType) {
+
+	dev, err := getDevice(deviceType)
+	if err != nil {
+		log.Panicf(err.Error())
+		return
+	}
+	defer dev.Close()
+
+	skycoinGetVersion := &messages.GetVersion{}
+
+	data, _ := proto.Marshal(skycoinGetVersion)
+	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_GetVersion)
+
+	msg, err := sendToDevice(dev, chunks)
+	if err != nil {
+		log.Panicf(err.Error())
+		return
+	}
+
+	log.Printf("Success %d! Answer is: %s\n", msg.Kind, msg.Data[2:])
+}
+
 // DeviceGenerateMnemonic Ask the device to generate a mnemonic and configure itself with it.
 func DeviceGenerateMnemonic(deviceType DeviceType) {
 

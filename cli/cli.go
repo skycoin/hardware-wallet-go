@@ -119,6 +119,7 @@ func NewApp() (*App, error) {
 		emulatorSetPinCode(),
 		emulatorWipeCmd(),
 		emulatorBackupCmd(),
+		emulatorGetVersionCmd(),
 		sandbox(),
 	}
 

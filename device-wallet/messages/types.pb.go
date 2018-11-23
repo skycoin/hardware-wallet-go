@@ -12,12 +12,6 @@ var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
 
-// This is a compile-time assertion to ensure that this generated file
-// is compatible with the proto package it is being compiled against.
-// A compilation error at this line likely means your copy of the
-// proto package needs to be updated.
-const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
-
 // *
 // Type of failures returned by Failure message
 // @used_in Failure
@@ -89,9 +83,7 @@ func (x *FailureType) UnmarshalJSON(data []byte) error {
 	*x = FailureType(value)
 	return nil
 }
-func (FailureType) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_types_1ada1ba478f73c0d, []int{0}
-}
+func (FailureType) EnumDescriptor() ([]byte, []int) { return fileDescriptor1, []int{0} }
 
 // *
 // Type of script which will be used for transaction output
@@ -140,9 +132,7 @@ func (x *OutputScriptType) UnmarshalJSON(data []byte) error {
 	*x = OutputScriptType(value)
 	return nil
 }
-func (OutputScriptType) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_types_1ada1ba478f73c0d, []int{1}
-}
+func (OutputScriptType) EnumDescriptor() ([]byte, []int) { return fileDescriptor1, []int{1} }
 
 // *
 // Type of script which will be used for transaction output
@@ -188,9 +178,7 @@ func (x *InputScriptType) UnmarshalJSON(data []byte) error {
 	*x = InputScriptType(value)
 	return nil
 }
-func (InputScriptType) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_types_1ada1ba478f73c0d, []int{2}
-}
+func (InputScriptType) EnumDescriptor() ([]byte, []int) { return fileDescriptor1, []int{2} }
 
 // *
 // Type of information required by transaction signing process
@@ -236,9 +224,7 @@ func (x *RequestType) UnmarshalJSON(data []byte) error {
 	*x = RequestType(value)
 	return nil
 }
-func (RequestType) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_types_1ada1ba478f73c0d, []int{3}
-}
+func (RequestType) EnumDescriptor() ([]byte, []int) { return fileDescriptor1, []int{3} }
 
 // *
 // Type of button request
@@ -311,9 +297,7 @@ func (x *ButtonRequestType) UnmarshalJSON(data []byte) error {
 	*x = ButtonRequestType(value)
 	return nil
 }
-func (ButtonRequestType) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_types_1ada1ba478f73c0d, []int{4}
-}
+func (ButtonRequestType) EnumDescriptor() ([]byte, []int) { return fileDescriptor1, []int{4} }
 
 // *
 // Type of PIN request
@@ -353,9 +337,7 @@ func (x *PinMatrixRequestType) UnmarshalJSON(data []byte) error {
 	*x = PinMatrixRequestType(value)
 	return nil
 }
-func (PinMatrixRequestType) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_types_1ada1ba478f73c0d, []int{5}
-}
+func (PinMatrixRequestType) EnumDescriptor() ([]byte, []int) { return fileDescriptor1, []int{5} }
 
 // *
 // Type of recovery procedure. These should be used as bitmask, e.g.,
@@ -399,9 +381,7 @@ func (x *RecoveryDeviceType) UnmarshalJSON(data []byte) error {
 	*x = RecoveryDeviceType(value)
 	return nil
 }
-func (RecoveryDeviceType) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_types_1ada1ba478f73c0d, []int{6}
-}
+func (RecoveryDeviceType) EnumDescriptor() ([]byte, []int) { return fileDescriptor1, []int{6} }
 
 // *
 // Type of Recovery Word request
@@ -441,9 +421,7 @@ func (x *WordRequestType) UnmarshalJSON(data []byte) error {
 	*x = WordRequestType(value)
 	return nil
 }
-func (WordRequestType) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_types_1ada1ba478f73c0d, []int{7}
-}
+func (WordRequestType) EnumDescriptor() ([]byte, []int) { return fileDescriptor1, []int{7} }
 
 // *
 // Ask trezor to generate a skycoin address
@@ -480,9 +458,7 @@ func (x *SkycoinAddressType) UnmarshalJSON(data []byte) error {
 	*x = SkycoinAddressType(value)
 	return nil
 }
-func (SkycoinAddressType) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_types_1ada1ba478f73c0d, []int{8}
-}
+func (SkycoinAddressType) EnumDescriptor() ([]byte, []int) { return fileDescriptor1, []int{8} }
 
 // *
 // Structure representing BIP32 (hierarchical deterministic) node
@@ -492,40 +468,19 @@ func (SkycoinAddressType) EnumDescriptor() ([]byte, []int) {
 // @used_in DebugLinkState
 // @used_in Storage
 type HDNodeType struct {
-	Depth                *uint32  `protobuf:"varint,1,req,name=depth" json:"depth,omitempty"`
-	Fingerprint          *uint32  `protobuf:"varint,2,req,name=fingerprint" json:"fingerprint,omitempty"`
-	ChildNum             *uint32  `protobuf:"varint,3,req,name=child_num,json=childNum" json:"child_num,omitempty"`
-	ChainCode            []byte   `protobuf:"bytes,4,req,name=chain_code,json=chainCode" json:"chain_code,omitempty"`
-	PrivateKey           []byte   `protobuf:"bytes,5,opt,name=private_key,json=privateKey" json:"private_key,omitempty"`
-	PublicKey            []byte   `protobuf:"bytes,6,opt,name=public_key,json=publicKey" json:"public_key,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	Depth            *uint32 `protobuf:"varint,1,req,name=depth" json:"depth,omitempty"`
+	Fingerprint      *uint32 `protobuf:"varint,2,req,name=fingerprint" json:"fingerprint,omitempty"`
+	ChildNum         *uint32 `protobuf:"varint,3,req,name=child_num,json=childNum" json:"child_num,omitempty"`
+	ChainCode        []byte  `protobuf:"bytes,4,req,name=chain_code,json=chainCode" json:"chain_code,omitempty"`
+	PrivateKey       []byte  `protobuf:"bytes,5,opt,name=private_key,json=privateKey" json:"private_key,omitempty"`
+	PublicKey        []byte  `protobuf:"bytes,6,opt,name=public_key,json=publicKey" json:"public_key,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
 }
 
-func (m *HDNodeType) Reset()         { *m = HDNodeType{} }
-func (m *HDNodeType) String() string { return proto.CompactTextString(m) }
-func (*HDNodeType) ProtoMessage()    {}
-func (*HDNodeType) Descriptor() ([]byte, []int) {
-	return fileDescriptor_types_1ada1ba478f73c0d, []int{0}
-}
-func (m *HDNodeType) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_HDNodeType.Unmarshal(m, b)
-}
-func (m *HDNodeType) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_HDNodeType.Marshal(b, m, deterministic)
-}
-func (dst *HDNodeType) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_HDNodeType.Merge(dst, src)
-}
-func (m *HDNodeType) XXX_Size() int {
-	return xxx_messageInfo_HDNodeType.Size(m)
-}
-func (m *HDNodeType) XXX_DiscardUnknown() {
-	xxx_messageInfo_HDNodeType.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_HDNodeType proto.InternalMessageInfo
+func (m *HDNodeType) Reset()                    { *m = HDNodeType{} }
+func (m *HDNodeType) String() string            { return proto.CompactTextString(m) }
+func (*HDNodeType) ProtoMessage()               {}
+func (*HDNodeType) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{0} }
 
 func (m *HDNodeType) GetDepth() uint32 {
 	if m != nil && m.Depth != nil {
@@ -570,36 +525,15 @@ func (m *HDNodeType) GetPublicKey() []byte {
 }
 
 type HDNodePathType struct {
-	Node                 *HDNodeType `protobuf:"bytes,1,req,name=node" json:"node,omitempty"`
-	AddressN             []uint32    `protobuf:"varint,2,rep,name=address_n,json=addressN" json:"address_n,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}    `json:"-"`
-	XXX_unrecognized     []byte      `json:"-"`
-	XXX_sizecache        int32       `json:"-"`
+	Node             *HDNodeType `protobuf:"bytes,1,req,name=node" json:"node,omitempty"`
+	AddressN         []uint32    `protobuf:"varint,2,rep,name=address_n,json=addressN" json:"address_n,omitempty"`
+	XXX_unrecognized []byte      `json:"-"`
 }
 
-func (m *HDNodePathType) Reset()         { *m = HDNodePathType{} }
-func (m *HDNodePathType) String() string { return proto.CompactTextString(m) }
-func (*HDNodePathType) ProtoMessage()    {}
-func (*HDNodePathType) Descriptor() ([]byte, []int) {
-	return fileDescriptor_types_1ada1ba478f73c0d, []int{1}
-}
-func (m *HDNodePathType) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_HDNodePathType.Unmarshal(m, b)
-}
-func (m *HDNodePathType) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_HDNodePathType.Marshal(b, m, deterministic)
-}
-func (dst *HDNodePathType) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_HDNodePathType.Merge(dst, src)
-}
-func (m *HDNodePathType) XXX_Size() int {
-	return xxx_messageInfo_HDNodePathType.Size(m)
-}
-func (m *HDNodePathType) XXX_DiscardUnknown() {
-	xxx_messageInfo_HDNodePathType.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_HDNodePathType proto.InternalMessageInfo
+func (m *HDNodePathType) Reset()                    { *m = HDNodePathType{} }
+func (m *HDNodePathType) String() string            { return proto.CompactTextString(m) }
+func (*HDNodePathType) ProtoMessage()               {}
+func (*HDNodePathType) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{1} }
 
 func (m *HDNodePathType) GetNode() *HDNodeType {
 	if m != nil {
@@ -619,45 +553,24 @@ func (m *HDNodePathType) GetAddressN() []uint32 {
 // Structure representing Coin
 // @used_in Features
 type CoinType struct {
-	CoinName             *string  `protobuf:"bytes,1,opt,name=coin_name,json=coinName" json:"coin_name,omitempty"`
-	CoinShortcut         *string  `protobuf:"bytes,2,opt,name=coin_shortcut,json=coinShortcut" json:"coin_shortcut,omitempty"`
-	AddressType          *uint32  `protobuf:"varint,3,opt,name=address_type,json=addressType,def=0" json:"address_type,omitempty"`
-	MaxfeeKb             *uint64  `protobuf:"varint,4,opt,name=maxfee_kb,json=maxfeeKb" json:"maxfee_kb,omitempty"`
-	AddressTypeP2Sh      *uint32  `protobuf:"varint,5,opt,name=address_type_p2sh,json=addressTypeP2sh,def=5" json:"address_type_p2sh,omitempty"`
-	SignedMessageHeader  *string  `protobuf:"bytes,8,opt,name=signed_message_header,json=signedMessageHeader" json:"signed_message_header,omitempty"`
-	XpubMagic            *uint32  `protobuf:"varint,9,opt,name=xpub_magic,json=xpubMagic,def=76067358" json:"xpub_magic,omitempty"`
-	XprvMagic            *uint32  `protobuf:"varint,10,opt,name=xprv_magic,json=xprvMagic,def=76066276" json:"xprv_magic,omitempty"`
-	Segwit               *bool    `protobuf:"varint,11,opt,name=segwit" json:"segwit,omitempty"`
-	Forkid               *uint32  `protobuf:"varint,12,opt,name=forkid" json:"forkid,omitempty"`
-	ForceBip143          *bool    `protobuf:"varint,13,opt,name=force_bip143,json=forceBip143" json:"force_bip143,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	CoinName            *string `protobuf:"bytes,1,opt,name=coin_name,json=coinName" json:"coin_name,omitempty"`
+	CoinShortcut        *string `protobuf:"bytes,2,opt,name=coin_shortcut,json=coinShortcut" json:"coin_shortcut,omitempty"`
+	AddressType         *uint32 `protobuf:"varint,3,opt,name=address_type,json=addressType,def=0" json:"address_type,omitempty"`
+	MaxfeeKb            *uint64 `protobuf:"varint,4,opt,name=maxfee_kb,json=maxfeeKb" json:"maxfee_kb,omitempty"`
+	AddressTypeP2Sh     *uint32 `protobuf:"varint,5,opt,name=address_type_p2sh,json=addressTypeP2sh,def=5" json:"address_type_p2sh,omitempty"`
+	SignedMessageHeader *string `protobuf:"bytes,8,opt,name=signed_message_header,json=signedMessageHeader" json:"signed_message_header,omitempty"`
+	XpubMagic           *uint32 `protobuf:"varint,9,opt,name=xpub_magic,json=xpubMagic,def=76067358" json:"xpub_magic,omitempty"`
+	XprvMagic           *uint32 `protobuf:"varint,10,opt,name=xprv_magic,json=xprvMagic,def=76066276" json:"xprv_magic,omitempty"`
+	Segwit              *bool   `protobuf:"varint,11,opt,name=segwit" json:"segwit,omitempty"`
+	Forkid              *uint32 `protobuf:"varint,12,opt,name=forkid" json:"forkid,omitempty"`
+	ForceBip143         *bool   `protobuf:"varint,13,opt,name=force_bip143,json=forceBip143" json:"force_bip143,omitempty"`
+	XXX_unrecognized    []byte  `json:"-"`
 }
 
-func (m *CoinType) Reset()         { *m = CoinType{} }
-func (m *CoinType) String() string { return proto.CompactTextString(m) }
-func (*CoinType) ProtoMessage()    {}
-func (*CoinType) Descriptor() ([]byte, []int) {
-	return fileDescriptor_types_1ada1ba478f73c0d, []int{2}
-}
-func (m *CoinType) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_CoinType.Unmarshal(m, b)
-}
-func (m *CoinType) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_CoinType.Marshal(b, m, deterministic)
-}
-func (dst *CoinType) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_CoinType.Merge(dst, src)
-}
-func (m *CoinType) XXX_Size() int {
-	return xxx_messageInfo_CoinType.Size(m)
-}
-func (m *CoinType) XXX_DiscardUnknown() {
-	xxx_messageInfo_CoinType.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_CoinType proto.InternalMessageInfo
+func (m *CoinType) Reset()                    { *m = CoinType{} }
+func (m *CoinType) String() string            { return proto.CompactTextString(m) }
+func (*CoinType) ProtoMessage()               {}
+func (*CoinType) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{2} }
 
 const Default_CoinType_AddressType uint32 = 0
 const Default_CoinType_AddressTypeP2Sh uint32 = 5
@@ -745,37 +658,16 @@ func (m *CoinType) GetForceBip143() bool {
 // Type of redeem script used in input
 // @used_in TxInputType
 type MultisigRedeemScriptType struct {
-	Pubkeys              []*HDNodePathType `protobuf:"bytes,1,rep,name=pubkeys" json:"pubkeys,omitempty"`
-	Signatures           [][]byte          `protobuf:"bytes,2,rep,name=signatures" json:"signatures,omitempty"`
-	M                    *uint32           `protobuf:"varint,3,opt,name=m" json:"m,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
-	XXX_unrecognized     []byte            `json:"-"`
-	XXX_sizecache        int32             `json:"-"`
+	Pubkeys          []*HDNodePathType `protobuf:"bytes,1,rep,name=pubkeys" json:"pubkeys,omitempty"`
+	Signatures       [][]byte          `protobuf:"bytes,2,rep,name=signatures" json:"signatures,omitempty"`
+	M                *uint32           `protobuf:"varint,3,opt,name=m" json:"m,omitempty"`
+	XXX_unrecognized []byte            `json:"-"`
 }
 
-func (m *MultisigRedeemScriptType) Reset()         { *m = MultisigRedeemScriptType{} }
-func (m *MultisigRedeemScriptType) String() string { return proto.CompactTextString(m) }
-func (*MultisigRedeemScriptType) ProtoMessage()    {}
-func (*MultisigRedeemScriptType) Descriptor() ([]byte, []int) {
-	return fileDescriptor_types_1ada1ba478f73c0d, []int{3}
-}
-func (m *MultisigRedeemScriptType) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_MultisigRedeemScriptType.Unmarshal(m, b)
-}
-func (m *MultisigRedeemScriptType) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_MultisigRedeemScriptType.Marshal(b, m, deterministic)
-}
-func (dst *MultisigRedeemScriptType) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MultisigRedeemScriptType.Merge(dst, src)
-}
-func (m *MultisigRedeemScriptType) XXX_Size() int {
-	return xxx_messageInfo_MultisigRedeemScriptType.Size(m)
-}
-func (m *MultisigRedeemScriptType) XXX_DiscardUnknown() {
-	xxx_messageInfo_MultisigRedeemScriptType.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_MultisigRedeemScriptType proto.InternalMessageInfo
+func (m *MultisigRedeemScriptType) Reset()                    { *m = MultisigRedeemScriptType{} }
+func (m *MultisigRedeemScriptType) String() string            { return proto.CompactTextString(m) }
+func (*MultisigRedeemScriptType) ProtoMessage()               {}
+func (*MultisigRedeemScriptType) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{3} }
 
 func (m *MultisigRedeemScriptType) GetPubkeys() []*HDNodePathType {
 	if m != nil {
@@ -803,44 +695,23 @@ func (m *MultisigRedeemScriptType) GetM() uint32 {
 // @used_in SimpleSignTx
 // @used_in TransactionType
 type TxInputType struct {
-	AddressN             []uint32                  `protobuf:"varint,1,rep,name=address_n,json=addressN" json:"address_n,omitempty"`
-	PrevHash             []byte                    `protobuf:"bytes,2,req,name=prev_hash,json=prevHash" json:"prev_hash,omitempty"`
-	PrevIndex            *uint32                   `protobuf:"varint,3,req,name=prev_index,json=prevIndex" json:"prev_index,omitempty"`
-	ScriptSig            []byte                    `protobuf:"bytes,4,opt,name=script_sig,json=scriptSig" json:"script_sig,omitempty"`
-	Sequence             *uint32                   `protobuf:"varint,5,opt,name=sequence,def=4294967295" json:"sequence,omitempty"`
-	ScriptType           *InputScriptType          `protobuf:"varint,6,opt,name=script_type,json=scriptType,enum=InputScriptType,def=0" json:"script_type,omitempty"`
-	Multisig             *MultisigRedeemScriptType `protobuf:"bytes,7,opt,name=multisig" json:"multisig,omitempty"`
-	Amount               *uint64                   `protobuf:"varint,8,opt,name=amount" json:"amount,omitempty"`
-	DecredTree           *uint32                   `protobuf:"varint,9,opt,name=decred_tree,json=decredTree" json:"decred_tree,omitempty"`
-	DecredScriptVersion  *uint32                   `protobuf:"varint,10,opt,name=decred_script_version,json=decredScriptVersion" json:"decred_script_version,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}                  `json:"-"`
-	XXX_unrecognized     []byte                    `json:"-"`
-	XXX_sizecache        int32                     `json:"-"`
+	AddressN            []uint32                  `protobuf:"varint,1,rep,name=address_n,json=addressN" json:"address_n,omitempty"`
+	PrevHash            []byte                    `protobuf:"bytes,2,req,name=prev_hash,json=prevHash" json:"prev_hash,omitempty"`
+	PrevIndex           *uint32                   `protobuf:"varint,3,req,name=prev_index,json=prevIndex" json:"prev_index,omitempty"`
+	ScriptSig           []byte                    `protobuf:"bytes,4,opt,name=script_sig,json=scriptSig" json:"script_sig,omitempty"`
+	Sequence            *uint32                   `protobuf:"varint,5,opt,name=sequence,def=4294967295" json:"sequence,omitempty"`
+	ScriptType          *InputScriptType          `protobuf:"varint,6,opt,name=script_type,json=scriptType,enum=InputScriptType,def=0" json:"script_type,omitempty"`
+	Multisig            *MultisigRedeemScriptType `protobuf:"bytes,7,opt,name=multisig" json:"multisig,omitempty"`
+	Amount              *uint64                   `protobuf:"varint,8,opt,name=amount" json:"amount,omitempty"`
+	DecredTree          *uint32                   `protobuf:"varint,9,opt,name=decred_tree,json=decredTree" json:"decred_tree,omitempty"`
+	DecredScriptVersion *uint32                   `protobuf:"varint,10,opt,name=decred_script_version,json=decredScriptVersion" json:"decred_script_version,omitempty"`
+	XXX_unrecognized    []byte                    `json:"-"`
 }
 
-func (m *TxInputType) Reset()         { *m = TxInputType{} }
-func (m *TxInputType) String() string { return proto.CompactTextString(m) }
-func (*TxInputType) ProtoMessage()    {}
-func (*TxInputType) Descriptor() ([]byte, []int) {
-	return fileDescriptor_types_1ada1ba478f73c0d, []int{4}
-}
-func (m *TxInputType) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_TxInputType.Unmarshal(m, b)
-}
-func (m *TxInputType) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_TxInputType.Marshal(b, m, deterministic)
-}
-func (dst *TxInputType) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_TxInputType.Merge(dst, src)
-}
-func (m *TxInputType) XXX_Size() int {
-	return xxx_messageInfo_TxInputType.Size(m)
-}
-func (m *TxInputType) XXX_DiscardUnknown() {
-	xxx_messageInfo_TxInputType.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_TxInputType proto.InternalMessageInfo
+func (m *TxInputType) Reset()                    { *m = TxInputType{} }
+func (m *TxInputType) String() string            { return proto.CompactTextString(m) }
+func (*TxInputType) ProtoMessage()               {}
+func (*TxInputType) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{4} }
 
 const Default_TxInputType_Sequence uint32 = 4294967295
 const Default_TxInputType_ScriptType InputScriptType = InputScriptType_SPENDADDRESS
@@ -920,41 +791,20 @@ func (m *TxInputType) GetDecredScriptVersion() uint32 {
 // @used_in SimpleSignTx
 // @used_in TransactionType
 type TxOutputType struct {
-	Address              *string                   `protobuf:"bytes,1,opt,name=address" json:"address,omitempty"`
-	AddressN             []uint32                  `protobuf:"varint,2,rep,name=address_n,json=addressN" json:"address_n,omitempty"`
-	Amount               *uint64                   `protobuf:"varint,3,req,name=amount" json:"amount,omitempty"`
-	ScriptType           *OutputScriptType         `protobuf:"varint,4,req,name=script_type,json=scriptType,enum=OutputScriptType" json:"script_type,omitempty"`
-	Multisig             *MultisigRedeemScriptType `protobuf:"bytes,5,opt,name=multisig" json:"multisig,omitempty"`
-	OpReturnData         []byte                    `protobuf:"bytes,6,opt,name=op_return_data,json=opReturnData" json:"op_return_data,omitempty"`
-	DecredScriptVersion  *uint32                   `protobuf:"varint,7,opt,name=decred_script_version,json=decredScriptVersion" json:"decred_script_version,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}                  `json:"-"`
-	XXX_unrecognized     []byte                    `json:"-"`
-	XXX_sizecache        int32                     `json:"-"`
+	Address             *string                   `protobuf:"bytes,1,opt,name=address" json:"address,omitempty"`
+	AddressN            []uint32                  `protobuf:"varint,2,rep,name=address_n,json=addressN" json:"address_n,omitempty"`
+	Amount              *uint64                   `protobuf:"varint,3,req,name=amount" json:"amount,omitempty"`
+	ScriptType          *OutputScriptType         `protobuf:"varint,4,req,name=script_type,json=scriptType,enum=OutputScriptType" json:"script_type,omitempty"`
+	Multisig            *MultisigRedeemScriptType `protobuf:"bytes,5,opt,name=multisig" json:"multisig,omitempty"`
+	OpReturnData        []byte                    `protobuf:"bytes,6,opt,name=op_return_data,json=opReturnData" json:"op_return_data,omitempty"`
+	DecredScriptVersion *uint32                   `protobuf:"varint,7,opt,name=decred_script_version,json=decredScriptVersion" json:"decred_script_version,omitempty"`
+	XXX_unrecognized    []byte                    `json:"-"`
 }
 
-func (m *TxOutputType) Reset()         { *m = TxOutputType{} }
-func (m *TxOutputType) String() string { return proto.CompactTextString(m) }
-func (*TxOutputType) ProtoMessage()    {}
-func (*TxOutputType) Descriptor() ([]byte, []int) {
-	return fileDescriptor_types_1ada1ba478f73c0d, []int{5}
-}
-func (m *TxOutputType) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_TxOutputType.Unmarshal(m, b)
-}
-func (m *TxOutputType) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_TxOutputType.Marshal(b, m, deterministic)
-}
-func (dst *TxOutputType) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_TxOutputType.Merge(dst, src)
-}
-func (m *TxOutputType) XXX_Size() int {
-	return xxx_messageInfo_TxOutputType.Size(m)
-}
-func (m *TxOutputType) XXX_DiscardUnknown() {
-	xxx_messageInfo_TxOutputType.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_TxOutputType proto.InternalMessageInfo
+func (m *TxOutputType) Reset()                    { *m = TxOutputType{} }
+func (m *TxOutputType) String() string            { return proto.CompactTextString(m) }
+func (*TxOutputType) ProtoMessage()               {}
+func (*TxOutputType) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{5} }
 
 func (m *TxOutputType) GetAddress() string {
 	if m != nil && m.Address != nil {
@@ -1009,37 +859,16 @@ func (m *TxOutputType) GetDecredScriptVersion() uint32 {
 // Structure representing compiled transaction output
 // @used_in TransactionType
 type TxOutputBinType struct {
-	Amount               *uint64  `protobuf:"varint,1,req,name=amount" json:"amount,omitempty"`
-	ScriptPubkey         []byte   `protobuf:"bytes,2,req,name=script_pubkey,json=scriptPubkey" json:"script_pubkey,omitempty"`
-	DecredScriptVersion  *uint32  `protobuf:"varint,3,opt,name=decred_script_version,json=decredScriptVersion" json:"decred_script_version,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	Amount              *uint64 `protobuf:"varint,1,req,name=amount" json:"amount,omitempty"`
+	ScriptPubkey        []byte  `protobuf:"bytes,2,req,name=script_pubkey,json=scriptPubkey" json:"script_pubkey,omitempty"`
+	DecredScriptVersion *uint32 `protobuf:"varint,3,opt,name=decred_script_version,json=decredScriptVersion" json:"decred_script_version,omitempty"`
+	XXX_unrecognized    []byte  `json:"-"`
 }
 
-func (m *TxOutputBinType) Reset()         { *m = TxOutputBinType{} }
-func (m *TxOutputBinType) String() string { return proto.CompactTextString(m) }
-func (*TxOutputBinType) ProtoMessage()    {}
-func (*TxOutputBinType) Descriptor() ([]byte, []int) {
-	return fileDescriptor_types_1ada1ba478f73c0d, []int{6}
-}
-func (m *TxOutputBinType) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_TxOutputBinType.Unmarshal(m, b)
-}
-func (m *TxOutputBinType) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_TxOutputBinType.Marshal(b, m, deterministic)
-}
-func (dst *TxOutputBinType) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_TxOutputBinType.Merge(dst, src)
-}
-func (m *TxOutputBinType) XXX_Size() int {
-	return xxx_messageInfo_TxOutputBinType.Size(m)
-}
-func (m *TxOutputBinType) XXX_DiscardUnknown() {
-	xxx_messageInfo_TxOutputBinType.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_TxOutputBinType proto.InternalMessageInfo
+func (m *TxOutputBinType) Reset()                    { *m = TxOutputBinType{} }
+func (m *TxOutputBinType) String() string            { return proto.CompactTextString(m) }
+func (*TxOutputBinType) ProtoMessage()               {}
+func (*TxOutputBinType) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{6} }
 
 func (m *TxOutputBinType) GetAmount() uint64 {
 	if m != nil && m.Amount != nil {
@@ -1066,44 +895,23 @@ func (m *TxOutputBinType) GetDecredScriptVersion() uint32 {
 // Structure representing transaction
 // @used_in SimpleSignTx
 type TransactionType struct {
-	Version              *uint32            `protobuf:"varint,1,opt,name=version" json:"version,omitempty"`
-	Inputs               []*TxInputType     `protobuf:"bytes,2,rep,name=inputs" json:"inputs,omitempty"`
-	BinOutputs           []*TxOutputBinType `protobuf:"bytes,3,rep,name=bin_outputs,json=binOutputs" json:"bin_outputs,omitempty"`
-	Outputs              []*TxOutputType    `protobuf:"bytes,5,rep,name=outputs" json:"outputs,omitempty"`
-	LockTime             *uint32            `protobuf:"varint,4,opt,name=lock_time,json=lockTime" json:"lock_time,omitempty"`
-	InputsCnt            *uint32            `protobuf:"varint,6,opt,name=inputs_cnt,json=inputsCnt" json:"inputs_cnt,omitempty"`
-	OutputsCnt           *uint32            `protobuf:"varint,7,opt,name=outputs_cnt,json=outputsCnt" json:"outputs_cnt,omitempty"`
-	ExtraData            []byte             `protobuf:"bytes,8,opt,name=extra_data,json=extraData" json:"extra_data,omitempty"`
-	ExtraDataLen         *uint32            `protobuf:"varint,9,opt,name=extra_data_len,json=extraDataLen" json:"extra_data_len,omitempty"`
-	DecredExpiry         *uint32            `protobuf:"varint,10,opt,name=decred_expiry,json=decredExpiry" json:"decred_expiry,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}           `json:"-"`
-	XXX_unrecognized     []byte             `json:"-"`
-	XXX_sizecache        int32              `json:"-"`
+	Version          *uint32            `protobuf:"varint,1,opt,name=version" json:"version,omitempty"`
+	Inputs           []*TxInputType     `protobuf:"bytes,2,rep,name=inputs" json:"inputs,omitempty"`
+	BinOutputs       []*TxOutputBinType `protobuf:"bytes,3,rep,name=bin_outputs,json=binOutputs" json:"bin_outputs,omitempty"`
+	Outputs          []*TxOutputType    `protobuf:"bytes,5,rep,name=outputs" json:"outputs,omitempty"`
+	LockTime         *uint32            `protobuf:"varint,4,opt,name=lock_time,json=lockTime" json:"lock_time,omitempty"`
+	InputsCnt        *uint32            `protobuf:"varint,6,opt,name=inputs_cnt,json=inputsCnt" json:"inputs_cnt,omitempty"`
+	OutputsCnt       *uint32            `protobuf:"varint,7,opt,name=outputs_cnt,json=outputsCnt" json:"outputs_cnt,omitempty"`
+	ExtraData        []byte             `protobuf:"bytes,8,opt,name=extra_data,json=extraData" json:"extra_data,omitempty"`
+	ExtraDataLen     *uint32            `protobuf:"varint,9,opt,name=extra_data_len,json=extraDataLen" json:"extra_data_len,omitempty"`
+	DecredExpiry     *uint32            `protobuf:"varint,10,opt,name=decred_expiry,json=decredExpiry" json:"decred_expiry,omitempty"`
+	XXX_unrecognized []byte             `json:"-"`
 }
 
-func (m *TransactionType) Reset()         { *m = TransactionType{} }
-func (m *TransactionType) String() string { return proto.CompactTextString(m) }
-func (*TransactionType) ProtoMessage()    {}
-func (*TransactionType) Descriptor() ([]byte, []int) {
-	return fileDescriptor_types_1ada1ba478f73c0d, []int{7}
-}
-func (m *TransactionType) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_TransactionType.Unmarshal(m, b)
-}
-func (m *TransactionType) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_TransactionType.Marshal(b, m, deterministic)
-}
-func (dst *TransactionType) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_TransactionType.Merge(dst, src)
-}
-func (m *TransactionType) XXX_Size() int {
-	return xxx_messageInfo_TransactionType.Size(m)
-}
-func (m *TransactionType) XXX_DiscardUnknown() {
-	xxx_messageInfo_TransactionType.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_TransactionType proto.InternalMessageInfo
+func (m *TransactionType) Reset()                    { *m = TransactionType{} }
+func (m *TransactionType) String() string            { return proto.CompactTextString(m) }
+func (*TransactionType) ProtoMessage()               {}
+func (*TransactionType) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{7} }
 
 func (m *TransactionType) GetVersion() uint32 {
 	if m != nil && m.Version != nil {
@@ -1179,38 +987,17 @@ func (m *TransactionType) GetDecredExpiry() uint32 {
 // Structure representing request details
 // @used_in TxRequest
 type TxRequestDetailsType struct {
-	RequestIndex         *uint32  `protobuf:"varint,1,opt,name=request_index,json=requestIndex" json:"request_index,omitempty"`
-	TxHash               []byte   `protobuf:"bytes,2,opt,name=tx_hash,json=txHash" json:"tx_hash,omitempty"`
-	ExtraDataLen         *uint32  `protobuf:"varint,3,opt,name=extra_data_len,json=extraDataLen" json:"extra_data_len,omitempty"`
-	ExtraDataOffset      *uint32  `protobuf:"varint,4,opt,name=extra_data_offset,json=extraDataOffset" json:"extra_data_offset,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	RequestIndex     *uint32 `protobuf:"varint,1,opt,name=request_index,json=requestIndex" json:"request_index,omitempty"`
+	TxHash           []byte  `protobuf:"bytes,2,opt,name=tx_hash,json=txHash" json:"tx_hash,omitempty"`
+	ExtraDataLen     *uint32 `protobuf:"varint,3,opt,name=extra_data_len,json=extraDataLen" json:"extra_data_len,omitempty"`
+	ExtraDataOffset  *uint32 `protobuf:"varint,4,opt,name=extra_data_offset,json=extraDataOffset" json:"extra_data_offset,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
 }
 
-func (m *TxRequestDetailsType) Reset()         { *m = TxRequestDetailsType{} }
-func (m *TxRequestDetailsType) String() string { return proto.CompactTextString(m) }
-func (*TxRequestDetailsType) ProtoMessage()    {}
-func (*TxRequestDetailsType) Descriptor() ([]byte, []int) {
-	return fileDescriptor_types_1ada1ba478f73c0d, []int{8}
-}
-func (m *TxRequestDetailsType) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_TxRequestDetailsType.Unmarshal(m, b)
-}
-func (m *TxRequestDetailsType) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_TxRequestDetailsType.Marshal(b, m, deterministic)
-}
-func (dst *TxRequestDetailsType) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_TxRequestDetailsType.Merge(dst, src)
-}
-func (m *TxRequestDetailsType) XXX_Size() int {
-	return xxx_messageInfo_TxRequestDetailsType.Size(m)
-}
-func (m *TxRequestDetailsType) XXX_DiscardUnknown() {
-	xxx_messageInfo_TxRequestDetailsType.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_TxRequestDetailsType proto.InternalMessageInfo
+func (m *TxRequestDetailsType) Reset()                    { *m = TxRequestDetailsType{} }
+func (m *TxRequestDetailsType) String() string            { return proto.CompactTextString(m) }
+func (*TxRequestDetailsType) ProtoMessage()               {}
+func (*TxRequestDetailsType) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{8} }
 
 func (m *TxRequestDetailsType) GetRequestIndex() uint32 {
 	if m != nil && m.RequestIndex != nil {
@@ -1244,37 +1031,16 @@ func (m *TxRequestDetailsType) GetExtraDataOffset() uint32 {
 // Structure representing serialized data
 // @used_in TxRequest
 type TxRequestSerializedType struct {
-	SignatureIndex       *uint32  `protobuf:"varint,1,opt,name=signature_index,json=signatureIndex" json:"signature_index,omitempty"`
-	Signature            []byte   `protobuf:"bytes,2,opt,name=signature" json:"signature,omitempty"`
-	SerializedTx         []byte   `protobuf:"bytes,3,opt,name=serialized_tx,json=serializedTx" json:"serialized_tx,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	SignatureIndex   *uint32 `protobuf:"varint,1,opt,name=signature_index,json=signatureIndex" json:"signature_index,omitempty"`
+	Signature        []byte  `protobuf:"bytes,2,opt,name=signature" json:"signature,omitempty"`
+	SerializedTx     []byte  `protobuf:"bytes,3,opt,name=serialized_tx,json=serializedTx" json:"serialized_tx,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
 }
 
-func (m *TxRequestSerializedType) Reset()         { *m = TxRequestSerializedType{} }
-func (m *TxRequestSerializedType) String() string { return proto.CompactTextString(m) }
-func (*TxRequestSerializedType) ProtoMessage()    {}
-func (*TxRequestSerializedType) Descriptor() ([]byte, []int) {
-	return fileDescriptor_types_1ada1ba478f73c0d, []int{9}
-}
-func (m *TxRequestSerializedType) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_TxRequestSerializedType.Unmarshal(m, b)
-}
-func (m *TxRequestSerializedType) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_TxRequestSerializedType.Marshal(b, m, deterministic)
-}
-func (dst *TxRequestSerializedType) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_TxRequestSerializedType.Merge(dst, src)
-}
-func (m *TxRequestSerializedType) XXX_Size() int {
-	return xxx_messageInfo_TxRequestSerializedType.Size(m)
-}
-func (m *TxRequestSerializedType) XXX_DiscardUnknown() {
-	xxx_messageInfo_TxRequestSerializedType.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_TxRequestSerializedType proto.InternalMessageInfo
+func (m *TxRequestSerializedType) Reset()                    { *m = TxRequestSerializedType{} }
+func (m *TxRequestSerializedType) String() string            { return proto.CompactTextString(m) }
+func (*TxRequestSerializedType) ProtoMessage()               {}
+func (*TxRequestSerializedType) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{9} }
 
 func (m *TxRequestSerializedType) GetSignatureIndex() uint32 {
 	if m != nil && m.SignatureIndex != nil {
@@ -1301,40 +1067,19 @@ func (m *TxRequestSerializedType) GetSerializedTx() []byte {
 // Structure representing identity data
 // @used_in IdentityType
 type IdentityType struct {
-	Proto                *string  `protobuf:"bytes,1,opt,name=proto" json:"proto,omitempty"`
-	User                 *string  `protobuf:"bytes,2,opt,name=user" json:"user,omitempty"`
-	Host                 *string  `protobuf:"bytes,3,opt,name=host" json:"host,omitempty"`
-	Port                 *string  `protobuf:"bytes,4,opt,name=port" json:"port,omitempty"`
-	Path                 *string  `protobuf:"bytes,5,opt,name=path" json:"path,omitempty"`
-	Index                *uint32  `protobuf:"varint,6,opt,name=index,def=0" json:"index,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	Proto            *string `protobuf:"bytes,1,opt,name=proto" json:"proto,omitempty"`
+	User             *string `protobuf:"bytes,2,opt,name=user" json:"user,omitempty"`
+	Host             *string `protobuf:"bytes,3,opt,name=host" json:"host,omitempty"`
+	Port             *string `protobuf:"bytes,4,opt,name=port" json:"port,omitempty"`
+	Path             *string `protobuf:"bytes,5,opt,name=path" json:"path,omitempty"`
+	Index            *uint32 `protobuf:"varint,6,opt,name=index,def=0" json:"index,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
 }
 
-func (m *IdentityType) Reset()         { *m = IdentityType{} }
-func (m *IdentityType) String() string { return proto.CompactTextString(m) }
-func (*IdentityType) ProtoMessage()    {}
-func (*IdentityType) Descriptor() ([]byte, []int) {
-	return fileDescriptor_types_1ada1ba478f73c0d, []int{10}
-}
-func (m *IdentityType) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_IdentityType.Unmarshal(m, b)
-}
-func (m *IdentityType) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_IdentityType.Marshal(b, m, deterministic)
-}
-func (dst *IdentityType) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_IdentityType.Merge(dst, src)
-}
-func (m *IdentityType) XXX_Size() int {
-	return xxx_messageInfo_IdentityType.Size(m)
-}
-func (m *IdentityType) XXX_DiscardUnknown() {
-	xxx_messageInfo_IdentityType.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_IdentityType proto.InternalMessageInfo
+func (m *IdentityType) Reset()                    { *m = IdentityType{} }
+func (m *IdentityType) String() string            { return proto.CompactTextString(m) }
+func (*IdentityType) ProtoMessage()               {}
+func (*IdentityType) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{10} }
 
 const Default_IdentityType_Index uint32 = 0
 
@@ -1463,9 +1208,9 @@ func init() {
 	proto.RegisterExtension(E_WireBootloader)
 }
 
-func init() { proto.RegisterFile("types.proto", fileDescriptor_types_1ada1ba478f73c0d) }
+func init() { proto.RegisterFile("types.proto", fileDescriptor1) }
 
-var fileDescriptor_types_1ada1ba478f73c0d = []byte{
+var fileDescriptor1 = []byte{
 	// 2067 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x57, 0x4b, 0x6f, 0xdb, 0xc8,
 	0x1d, 0x0f, 0x25, 0x3f, 0xa4, 0xbf, 0x28, 0x7b, 0x3c, 0x79, 0x98, 0xd9, 0x4d, 0x36, 0x8a, 0x93,
