@@ -20,6 +20,10 @@ This project uses dep [dependancy manager](https://github.com/golang/dep).
 
 Don't modify anything under vendor/ directory without using [dep commands](https://github.com/golang/dep/blob/master/docs/Gopkg.toml.md).
 
+Download dependencies using command:
+
+    dep ensure
+
 ### Generate protobuf files
 
 If you need to generate google protobuf files yourself (if you are creating a new message for instance). You need to [install protoc](http://google.github.io/proto-lens/installing-protoc.html) first, then run the following:
