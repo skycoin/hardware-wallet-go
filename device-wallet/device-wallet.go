@@ -275,12 +275,12 @@ func DeviceSetMnemonic(deviceType DeviceType, mnemonic string) {
 }
 
 // DeviceGetVersion Ask the firmware version
-func DeviceGetVersion(deviceType DeviceType) {
+func DeviceGetVersion(deviceType DeviceType) string {
 
 	dev, err := getDevice(deviceType)
 	if err != nil {
 		log.Panicf(err.Error())
-		return
+		return ""
 	}
 	defer dev.Close()
 
@@ -292,10 +292,9 @@ func DeviceGetVersion(deviceType DeviceType) {
 	msg, err := sendToDevice(dev, chunks)
 	if err != nil {
 		log.Panicf(err.Error())
-		return
+		return ""
 	}
-
-	log.Printf("Success %d! Answer is: %s\n", msg.Kind, msg.Data[2:])
+	return DecodeSuccessMsg(msg.Kind, msg.Data)
 }
 
 // DeviceGenerateMnemonic Ask the device to generate a mnemonic and configure itself with it.
@@ -335,6 +334,21 @@ func DeviceGenerateMnemonic(deviceType DeviceType) {
 	}
 
 	log.Printf("MessageButtonAck Answer is: %d / %s\n", msg.Kind, msg.Data)
+}
+
+// DecodeSuccessMsg convert byte data into string containing the success message returned by the device
+func DecodeSuccessMsg(kind uint16, data []byte) string {
+	if kind == uint16(messages.MessageType_MessageType_Success) {
+		success := &messages.Success{}
+		err := proto.Unmarshal(data, success)
+		if err != nil {
+			log.Panicf("unmarshaling error: %s\n", err.Error())
+			return ""
+		}
+		return success.GetMessage()
+	}
+	log.Panic("Calling DecodeSuccessMsg with wrong message type")
+	return ""
 }
 
 // DecodeFailMsg convert byte data into string containing the failure returned by the device

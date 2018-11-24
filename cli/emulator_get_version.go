@@ -1,6 +1,8 @@
 package cli
 
 import (
+	"fmt"
+
 	gcli "github.com/urfave/cli"
 
 	deviceWallet "github.com/skycoin/hardware-wallet-go/device-wallet"
@@ -14,7 +16,8 @@ func emulatorGetVersionCmd() gcli.Command {
 		Description:  "",
 		OnUsageError: onCommandUsageError(name),
 		Action: func(c *gcli.Context) {
-			deviceWallet.DeviceGetVersion(deviceWallet.DeviceTypeEmulator)
+			version := deviceWallet.DeviceGetVersion(deviceWallet.DeviceTypeEmulator)
+			fmt.Printf("Firmware version is %s\n", version)
 		},
 	}
 }
