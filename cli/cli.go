@@ -111,6 +111,7 @@ func NewApp() (*App, error) {
 		deviceSetPinCode(),
 		deviceWipeCmd(),
 		deviceBackupCmd(),
+		deviceGetVersionCmd(),
 		emulatorSetMnemonicCmd(),
 		emulatorGenerateMnemonicCmd(),
 		emulatorAddressGenCmd(),
