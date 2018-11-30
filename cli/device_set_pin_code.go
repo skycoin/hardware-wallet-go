@@ -13,7 +13,7 @@ func deviceSetPinCode() gcli.Command {
 	name := "deviceSetPinCode"
 	return gcli.Command{
 		Name:         name,
-		Usage:        "Configure a PIN code on an emulated device.",
+		Usage:        "Configure a PIN code on a device.",
 		Description:  "",
 		Flags:        []gcli.Flag{},
 		OnUsageError: onCommandUsageError(name),

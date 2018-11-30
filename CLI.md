@@ -12,10 +12,11 @@ The CLI command APIs can be used directly from a Go application, see [Skycoin CL
     - [Configure device mnemonic](#configure-device-mnemonic)
     - [Ask device to generate mnemonic](#generate-mnemonic)
     - [Configure device PIN code](#configure-device-pin-code)
+    - [Get firmware version](#get-version)
     - [Ask device to sign message](#ask-device-to-sign-message)
     - [Ask device to check signature](#ask-device-to-check-signature)
     - [Wipe device](#wipe-device)
-    - [Ask the emulator to perform the seed backup procedure](#backup-device)
+    - [Ask the device to perform the seed backup procedure](#backup-device)
 - [Note](#note)
 
 <!-- /MarkdownTOC -->
@@ -51,24 +52,26 @@ COMMANDS:
      deviceFirmwareUpdate           Update device's firmware.
      deviceSignMessage              Ask the device to sign a message using the secret key at given index.
      deviceCheckMessageSignature    Check a message signature matches the given address.
+     deviceSetPinCode               Configure a PIN code on a device.
      deviceWipe                     Ask the device to wipe clean all the configuration it contains.
+     deviceBackup                   Ask the device to perform the seed backup procedure.
+     deviceGetVersion               Ask firmware version.
      emulatorSetMnemonic            Configure an emulated device with a mnemonic.
-     emulatorGenerateMnemonic       Ask an emulated device to generate a mnemonic and configure itself with it.
+     emulatorGenerateMnemonic       Ask the device to generate a mnemonic and configure itself with it.
      emulatorAddressGen             Generate skycoin addresses using an emulated device.
      emulatorSignMessage            Ask the emulated device to sign a message using the secret key at given index.
      emulatorCheckMessageSignature  Check a message signature matches the given address.
+     emulatorSetPinCode             Configure a PIN code on an emulated device.
      emulatorWipe                   Ask the emulator to wipe clean all the configuration it contains.
-     help, h               Shows a list of commands or help for one command
+     emulatorBackup                 Ask the emulator to perform the seed backup procedure.
+     emulatorGetVersion             Ask firmware version.
+     sandbox                        Sandbox.
+     help, h                        Shows a list of commands or help for one command
+
 
 GLOBAL OPTIONS:
    --help, -h     show help
    --version, -v  print the version
-ENVIRONMENT VARIABLES:
-    RPC_ADDR: Address of RPC node. Must be in scheme://host format. Default "http://127.0.0.1:6420"
-    COIN: Name of the coin. Default "skycoin"
-    USE_CSRF: Set to 1 or true if the remote node has CSRF enabled. Default false (unset)
-    WALLET_DIR: Directory where wallets are stored. This value is overriden by any subcommand flag specifying a wallet filename, if that filename includes a path. Default "$HOME/.$COIN/wallets"
-    WALLET_NAME: Name of wallet file (without path). This value is overriden by any subcommand flag specifying a wallet filename. Default "$COIN_cli.wlt"
 ```
 
 ### Update firmware
@@ -144,6 +147,30 @@ MessageButtonAck Answer is: 2 /
 Ecloud flower upset remain green metal below cup stem infant art thank
 ```
 </details>
+
+
+### Get version
+
+Ask firmware version.
+
+```bash
+$skycoin-cli deviceGetVersion
+```
+
+#### Examples
+##### Text output
+
+```bash
+$skycoin-cli deviceGetVersion
+```
+<details>
+ <summary>View Output</summary>
+
+```
+Firmware version is Firmware Version 1.6.1
+```
+</details>
+
 
 ### Generate mnemonic
 
@@ -317,7 +344,7 @@ Device wiped
 
 ### Backup device
 
-Ask the emulator to perform the seed backup procedure.
+Ask the device to perform the seed backup procedure.
 
 ```bash
 $skycoin-cli deviceBackup

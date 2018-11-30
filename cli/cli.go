@@ -24,13 +24,6 @@ const (
 )
 
 var (
-	envVarsHelp = fmt.Sprintf(`ENVIRONMENT VARIABLES:
-    RPC_ADDR: Address of RPC node. Must be in scheme://host format. Default "%s"
-    COIN: Name of the coin. Default "%s"
-    USE_CSRF: Set to 1 or true if the remote node has CSRF enabled. Default false (unset)
-    WALLET_DIR: Directory where wallets are stored. This value is overriden by any subcommand flag specifying a wallet filename, if that filename includes a path. Default "%s"
-    WALLET_NAME: Name of wallet file (without path). This value is overriden by any subcommand flag specifying a wallet filename. Default "%s"
-    DATA_DIR: Directory where everything is stored. Default "%s"`, defaultRPCAddress, defaultCoin, defaultWalletDir, defaultWalletName, defaultDataDir)
 
 	commandHelpTemplate = fmt.Sprintf(`USAGE:
         {{.HelpName}}{{if .VisibleFlags}} [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{if .Category}}
@@ -44,8 +37,7 @@ DESCRIPTION:
 OPTIONS:
         {{range .VisibleFlags}}{{.}}
         {{end}}{{end}}
-%s
-`, envVarsHelp)
+`)
 
 	appHelpTemplate = fmt.Sprintf(`NAME:
    {{.Name}}{{if .Usage}} - {{.Usage}}{{end}}
@@ -73,8 +65,7 @@ GLOBAL OPTIONS:
 
 COPYRIGHT:
    {{.Copyright}}{{end}}
-%s
-`, envVarsHelp)
+`)
 
 	// ErrWalletName is returned if the wallet file name is invalid
 	ErrWalletName = fmt.Errorf("error wallet file name, must have %s extension", walletExt)
