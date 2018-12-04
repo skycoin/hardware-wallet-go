@@ -166,11 +166,13 @@ func MessageButtonAck() [][64]byte {
 	return chunks
 }
 
-// MessageWordRequest send this message between each word of the seed (before user action) during device backup
-func MessageWordRequest() [][64]byte {
-	wordRequest := &messages.WordRequest{}
-	data, _ := proto.Marshal(wordRequest)
-	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_WordRequest)
+// MessageWordAck send this message between each word of the seed (before user action) during device backup
+func MessageWordAck(word string) [][64]byte {
+	wordAck := &messages.WordAck{
+		Word: proto.String(word),
+	}
+	data, _ := proto.Marshal(wordAck)
+	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_WordAck)
 	return chunks
 }
 
@@ -554,6 +556,60 @@ func BackupDevice(deviceType DeviceType) {
 		}
 	}
 	log.Printf("Success %d! Answer is: %s\n", msg.Kind, msg.Data[2:])
+}
+
+// DeviceWordAck send a word to the device during device "recovery procedure"
+func DeviceWordAck(deviceType DeviceType, word string) wire.Message {
+	dev, err := getDevice(deviceType)
+	if err != nil {
+		log.Panicf(err.Error())
+	}
+	defer dev.Close()
+	chunks := MessageWordAck(word)
+	msg, err := sendToDevice(dev, chunks)
+	if err != nil {
+		log.Panicf(err.Error())
+	}
+	return msg
+}
+
+// RecoveryDevice ask the device to perform the seed backup
+func RecoveryDevice(deviceType DeviceType) wire.Message {
+	dev, err := getDevice(deviceType)
+	if err != nil {
+		log.Panicf(err.Error())
+	}
+	defer dev.Close()
+	var msg wire.Message
+	var chunks [][64]byte
+
+	recoveryDevice := &messages.RecoveryDevice{
+		DryRun:    proto.Bool(true),
+		WordCount: proto.Uint32(12),
+	}
+	data, _ := proto.Marshal(recoveryDevice)
+	chunks = makeTrezorMessage(data, messages.MessageType_MessageType_RecoveryDevice)
+	msg, err = sendToDevice(dev, chunks)
+	if err != nil {
+		log.Panicf(err.Error())
+	}
+	log.Printf("Recovery device %d! Answer is: %s\n", msg.Kind, msg.Data)
+
+	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
+		// Send ButtonAck
+		chunks = MessageButtonAck()
+		err = sendToDeviceNoAnswer(dev, chunks)
+		if err != nil {
+			log.Panicf(err.Error())
+		}
+
+		_, err = msg.ReadFrom(dev)
+		time.Sleep(1 * time.Second)
+		if err != nil {
+			log.Panicf(err.Error())
+		}
+	}
+	return msg
 }
 
 // WipeDevice wipes out device configuration

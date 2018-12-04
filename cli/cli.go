@@ -88,6 +88,7 @@ func NewApp() (*App, error) {
 		deviceWipeCmd(),
 		deviceBackupCmd(),
 		deviceGetVersionCmd(),
+		deviceRecoveryCmd(),
 		emulatorSetMnemonicCmd(),
 		emulatorGenerateMnemonicCmd(),
 		emulatorAddressGenCmd(),
@@ -97,6 +98,7 @@ func NewApp() (*App, error) {
 		emulatorWipeCmd(),
 		emulatorBackupCmd(),
 		emulatorGetVersionCmd(),
+		emulatorRecoveryCmd(),
 		sandbox(),
 	}
 
