@@ -6,7 +6,6 @@ webrpc API to query a skycoin node's status.
 package cli
 
 import (
-	"errors"
 	"fmt"
 
 	gcli "github.com/urfave/cli"
@@ -14,17 +13,10 @@ import (
 
 const (
 	// Version is the CLI Version
-	Version           = "0.24.1"
-	walletExt         = ".wlt"
-	defaultCoin       = "skycoin"
-	defaultWalletName = "$COIN_cli" + walletExt
-	defaultWalletDir  = "$DATA_DIR/wallets"
-	defaultRPCAddress = "http://127.0.0.1:6420"
-	defaultDataDir    = "$HOME/.$COIN/"
+	Version = "0.24.1"
 )
 
 var (
-
 	commandHelpTemplate = fmt.Sprintf(`USAGE:
         {{.HelpName}}{{if .VisibleFlags}} [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}{{if .Category}}
 
@@ -66,13 +58,6 @@ GLOBAL OPTIONS:
 COPYRIGHT:
    {{.Copyright}}{{end}}
 `)
-
-	// ErrWalletName is returned if the wallet file name is invalid
-	ErrWalletName = fmt.Errorf("error wallet file name, must have %s extension", walletExt)
-	// ErrAddress is returned if an address is invalid
-	ErrAddress = errors.New("invalid address")
-	// ErrJSONMarshal is returned if JSON marshaling failed
-	ErrJSONMarshal = errors.New("json marshal failed")
 )
 
 // App Wraps the app so that main package won't use the raw App directly,
