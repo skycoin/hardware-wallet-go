@@ -24,6 +24,12 @@ func emulatorRecoveryCmd() gcli.Command {
 				fmt.Scanln(&word)
 				msg = deviceWallet.DeviceWordAck(deviceWallet.DeviceTypeEmulator, word)
 			}
+
+			if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
+				// Send ButtonAck
+				msg = deviceWallet.DeviceButtonAck(deviceWallet.DeviceTypeEmulator, msg)
+			}
+
 			if msg.Kind == uint16(messages.MessageType_MessageType_Failure) {
 				_, failMsg := deviceWallet.DecodeFailMsg(msg.Kind, msg.Data)
 				fmt.Println("Failed with code: ", failMsg)

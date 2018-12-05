@@ -24,6 +24,12 @@ func deviceRecoveryCmd() gcli.Command {
 				fmt.Scanln(&word)
 				msg = deviceWallet.DeviceWordAck(deviceWallet.DeviceTypeUsb, word)
 			}
+
+			if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
+				// Send ButtonAck
+				msg = deviceWallet.DeviceButtonAck(deviceWallet.DeviceTypeUsb, msg)
+			}
+
 			if msg.Kind == uint16(messages.MessageType_MessageType_Failure) {
 				_, failMsg := deviceWallet.DecodeFailMsg(msg.Kind, msg.Data)
 				fmt.Println("Failed with code: ", failMsg)

@@ -176,6 +176,35 @@ func MessageWordAck(word string) [][64]byte {
 	return chunks
 }
 
+// DeviceButtonAck when the device is waiting for the user to press a button
+// the PC need to acknowledge, showing it knows we are waiting for a user action
+func DeviceButtonAck(deviceType DeviceType, msg wire.Message) wire.Message {
+	dev, err := getDevice(deviceType)
+	if err != nil {
+		log.Panicf(err.Error())
+	}
+	defer dev.Close()
+	return deviceButtonAck(dev, msg)
+}
+
+func deviceButtonAck(dev io.ReadWriteCloser, msg wire.Message) wire.Message {
+	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
+		// Send ButtonAck
+		chunks := MessageButtonAck()
+		err := sendToDeviceNoAnswer(dev, chunks)
+		if err != nil {
+			log.Panicf(err.Error())
+		}
+
+		_, err = msg.ReadFrom(dev)
+		time.Sleep(1 * time.Second)
+		if err != nil {
+			log.Panicf(err.Error())
+		}
+	}
+	return msg
+}
+
 // DeviceFirmwareUpload Updates device's firmware
 func DeviceFirmwareUpload(payload []byte, hash []byte) {
 	dev, err := getDevice(DeviceTypeUsb)
@@ -595,21 +624,7 @@ func RecoveryDevice(deviceType DeviceType) wire.Message {
 	}
 	log.Printf("Recovery device %d! Answer is: %s\n", msg.Kind, msg.Data)
 
-	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		// Send ButtonAck
-		chunks = MessageButtonAck()
-		err = sendToDeviceNoAnswer(dev, chunks)
-		if err != nil {
-			log.Panicf(err.Error())
-		}
-
-		_, err = msg.ReadFrom(dev)
-		time.Sleep(1 * time.Second)
-		if err != nil {
-			log.Panicf(err.Error())
-		}
-	}
-	return msg
+	return deviceButtonAck(dev, msg)
 }
 
 // WipeDevice wipes out device configuration
