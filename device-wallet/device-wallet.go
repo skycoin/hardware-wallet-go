@@ -287,22 +287,8 @@ func DeviceSetMnemonic(deviceType DeviceType, mnemonic string) {
 
 	log.Printf("Success %d! Mnemonic %s\n", msg.Kind, msg.Data)
 
-	// Send ButtonAck
-	chunks = MessageButtonAck()
-	err = sendToDeviceNoAnswer(dev, chunks)
-	if err != nil {
-		log.Panicf(err.Error())
-		return
-	}
-
-	time.Sleep(1 * time.Second)
-	_, err = msg.ReadFrom(dev)
-	if err != nil {
-		log.Panicf(err.Error())
-		return
-	}
-
-	log.Printf("MessageButtonAck Answer is: %d / %s\n", msg.Kind, msg.Data)
+	msg = deviceButtonAck(dev, msg)
+	log.Println(DecodeSuccessOrFailMsg(msg.Kind, msg.Data))
 }
 
 // DeviceGetVersion Ask the firmware version
@@ -325,7 +311,7 @@ func DeviceGetVersion(deviceType DeviceType) string {
 		log.Panicf(err.Error())
 		return ""
 	}
-	return DecodeSuccessMsg(msg.Kind, msg.Data)
+	return DecodeSuccessOrFailMsg(msg.Kind, msg.Data)
 }
 
 // DeviceGenerateMnemonic Ask the device to generate a mnemonic and configure itself with it.
@@ -349,22 +335,20 @@ func DeviceGenerateMnemonic(deviceType DeviceType) {
 		return
 	}
 
-	// Send ButtonAck
-	chunks = MessageButtonAck()
-	err = sendToDeviceNoAnswer(dev, chunks)
-	if err != nil {
-		log.Panicf(err.Error())
-		return
-	}
+	msg = deviceButtonAck(dev, msg)
+	log.Println(DecodeSuccessOrFailMsg(msg.Kind, msg.Data))
+}
 
-	time.Sleep(1 * time.Second)
-	_, err = msg.ReadFrom(dev)
-	if err != nil {
-		log.Panicf(err.Error())
-		return
-	}
+func DecodeSuccessOrFailMsg(kind uint16, data []byte) string {
 
-	log.Printf("MessageButtonAck Answer is: %d / %s\n", msg.Kind, msg.Data)
+	if kind == uint16(messages.MessageType_MessageType_Success) {
+		return DecodeSuccessMsg(kind, data)
+	}
+	if kind == uint16(messages.MessageType_MessageType_Failure) {
+		return DecodeFailMsg(kind, data)
+	}
+	log.Printf("Calling DecodeSuccessOrFailMsg on message kind %d", kind)
+	return ""
 }
 
 // DecodeSuccessMsg convert byte data into string containing the success message returned by the device
@@ -378,23 +362,23 @@ func DecodeSuccessMsg(kind uint16, data []byte) string {
 		}
 		return success.GetMessage()
 	}
-	log.Panic("Calling DecodeSuccessMsg with wrong message type")
+	log.Panicf("Calling DecodeSuccessMsg with message type %d", kind)
 	return ""
 }
 
 // DecodeFailMsg convert byte data into string containing the failure returned by the device
-func DecodeFailMsg(kind uint16, data []byte) (uint16, string) {
+func DecodeFailMsg(kind uint16, data []byte) string {
 	if kind == uint16(messages.MessageType_MessageType_Failure) {
 		failure := &messages.Failure{}
 		err := proto.Unmarshal(data, failure)
 		if err != nil {
 			log.Panicf("unmarshaling error: %s\n", err.Error())
-			return kind, ""
+			return ""
 		}
-		return kind, failure.GetMessage()
+		return failure.GetMessage()
 	}
-	log.Panic("Calling DecodeFailMsg with wrong message type")
-	return kind, ""
+	log.Panicf("Calling DecodeFailMsg with message type %d", kind)
+	return ""
 }
 
 // DecodeResponseSkycoinAddress convert byte data into list of addresses, meant to be used after DevicePinMatrixAck
@@ -569,22 +553,11 @@ func BackupDevice(deviceType DeviceType) {
 		log.Panicf(err.Error())
 		return
 	}
-	log.Printf("Backup device %d! Answer is: %s\n", msg.Kind, msg.Data)
+
 	for msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		chunks = MessageButtonAck()
-		err = sendToDeviceNoAnswer(dev, chunks)
-		if err != nil {
-			log.Panicf(err.Error())
-			return
-		}
-		_, err = msg.ReadFrom(dev)
-		time.Sleep(1 * time.Second)
-		if err != nil {
-			log.Panicf(err.Error())
-			return
-		}
+		msg = deviceButtonAck(dev, msg)
 	}
-	log.Printf("Success %d! Answer is: %s\n", msg.Kind, msg.Data[2:])
+	log.Println(DecodeSuccessOrFailMsg(msg.Kind, msg.Data))
 }
 
 // DeviceWordAck send a word to the device during device "recovery procedure"
@@ -650,21 +623,8 @@ func WipeDevice(deviceType DeviceType) {
 	}
 	log.Printf("Wipe device %d! Answer is: %x\n", msg.Kind, msg.Data)
 
-	// Send ButtonAck
-	chunks = MessageButtonAck()
-	err = sendToDeviceNoAnswer(dev, chunks)
-	if err != nil {
-		log.Panicf(err.Error())
-		return
-	}
-
-	_, err = msg.ReadFrom(dev)
-	time.Sleep(1 * time.Second)
-	if err != nil {
-		log.Panicf(err.Error())
-		return
-	}
-	log.Printf("MessageButtonAck Answer is: %d / %s\n", msg.Kind, msg.Data)
+	msg = deviceButtonAck(dev, msg)
+	log.Println(DecodeSuccessOrFailMsg(msg.Kind, msg.Data))
 
 	initialize(dev)
 }
@@ -702,18 +662,7 @@ func DeviceChangePin(deviceType DeviceType) (uint16, []byte) {
 		return msg.Kind, msg.Data
 	}
 	// Acknowledge that a button has been pressed
-	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		chunks = MessageButtonAck()
-		err = sendToDeviceNoAnswer(dev, chunks)
-		if err != nil {
-			log.Panicf(err.Error())
-			return msg.Kind, msg.Data
-		}
-
-		_, _ = msg.ReadFrom(dev)
-		time.Sleep(1 * time.Second)
-		log.Printf("MessageButtonAck Answer is: %d / %s\n", msg.Kind, msg.Data)
-	}
+	msg = deviceButtonAck(dev, msg)
 	return msg.Kind, msg.Data
 }
 
@@ -739,6 +688,8 @@ func DevicePinMatrixAck(deviceType DeviceType, p string) (uint16, []byte) {
 		log.Panicf(err.Error())
 		return msg.Kind, msg.Data
 	}
-	log.Printf("MessagePinMatrixAck Answer is: %d / %s\n", msg.Kind, msg.Data)
+	if msg.Kind != uint16(messages.MessageType_MessageType_PinMatrixAck) {
+		log.Printf("MessagePinMatrixAck Answer is: %d / %s\n", msg.Kind, DecodeSuccessOrFailMsg(msg.Kind, msg.Data))
+	}
 	return msg.Kind, msg.Data
 }

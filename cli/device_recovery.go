@@ -31,7 +31,7 @@ func deviceRecoveryCmd() gcli.Command {
 			}
 
 			if msg.Kind == uint16(messages.MessageType_MessageType_Failure) {
-				_, failMsg := deviceWallet.DecodeFailMsg(msg.Kind, msg.Data)
+				failMsg := deviceWallet.DecodeFailMsg(msg.Kind, msg.Data)
 				fmt.Println("Failed with code: ", failMsg)
 				return
 			}
