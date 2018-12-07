@@ -533,6 +533,87 @@ func initialize(dev io.ReadWriteCloser) {
 	}
 }
 
+// DeviceGetFeatures send Features message to the device
+func DeviceGetFeatures(deviceType DeviceType) {
+	dev, err := getDevice(deviceType)
+	if err != nil {
+		log.Panicf(err.Error())
+		return
+	}
+	defer dev.Close()
+
+	featureMsg := &messages.GetFeatures{}
+	data, _ := proto.Marshal(featureMsg)
+	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_GetFeatures)
+	msg, err := sendToDevice(dev, chunks)
+	if err != nil {
+		log.Panicf(err.Error())
+	}
+	if msg.Kind == uint16(messages.MessageType_MessageType_Failure) || msg.Kind == uint16(messages.MessageType_MessageType_Success) {
+		log.Printf("Received message kind: %d %s\n", msg.Kind, DecodeSuccessOrFailMsg(msg.Kind, msg.Data))
+		return
+	}
+	features := &messages.Features{}
+	err = proto.Unmarshal(msg.Data, features)
+	if err != nil {
+		log.Panicf("unmarshaling error: %s\n", err.Error())
+	}
+	log.Printf(`Vendor: %s
+MajorVersion: %d
+MinorVersion: %d
+PatchVersion: %d
+BootloaderMode: %t
+DeviceId: %x
+PinProtection: %t
+PassphraseProtection: %t
+Language: %s
+Label: %s
+Coins: %s
+Initialized: %t
+Revision: %s
+BootloaderHash: %x
+Imported: %t
+PinCached: %t
+PassphraseCached: %t
+FirmwarePresent: %t
+NeedsBackup: %t
+Flags: %x
+Model: %s
+FwMajor: %d
+FwMinor: %d
+FwPatch: %d
+FwVendor: %s
+FwVendorKeys: %s
+UnfinishedBackup: %t`,
+		features.GetVendor(),
+		features.GetMajorVersion(),
+		features.GetMinorVersion(),
+		features.GetPatchVersion(),
+		features.GetBootloaderMode(),
+		features.GetDeviceId(),
+		features.GetPinProtection(),
+		features.GetPassphraseProtection(),
+		features.GetLanguage(),
+		features.GetLabel(),
+		features.GetCoins(),
+		features.GetInitialized(),
+		features.GetRevision(),
+		features.GetBootloaderHash(),
+		features.GetImported(),
+		features.GetPinCached(),
+		features.GetPassphraseCached(),
+		features.GetFirmwarePresent(),
+		features.GetNeedsBackup(),
+		features.GetFlags(),
+		features.GetModel(),
+		features.GetFwMajor(),
+		features.GetFwMinor(),
+		features.GetFwPatch(),
+		features.GetFwVendor(),
+		features.GetFwVendorKeys(),
+		features.GetUnfinishedBackup())
+}
+
 // BackupDevice ask the device to perform the seed backup
 func BackupDevice(deviceType DeviceType) {
 	dev, err := getDevice(deviceType)
