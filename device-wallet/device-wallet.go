@@ -568,16 +568,12 @@ PinProtection: %t
 PassphraseProtection: %t
 Language: %s
 Label: %s
-Coins: %s
 Initialized: %t
-Revision: %s
 BootloaderHash: %x
-Imported: %t
 PinCached: %t
 PassphraseCached: %t
 FirmwarePresent: %t
 NeedsBackup: %t
-Flags: %x
 Model: %s
 FwMajor: %d
 FwMinor: %d
@@ -595,16 +591,12 @@ UnfinishedBackup: %t`,
 		features.GetPassphraseProtection(),
 		features.GetLanguage(),
 		features.GetLabel(),
-		features.GetCoins(),
 		features.GetInitialized(),
-		features.GetRevision(),
 		features.GetBootloaderHash(),
-		features.GetImported(),
 		features.GetPinCached(),
 		features.GetPassphraseCached(),
 		features.GetFirmwarePresent(),
 		features.GetNeedsBackup(),
-		features.GetFlags(),
 		features.GetModel(),
 		features.GetFwMajor(),
 		features.GetFwMinor(),
