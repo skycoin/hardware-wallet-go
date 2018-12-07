@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	vendorT1            = 0x534c
+	vendorT1            = 0x313a
 	productT1Bootloader = 0x0000
 	productT1Firmware   = 0x0001
 	vendorT2            = 0x1209
