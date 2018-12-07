@@ -17,6 +17,7 @@ The CLI command APIs can be used directly from a Go application, see [Skycoin CL
     - [Ask device to check signature](#ask-device-to-check-signature)
     - [Wipe device](#wipe-device)
     - [Ask the device to perform the seed backup procedure](#backup-device)
+    - [Ask the device to perform the seed recovery procedure](#recovery-device)
 - [Note](#note)
 
 <!-- /MarkdownTOC -->
@@ -47,6 +48,7 @@ VERSION:
 
 COMMANDS:
      deviceSetMnemonic              Configure the device with a mnemonic.
+     deviceFeatures                 Ask the device Features.
      deviceGenerateMnemonic         Ask the device to generate a mnemonic and configure itself with it.
      deviceAddressGen               Generate skycoin addresses using the firmware
      deviceFirmwareUpdate           Update device's firmware.
@@ -56,7 +58,9 @@ COMMANDS:
      deviceWipe                     Ask the device to wipe clean all the configuration it contains.
      deviceBackup                   Ask the device to perform the seed backup procedure.
      deviceGetVersion               Ask firmware version.
+     deviceRecovery                 Ask the device to perform the seed recovery procedure.
      emulatorSetMnemonic            Configure an emulated device with a mnemonic.
+     emulatorFeatures               Ask the emulator Features.
      emulatorGenerateMnemonic       Ask the device to generate a mnemonic and configure itself with it.
      emulatorAddressGen             Generate skycoin addresses using an emulated device.
      emulatorSignMessage            Ask the emulated device to sign a message using the secret key at given index.
@@ -65,8 +69,10 @@ COMMANDS:
      emulatorWipe                   Ask the emulator to wipe clean all the configuration it contains.
      emulatorBackup                 Ask the emulator to perform the seed backup procedure.
      emulatorGetVersion             Ask firmware version.
+     emulatorRecovery               Ask the device to perform the seed recovery procedure.
      sandbox                        Sandbox.
      help, h                        Shows a list of commands or help for one command
+
 
 
 GLOBAL OPTIONS:
@@ -362,5 +368,53 @@ $skycoin-cli deviceBackup
 ```
 2018/11/15 17:13:40 Backup device 26! Answer is:
 2018/11/15 17:14:58 Success 2! Answer is: Seed successfully backed up
+```
+</details>
+
+
+### Recovery device
+
+Ask the device to perform the seed recovery procedure.
+
+```bash
+$skycoin-cli deviceRecovery
+```
+
+#### Examples
+##### Text output
+
+```bash
+$skycoin-cli deviceRecovery
+```
+<details>
+ <summary>View Output</summary>
+
+```
+2018/12/07 17:50:26 Recovery device 46! Answer is: 
+Word: market
+Word: gaze
+Word: crouch
+Word: enforce
+Word: green
+Word: art
+Word: stem
+Word: infant
+Word: host
+Word: metal
+Word: flower
+Word: cup
+Word: exit
+Word: thank
+Word: upset
+Word: cloud
+Word: below
+Word: body
+Word: remain
+Word: vocal
+Word: team
+Word: discover
+Word: core
+Word: abuse
+Failed with code:  The seed is valid but does not match the one in the device
 ```
 </details>
