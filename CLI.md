@@ -18,6 +18,7 @@ The CLI command APIs can be used directly from a Go application, see [Skycoin CL
     - [Wipe device](#wipe-device)
     - [Ask the device to perform the seed backup procedure](#backup-device)
     - [Ask the device to perform the seed recovery procedure](#recovery-device)
+    - [Ask the device Features](#device-features)
 - [Note](#note)
 
 <!-- /MarkdownTOC -->
@@ -416,5 +417,44 @@ Word: discover
 Word: core
 Word: abuse
 Failed with code:  The seed is valid but does not match the one in the device
+```
+</details>
+
+### Device features
+
+Ask the device Features.
+
+```bash
+$skycoin-cli deviceFeatures
+```
+
+```
+<details>
+ <summary>View Output</summary>
+
+```
+2018/12/07 17:54:20 Vendor: Skycoin Foundation
+MajorVersion: 1
+MinorVersion: 6
+PatchVersion: 1
+BootloaderMode: false
+DeviceId: 453543343446324545394145393446463443463634434445
+PinProtection: false
+PassphraseProtection: false
+Language: 
+Label: 
+Initialized: true
+BootloaderHash: 765b3ec3a9c5b2f70326d0afce869cef5d1081124b91e1440b5b96a41436b723
+PinCached: false
+PassphraseCached: false
+FirmwarePresent: false
+NeedsBackup: true
+Model: 1
+FwMajor: 0
+FwMinor: 0
+FwPatch: 0
+FwVendor: 
+FwVendorKeys: 
+UnfinishedBackup: false
 ```
 </details>
