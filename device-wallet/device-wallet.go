@@ -158,6 +158,14 @@ func DeviceCheckMessageSignature(deviceType DeviceType, message string, signatur
 	return msg.Kind, msg.Data
 }
 
+// MessageCancel prepare Cancel request
+func MessageCancel() [][64]byte {
+	msg := &messages.Cancel{}
+	data, _ := proto.Marshal(msg)
+	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_Cancel)
+	return chunks
+}
+
 // MessageButtonAck send this message (before user action) when the device expects the user to push a button
 func MessageButtonAck() [][64]byte {
 	buttonAck := &messages.ButtonAck{}
@@ -203,6 +211,22 @@ func deviceButtonAck(dev io.ReadWriteCloser, msg wire.Message) wire.Message {
 		}
 	}
 	return msg
+}
+
+// DeviceCancel send Cancel request
+func DeviceCancel(deviceType DeviceType) {
+	dev, err := getDevice(deviceType)
+	if err != nil {
+		log.Panicf(err.Error())
+	}
+	defer dev.Close()
+
+	chunks := MessageCancel()
+	msg, err := sendToDevice(dev, chunks)
+	if err != nil {
+		log.Panicf(err.Error())
+	}
+	log.Println(DecodeSuccessOrFailMsg(msg.Kind, msg.Data))
 }
 
 // DeviceFirmwareUpload Updates device's firmware

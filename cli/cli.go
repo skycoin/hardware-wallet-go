@@ -90,6 +90,7 @@ func NewApp() (*App, error) {
 		deviceBackupCmd(),
 		deviceGetVersionCmd(),
 		deviceRecoveryCmd(),
+		deviceCancelCmd(),
 		emulatorSetMnemonicCmd(),
 		emulatorFeaturesCmd(),
 		emulatorGenerateMnemonicCmd(),
@@ -101,6 +102,7 @@ func NewApp() (*App, error) {
 		emulatorBackupCmd(),
 		emulatorGetVersionCmd(),
 		emulatorRecoveryCmd(),
+		emulatorCancelCmd(),
 		sandbox(),
 	}
 
