@@ -19,6 +19,7 @@ The CLI command APIs can be used directly from a Go application, see [Skycoin CL
     - [Ask the device to perform the seed backup procedure](#backup-device)
     - [Ask the device to perform the seed recovery procedure](#recovery-device)
     - [Ask the device Features](#device-features)
+    - [Ask the device to cancel the ongoing procedure](#device-cancel)
 - [Note](#note)
 
 <!-- /MarkdownTOC -->
@@ -60,6 +61,7 @@ COMMANDS:
      deviceBackup                   Ask the device to perform the seed backup procedure.
      deviceGetVersion               Ask firmware version.
      deviceRecovery                 Ask the device to perform the seed recovery procedure.
+     deviceCancel                   Ask the device to cancel the ongoing procedure.
      emulatorSetMnemonic            Configure an emulated device with a mnemonic.
      emulatorFeatures               Ask the emulator Features.
      emulatorGenerateMnemonic       Ask the device to generate a mnemonic and configure itself with it.
@@ -70,7 +72,8 @@ COMMANDS:
      emulatorWipe                   Ask the emulator to wipe clean all the configuration it contains.
      emulatorBackup                 Ask the emulator to perform the seed backup procedure.
      emulatorGetVersion             Ask firmware version.
-     emulatorRecovery               Ask the device to perform the seed recovery procedure.
+     emulatorRecovery               Ask the emulator to perform the seed recovery procedure.
+     emulatorCancel                 Ask the emulator to cancel the ongoing procedure.
      sandbox                        Sandbox.
      help, h                        Shows a list of commands or help for one command
 
@@ -428,7 +431,6 @@ Ask the device Features.
 $skycoin-cli deviceFeatures
 ```
 
-```
 <details>
  <summary>View Output</summary>
 
@@ -456,5 +458,21 @@ FwPatch: 0
 FwVendor: 
 FwVendorKeys: 
 UnfinishedBackup: false
+```
+</details>
+
+### Device cancel
+
+Ask the device to cancel the ongoing procedure.
+
+```bash
+$skycoin-cli deviceCancel
+```
+
+<details>
+ <summary>View Output</summary>
+
+```
+2018/12/10 15:06:42 Action cancelled by user
 ```
 </details>

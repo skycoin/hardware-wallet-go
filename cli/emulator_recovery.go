@@ -13,7 +13,7 @@ func emulatorRecoveryCmd() gcli.Command {
 	name := "emulatorRecovery"
 	return gcli.Command{
 		Name:         name,
-		Usage:        "Ask the device to perform the seed recovery procedure.",
+		Usage:        "Ask the emulator to perform the seed recovery procedure.",
 		Description:  "",
 		OnUsageError: onCommandUsageError(name),
 		Action: func(c *gcli.Context) {
