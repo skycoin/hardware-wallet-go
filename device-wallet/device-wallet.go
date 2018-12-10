@@ -683,8 +683,9 @@ func RecoveryDevice(deviceType DeviceType) wire.Message {
 	var chunks [][64]byte
 
 	recoveryDevice := &messages.RecoveryDevice{
-		DryRun:    proto.Bool(true),
-		WordCount: proto.Uint32(12),
+		DryRun:          proto.Bool(false),
+		EnforceWordlist: proto.Bool(true),
+		WordCount:       proto.Uint32(12),
 	}
 	data, _ := proto.Marshal(recoveryDevice)
 	chunks = makeTrezorMessage(data, messages.MessageType_MessageType_RecoveryDevice)
