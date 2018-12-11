@@ -624,11 +624,10 @@ UnfinishedBackup: %t`,
 }
 
 // BackupDevice ask the device to perform the seed backup
-func BackupDevice(deviceType DeviceType) {
+func BackupDevice(deviceType DeviceType) wire.Message {
 	dev, err := getDevice(deviceType)
 	if err != nil {
 		log.Panicf(err.Error())
-		return
 	}
 	defer dev.Close()
 	var msg wire.Message
@@ -641,13 +640,12 @@ func BackupDevice(deviceType DeviceType) {
 	msg, err = sendToDevice(dev, chunks)
 	if err != nil {
 		log.Panicf(err.Error())
-		return
 	}
 
 	for msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
 		msg = deviceButtonAck(dev, msg)
 	}
-	log.Println(DecodeSuccessOrFailMsg(msg.Kind, msg.Data))
+	return msg
 }
 
 // DeviceWordAck send a word to the device during device "recovery procedure"
