@@ -32,8 +32,8 @@ func emulatorBackupCmd() gcli.Command {
 					msg = deviceWallet.DeviceButtonAck(deviceWallet.DeviceTypeEmulator, msg)
 				}
 
-				fmt.Println(deviceWallet.DecodeSuccessOrFailMsg(msg.Kind, msg.Data))
 			}
+			fmt.Println(deviceWallet.DecodeSuccessOrFailMsg(msg.Kind, msg.Data))
 		},
 	}
 }

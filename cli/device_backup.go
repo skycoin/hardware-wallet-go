@@ -33,8 +33,8 @@ func deviceBackupCmd() gcli.Command {
 					msg = deviceWallet.DeviceButtonAck(deviceWallet.DeviceTypeUsb, msg)
 				}
 
-				fmt.Println(deviceWallet.DecodeSuccessOrFailMsg(msg.Kind, msg.Data))
 			}
+			fmt.Println(deviceWallet.DecodeSuccessOrFailMsg(msg.Kind, msg.Data))
 		},
 	}
 }
