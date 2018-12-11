@@ -6,6 +6,7 @@ import (
 	gcli "github.com/urfave/cli"
 
 	deviceWallet "github.com/skycoin/hardware-wallet-go/device-wallet"
+	"github.com/skycoin/hardware-wallet-go/device-wallet/messages"
 )
 
 func deviceSignMessageCmd() gcli.Command {
@@ -30,7 +31,21 @@ func deviceSignMessageCmd() gcli.Command {
 			addressN := c.Int("addressN")
 			message := c.String("message")
 			kind, signature := deviceWallet.DeviceSignMessage(deviceWallet.DeviceTypeUsb, addressN, message)
-			fmt.Printf("Success %d! address that issued the signature is: %s\n", kind, signature)
+			if kind == uint16(messages.MessageType_MessageType_PinMatrixRequest) {
+				var pinEnc string
+				var data []byte
+				fmt.Printf("PinMatrixRequest response: ")
+				fmt.Scanln(&pinEnc)
+				kind, data = deviceWallet.DevicePinMatrixAck(deviceWallet.DeviceTypeUsb, pinEnc)
+
+				if kind == uint16(messages.MessageType_MessageType_ResponseSkycoinSignMessage) {
+					kind, signature = deviceWallet.DecodeResponseSkycoinSignMessage(kind, data)
+				} else {
+					fmt.Printf("Failed with message: %s\n", deviceWallet.DecodeFailMsg(kind, data))
+					return
+				}
+			}
+			fmt.Printf("Success %d! the signature is: %s\n", kind, signature)
 		},
 	}
 }

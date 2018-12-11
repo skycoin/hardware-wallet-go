@@ -503,14 +503,7 @@ func DeviceSignMessage(deviceType DeviceType, addressN int, message string) (uin
 		log.Println("This operation requires a PIN code")
 		return msg.Kind, ""
 	}
-	log.Printf("DeviceSignMessage answer kind %d", msg.Kind)
-	failureMsg := &messages.Failure{}
-	err = proto.Unmarshal(msg.Data, failureMsg)
-	if err != nil {
-		log.Panicf("unmarshaling error: %s\n", err.Error())
-	}
-	log.Printf("Failure %d! Answer is: %s\n", failureMsg.GetCode(), failureMsg.GetMessage())
-	return msg.Kind, ""
+	return msg.Kind, DecodeFailMsg(msg.Kind, msg.Data)
 }
 
 // DeviceConnected check if a device is connected
