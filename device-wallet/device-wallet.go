@@ -664,7 +664,7 @@ func DeviceWordAck(deviceType DeviceType, word string) wire.Message {
 }
 
 // RecoveryDevice ask the device to perform the seed backup
-func RecoveryDevice(deviceType DeviceType) wire.Message {
+func RecoveryDevice(deviceType DeviceType, usePassphrase bool) wire.Message {
 	dev, err := getDevice(deviceType)
 	if err != nil {
 		log.Panicf(err.Error())
@@ -673,10 +673,13 @@ func RecoveryDevice(deviceType DeviceType) wire.Message {
 	var msg wire.Message
 	var chunks [][64]byte
 
+	log.Printf("Using passphrase %t\n", usePassphrase)
+
 	recoveryDevice := &messages.RecoveryDevice{
-		DryRun:          proto.Bool(false),
-		EnforceWordlist: proto.Bool(true),
-		WordCount:       proto.Uint32(12),
+		DryRun:               proto.Bool(false),
+		EnforceWordlist:      proto.Bool(true),
+		WordCount:            proto.Uint32(12),
+		PassphraseProtection: proto.Bool(usePassphrase),
 	}
 	data, _ := proto.Marshal(recoveryDevice)
 	chunks = makeTrezorMessage(data, messages.MessageType_MessageType_RecoveryDevice)

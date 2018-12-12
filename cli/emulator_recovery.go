@@ -12,12 +12,20 @@ import (
 func emulatorRecoveryCmd() gcli.Command {
 	name := "emulatorRecovery"
 	return gcli.Command{
-		Name:         name,
-		Usage:        "Ask the emulator to perform the seed recovery procedure.",
-		Description:  "",
+		Name:        name,
+		Usage:       "Ask the emulator to perform the seed recovery procedure.",
+		Description: "",
+
+		Flags: []gcli.Flag{
+			gcli.BoolFlag{
+				Name:  "usePassphrase",
+				Usage: "Configure a passphrase",
+			},
+		},
 		OnUsageError: onCommandUsageError(name),
 		Action: func(c *gcli.Context) {
-			msg := deviceWallet.RecoveryDevice(deviceWallet.DeviceTypeEmulator)
+			passphrase := c.Bool("usePassphrase")
+			msg := deviceWallet.RecoveryDevice(deviceWallet.DeviceTypeEmulator, passphrase)
 			for msg.Kind == uint16(messages.MessageType_MessageType_WordRequest) {
 				var word string
 				fmt.Printf("Word: ")
