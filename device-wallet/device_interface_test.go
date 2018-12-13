@@ -49,8 +49,8 @@ func TestMain(t *testing.T) {
 
 	DeviceSetMnemonic(deviceType, "cloud flower upset remain green metal below cup stem infant art thank")
 
-	kind, addresses := DeviceAddressGen(deviceType, 9, 15)
-	log.Print(addresses)
+	kind, data := DeviceAddressGen(deviceType, 9, 15)
+	kind, addresses := DecodeResponseSkycoinAddress(kind, data)
 	require.Equal(t, uint16(messages.MessageType_MessageType_ResponseSkycoinAddress), kind)
 	i := 0
 	require.Equal(t, 9, len(addresses))
@@ -79,8 +79,8 @@ func TestMain(t *testing.T) {
 	// }
 	// fmt.Printf("Success %d! Answer is: %s\n", msg.Kind, msg.Data[2:])
 
-	kind, addresses = DeviceAddressGen(deviceType, 1, 1)
-	log.Print(addresses)
+	kind, data = DeviceAddressGen(deviceType, 1, 1)
+	kind, addresses = DecodeResponseSkycoinAddress(kind, data)
 	require.Equal(t, uint16(messages.MessageType_MessageType_ResponseSkycoinAddress), kind)
 	require.Equal(t, len(addresses), 1)
 	require.Equal(t, addresses[0], "zC8GAQGQBfwk7vtTxVoRG7iMperHNuyYPs")
@@ -91,7 +91,7 @@ func TestMain(t *testing.T) {
 	require.Equal(t, uint16(messages.MessageType_MessageType_ResponseSkycoinSignMessage), kind) //Success message
 	require.Equal(t, 89, len(signature))
 
-	kind, data := DeviceCheckMessageSignature(deviceType, message, signature, addresses[0])
+	kind, data = DeviceCheckMessageSignature(deviceType, message, signature, addresses[0])
 	require.Equal(t, uint16(messages.MessageType_MessageType_Success), kind) //Success message
 	require.Equal(t, "zC8GAQGQBfwk7vtTxVoRG7iMperHNuyYPs", string(data[2:]))
 }
@@ -105,11 +105,12 @@ func TestGetAddressUsb(t *testing.T) {
 	WipeDevice(DeviceTypeUsb)
 	// need to connect the usb device
 	DeviceSetMnemonic(DeviceTypeUsb, "cloud flower upset remain green metal below cup stem infant art thank")
-	kind, address := DeviceAddressGen(DeviceTypeUsb, 2, 0)
-	log.Print(address)
+	kind, data := DeviceAddressGen(DeviceTypeUsb, 2, 0)
+	kind, addresses := DecodeResponseSkycoinAddress(kind, data)
+	log.Print(addresses)
 	require.Equal(t, kind, uint16(messages.MessageType_MessageType_ResponseSkycoinAddress)) //Success message
-	require.Equal(t, address[0], "2EU3JbveHdkxW6z5tdhbbB2kRAWvXC2pLzw")
-	require.Equal(t, address[1], "zC8GAQGQBfwk7vtTxVoRG7iMperHNuyYPs")
+	require.Equal(t, addresses[0], "2EU3JbveHdkxW6z5tdhbbB2kRAWvXC2pLzw")
+	require.Equal(t, addresses[1], "zC8GAQGQBfwk7vtTxVoRG7iMperHNuyYPs")
 }
 
 func TestGetAddressEmulator(t *testing.T) {
@@ -121,9 +122,10 @@ func TestGetAddressEmulator(t *testing.T) {
 	require.True(t, DeviceConnected(DeviceTypeEmulator))
 	WipeDevice(DeviceTypeEmulator)
 	DeviceSetMnemonic(DeviceTypeEmulator, "cloud flower upset remain green metal below cup stem infant art thank")
-	kind, address := DeviceAddressGen(DeviceTypeEmulator, 2, 0)
-	log.Print(address)
+	kind, data := DeviceAddressGen(DeviceTypeEmulator, 2, 0)
+	kind, addresses := DecodeResponseSkycoinAddress(kind, data)
+	log.Print(addresses)
 	require.Equal(t, kind, uint16(messages.MessageType_MessageType_ResponseSkycoinAddress)) //Success message
-	require.Equal(t, address[0], "2EU3JbveHdkxW6z5tdhbbB2kRAWvXC2pLzw")
-	require.Equal(t, address[1], "zC8GAQGQBfwk7vtTxVoRG7iMperHNuyYPs")
+	require.Equal(t, addresses[0], "2EU3JbveHdkxW6z5tdhbbB2kRAWvXC2pLzw")
+	require.Equal(t, addresses[1], "zC8GAQGQBfwk7vtTxVoRG7iMperHNuyYPs")
 }

@@ -5,7 +5,6 @@ import (
 
 	gcli "github.com/urfave/cli"
 
-	proto "github.com/golang/protobuf/proto"
 	deviceWallet "github.com/skycoin/hardware-wallet-go/device-wallet"
 	"github.com/skycoin/hardware-wallet-go/device-wallet/messages"
 )
@@ -34,28 +33,29 @@ func emulatorAddressGenCmd() gcli.Command {
 			startIndex := c.Int("startIndex")
 			var data []byte
 			var pinEnc string
-			kind, addresses := deviceWallet.DeviceAddressGen(deviceWallet.DeviceTypeEmulator, addressN, startIndex)
-			if kind == uint16(messages.MessageType_MessageType_PinMatrixRequest) {
-				fmt.Printf("PinMatrixRequest response: ")
-				fmt.Scanln(&pinEnc)
-				kind, data = deviceWallet.DevicePinMatrixAck(deviceWallet.DeviceTypeEmulator, pinEnc)
+			kind, data := deviceWallet.DeviceAddressGen(deviceWallet.DeviceTypeEmulator, addressN, startIndex)
+			for kind != uint16(messages.MessageType_MessageType_ResponseSkycoinAddress) && kind != uint16(messages.MessageType_MessageType_Failure) {
 
-				if kind == uint16(messages.MessageType_MessageType_ResponseSkycoinAddress) {
-					responseSkycoinAddress := &messages.ResponseSkycoinAddress{}
-					err := proto.Unmarshal(data, responseSkycoinAddress)
-					if err != nil {
-						fmt.Printf("unmarshaling error: %s\n", err.Error())
-						return
-					}
-					fmt.Print("Successfully got address")
-					fmt.Print(responseSkycoinAddress.GetAddresses())
+				if kind == uint16(messages.MessageType_MessageType_PinMatrixRequest) {
+					fmt.Printf("PinMatrixRequest response: ")
+					fmt.Scanln(&pinEnc)
+					kind, data = deviceWallet.DevicePinMatrixAck(deviceWallet.DeviceTypeEmulator, pinEnc)
+					continue
 				}
+				if kind == uint16(messages.MessageType_MessageType_PassphraseRequest) {
+					var passphrase string
+					fmt.Printf("Input passphrase: ")
+					fmt.Scanln(&passphrase)
+					kind, data = deviceWallet.DevicePassphraseAck(deviceWallet.DeviceTypeEmulator, passphrase)
+					continue
+				}
+			}
+
+			if kind == uint16(messages.MessageType_MessageType_ResponseSkycoinAddress) {
+				_, addresses := deviceWallet.DecodeResponseSkycoinAddress(kind, data)
+				fmt.Println(addresses)
 			} else {
-				if kind == uint16(messages.MessageType_MessageType_ResponseSkycoinAddress) {
-					fmt.Println("Got addresses without pin code")
-				}
-				fmt.Print(addresses)
-				fmt.Print("\n")
+				fmt.Println(deviceWallet.DecodeFailMsg(kind, data))
 			}
 		},
 	}

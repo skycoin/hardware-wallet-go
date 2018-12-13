@@ -174,6 +174,16 @@ func MessageButtonAck() [][64]byte {
 	return chunks
 }
 
+// MessagePassphraseAck send this message when the device expects receiving a Passphrase
+func MessagePassphraseAck(passphrase string) [][64]byte {
+	msg := &messages.PassphraseAck{
+		Passphrase: proto.String(passphrase),
+	}
+	data, _ := proto.Marshal(msg)
+	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_PassphraseAck)
+	return chunks
+}
+
 // MessageWordAck send this message between each word of the seed (before user action) during device backup
 func MessageWordAck(word string) [][64]byte {
 	wordAck := &messages.WordAck{
@@ -206,6 +216,27 @@ func deviceButtonAck(dev io.ReadWriteCloser) wire.Message {
 
 	_, err = msg.ReadFrom(dev)
 	time.Sleep(1 * time.Second)
+	if err != nil {
+		log.Panicf(err.Error())
+	}
+	return msg
+}
+
+// DevicePassphraseAck send this message when the device is waiting for the user to input a passphrase
+func DevicePassphraseAck(deviceType DeviceType, passphrase string) (uint16, []byte) {
+	dev, err := getDevice(deviceType)
+	if err != nil {
+		log.Panicf(err.Error())
+	}
+	defer dev.Close()
+	msg := devicePassphraseAck(dev, passphrase)
+	return msg.Kind, msg.Data
+}
+
+func devicePassphraseAck(dev io.ReadWriteCloser, passphrase string) wire.Message {
+	var msg wire.Message
+	chunks := MessagePassphraseAck(passphrase)
+	msg, err := sendToDevice(dev, chunks)
 	if err != nil {
 		log.Panicf(err.Error())
 	}
@@ -439,12 +470,11 @@ func DecodeResponseSkycoinSignMessage(kind uint16, data []byte) (uint16, string)
 }
 
 // DeviceAddressGen Ask the device to generate an address
-func DeviceAddressGen(deviceType DeviceType, addressN int, startIndex int) (uint16, []string) {
+func DeviceAddressGen(deviceType DeviceType, addressN int, startIndex int) (uint16, []byte) {
 
 	dev, err := getDevice(deviceType)
 	if err != nil {
 		log.Panicf(err.Error())
-		return 0, make([]string, 0)
 	}
 	defer dev.Close()
 	skycoinAddress := &messages.SkycoinAddress{
@@ -459,14 +489,7 @@ func DeviceAddressGen(deviceType DeviceType, addressN int, startIndex int) (uint
 	if err != nil {
 		log.Panicf("sendToDevice error: %s\n", err.Error())
 	}
-	if msg.Kind == uint16(messages.MessageType_MessageType_ResponseSkycoinAddress) {
-		return DecodeResponseSkycoinAddress(msg.Kind, msg.Data)
-	} else if msg.Kind == uint16(messages.MessageType_MessageType_PinMatrixRequest) {
-		log.Println("This operation requires a PIN code")
-		return msg.Kind, make([]string, 0)
-	}
-	DecodeFailMsg(msg.Kind, msg.Data)
-	return msg.Kind, make([]string, 0)
+	return msg.Kind, msg.Data
 }
 
 // DeviceSignMessage Ask the device to sign a message using the secret key at given index.

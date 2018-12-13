@@ -51,7 +51,7 @@ func sandbox() gcli.Command {
 			}
 
 			var data []byte
-			kind, addresses := deviceWallet.DeviceAddressGen(deviceType, 9, 15)
+			kind, data = deviceWallet.DeviceAddressGen(deviceType, 9, 15)
 			if kind == uint16(messages.MessageType_MessageType_PinMatrixRequest) {
 				log.Printf("PinMatrixRequest response: ")
 				fmt.Scanln(&pinEnc)
@@ -64,6 +64,7 @@ func sandbox() gcli.Command {
 				}
 			} else {
 				log.Println("Got addresses without pin code")
+				_, addresses := deviceWallet.DecodeResponseSkycoinAddress(kind, data)
 				log.Print(addresses)
 			}
 		},
