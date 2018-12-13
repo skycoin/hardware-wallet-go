@@ -35,7 +35,7 @@ func emulatorRecoveryCmd() gcli.Command {
 
 			if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
 				// Send ButtonAck
-				msg = deviceWallet.DeviceButtonAck(deviceWallet.DeviceTypeEmulator, msg)
+				msg = deviceWallet.DeviceButtonAck(deviceWallet.DeviceTypeEmulator)
 			}
 
 			if msg.Kind == uint16(messages.MessageType_MessageType_Failure) {

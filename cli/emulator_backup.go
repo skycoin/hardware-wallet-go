@@ -7,7 +7,6 @@ import (
 
 	deviceWallet "github.com/skycoin/hardware-wallet-go/device-wallet"
 	"github.com/skycoin/hardware-wallet-go/device-wallet/messages"
-	"github.com/skycoin/hardware-wallet-go/device-wallet/wire"
 )
 
 func emulatorBackupCmd() gcli.Command {
@@ -23,13 +22,9 @@ func emulatorBackupCmd() gcli.Command {
 				var pinEnc string
 				fmt.Printf("PinMatrixRequest response: ")
 				fmt.Scanln(&pinEnc)
-				kind, data := deviceWallet.DevicePinMatrixAck(deviceWallet.DeviceTypeEmulator, pinEnc)
-				msg = wire.Message{
-					Kind: kind,
-					Data: data,
-				}
-				for msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-					msg = deviceWallet.DeviceButtonAck(deviceWallet.DeviceTypeEmulator, msg)
+				kind, _ := deviceWallet.DevicePinMatrixAck(deviceWallet.DeviceTypeEmulator, pinEnc)
+				for kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
+					msg = deviceWallet.DeviceButtonAck(deviceWallet.DeviceTypeEmulator)
 				}
 
 			}

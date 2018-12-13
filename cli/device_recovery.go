@@ -35,7 +35,7 @@ func deviceRecoveryCmd() gcli.Command {
 
 			if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
 				// Send ButtonAck
-				msg = deviceWallet.DeviceButtonAck(deviceWallet.DeviceTypeUsb, msg)
+				msg = deviceWallet.DeviceButtonAck(deviceWallet.DeviceTypeUsb)
 			}
 
 			if msg.Kind == uint16(messages.MessageType_MessageType_Failure) {

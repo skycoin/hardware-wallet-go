@@ -186,29 +186,28 @@ func MessageWordAck(word string) [][64]byte {
 
 // DeviceButtonAck when the device is waiting for the user to press a button
 // the PC need to acknowledge, showing it knows we are waiting for a user action
-func DeviceButtonAck(deviceType DeviceType, msg wire.Message) wire.Message {
+func DeviceButtonAck(deviceType DeviceType) wire.Message {
 	dev, err := getDevice(deviceType)
 	if err != nil {
 		log.Panicf(err.Error())
 	}
 	defer dev.Close()
-	return deviceButtonAck(dev, msg)
+	return deviceButtonAck(dev)
 }
 
-func deviceButtonAck(dev io.ReadWriteCloser, msg wire.Message) wire.Message {
-	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		// Send ButtonAck
-		chunks := MessageButtonAck()
-		err := sendToDeviceNoAnswer(dev, chunks)
-		if err != nil {
-			log.Panicf(err.Error())
-		}
+func deviceButtonAck(dev io.ReadWriteCloser) wire.Message {
+	var msg wire.Message
+	// Send ButtonAck
+	chunks := MessageButtonAck()
+	err := sendToDeviceNoAnswer(dev, chunks)
+	if err != nil {
+		log.Panicf(err.Error())
+	}
 
-		_, err = msg.ReadFrom(dev)
-		time.Sleep(1 * time.Second)
-		if err != nil {
-			log.Panicf(err.Error())
-		}
+	_, err = msg.ReadFrom(dev)
+	time.Sleep(1 * time.Second)
+	if err != nil {
+		log.Panicf(err.Error())
 	}
 	return msg
 }
@@ -310,8 +309,9 @@ func DeviceSetMnemonic(deviceType DeviceType, mnemonic string) {
 	}
 
 	log.Printf("Success %d! Mnemonic %s\n", msg.Kind, msg.Data)
-
-	msg = deviceButtonAck(dev, msg)
+	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
+		msg = deviceButtonAck(dev)
+	}
 	log.Println(DecodeSuccessOrFailMsg(msg.Kind, msg.Data))
 }
 
@@ -359,7 +359,9 @@ func DeviceGenerateMnemonic(deviceType DeviceType) {
 		return
 	}
 
-	msg = deviceButtonAck(dev, msg)
+	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
+		msg = deviceButtonAck(dev)
+	}
 	log.Println(DecodeSuccessOrFailMsg(msg.Kind, msg.Data))
 }
 
@@ -463,13 +465,7 @@ func DeviceAddressGen(deviceType DeviceType, addressN int, startIndex int) (uint
 		log.Println("This operation requires a PIN code")
 		return msg.Kind, make([]string, 0)
 	}
-	failureMsg := &messages.Failure{}
-	err = proto.Unmarshal(msg.Data, failureMsg)
-	if err != nil {
-		log.Panicf("unmarshaling error: %s\n", err.Error())
-	}
-	log.Printf("Failure %d! Answer is: %s\n", failureMsg.GetCode(), failureMsg.GetMessage())
-	log.Printf("%x\n", msg.Data)
+	DecodeFailMsg(msg.Kind, msg.Data)
 	return msg.Kind, make([]string, 0)
 }
 
@@ -643,7 +639,7 @@ func BackupDevice(deviceType DeviceType) wire.Message {
 	}
 
 	for msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		msg = deviceButtonAck(dev, msg)
+		msg = deviceButtonAck(dev)
 	}
 	return msg
 }
@@ -689,7 +685,10 @@ func RecoveryDevice(deviceType DeviceType, usePassphrase bool) wire.Message {
 	}
 	log.Printf("Recovery device %d! Answer is: %s\n", msg.Kind, msg.Data)
 
-	return deviceButtonAck(dev, msg)
+	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
+		msg = deviceButtonAck(dev)
+	}
+	return msg
 }
 
 // WipeDevice wipes out device configuration
@@ -715,7 +714,9 @@ func WipeDevice(deviceType DeviceType) {
 	}
 	log.Printf("Wipe device %d! Answer is: %x\n", msg.Kind, msg.Data)
 
-	msg = deviceButtonAck(dev, msg)
+	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
+		msg = deviceButtonAck(dev)
+	}
 	log.Println(DecodeSuccessOrFailMsg(msg.Kind, msg.Data))
 
 	initialize(dev)
@@ -754,7 +755,9 @@ func DeviceChangePin(deviceType DeviceType) (uint16, []byte) {
 		return msg.Kind, msg.Data
 	}
 	// Acknowledge that a button has been pressed
-	msg = deviceButtonAck(dev, msg)
+	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
+		msg = deviceButtonAck(dev)
+	}
 	return msg.Kind, msg.Data
 }
 
