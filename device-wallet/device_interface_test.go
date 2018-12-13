@@ -86,7 +86,8 @@ func TestMain(t *testing.T) {
 	require.Equal(t, addresses[0], "zC8GAQGQBfwk7vtTxVoRG7iMperHNuyYPs")
 
 	message := "Hello World!"
-	kind, signature := DeviceSignMessage(deviceType, 1, message)
+	kind, data = DeviceSignMessage(deviceType, 1, message)
+	kind, signature := DecodeResponseSkycoinSignMessage(kind, data)
 	log.Print(signature)
 	require.Equal(t, uint16(messages.MessageType_MessageType_ResponseSkycoinSignMessage), kind) //Success message
 	require.Equal(t, 89, len(signature))

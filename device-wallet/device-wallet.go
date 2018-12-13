@@ -493,12 +493,11 @@ func DeviceAddressGen(deviceType DeviceType, addressN int, startIndex int) (uint
 }
 
 // DeviceSignMessage Ask the device to sign a message using the secret key at given index.
-func DeviceSignMessage(deviceType DeviceType, addressN int, message string) (uint16, string) {
+func DeviceSignMessage(deviceType DeviceType, addressN int, message string) (uint16, []byte) {
 
 	dev, err := getDevice(deviceType)
 	if err != nil {
 		log.Panicf(err.Error())
-		return 0, ""
 	}
 	defer dev.Close()
 
@@ -515,14 +514,7 @@ func DeviceSignMessage(deviceType DeviceType, addressN int, message string) (uin
 	if err != nil {
 		log.Panicf(err.Error())
 	}
-
-	if msg.Kind == uint16(messages.MessageType_MessageType_ResponseSkycoinSignMessage) {
-		return DecodeResponseSkycoinSignMessage(msg.Kind, msg.Data)
-	} else if msg.Kind == uint16(messages.MessageType_MessageType_PinMatrixRequest) {
-		log.Println("This operation requires a PIN code")
-		return msg.Kind, ""
-	}
-	return msg.Kind, DecodeFailMsg(msg.Kind, msg.Data)
+	return msg.Kind, msg.Data
 }
 
 // DeviceConnected check if a device is connected
