@@ -32,11 +32,22 @@ func deviceSignMessageCmd() gcli.Command {
 			message := c.String("message")
 			var signature string
 			kind, data := deviceWallet.DeviceSignMessage(deviceWallet.DeviceTypeUsb, addressN, message)
-			if kind == uint16(messages.MessageType_MessageType_PinMatrixRequest) {
-				var pinEnc string
-				fmt.Printf("PinMatrixRequest response: ")
-				fmt.Scanln(&pinEnc)
-				kind, data = deviceWallet.DevicePinMatrixAck(deviceWallet.DeviceTypeUsb, pinEnc)
+			for kind != uint16(messages.MessageType_MessageType_ResponseSkycoinSignMessage) && kind != uint16(messages.MessageType_MessageType_Failure) {
+				if kind == uint16(messages.MessageType_MessageType_PinMatrixRequest) {
+					var pinEnc string
+					fmt.Printf("PinMatrixRequest response: ")
+					fmt.Scanln(&pinEnc)
+					kind, data = deviceWallet.DevicePinMatrixAck(deviceWallet.DeviceTypeUsb, pinEnc)
+					continue
+				}
+
+				if kind == uint16(messages.MessageType_MessageType_PassphraseRequest) {
+					var passphrase string
+					fmt.Printf("Input passphrase: ")
+					fmt.Scanln(&passphrase)
+					kind, data = deviceWallet.DevicePassphraseAck(deviceWallet.DeviceTypeUsb, passphrase)
+					continue
+				}
 			}
 
 			if kind == uint16(messages.MessageType_MessageType_ResponseSkycoinSignMessage) {
