@@ -370,7 +370,7 @@ func DeviceGetVersion(deviceType DeviceType) string {
 }
 
 // DeviceGenerateMnemonic Ask the device to generate a mnemonic and configure itself with it.
-func DeviceGenerateMnemonic(deviceType DeviceType) {
+func DeviceGenerateMnemonic(deviceType DeviceType, usePassphrase bool) {
 
 	dev, err := getDevice(deviceType)
 	if err != nil {
@@ -379,7 +379,9 @@ func DeviceGenerateMnemonic(deviceType DeviceType) {
 	}
 	defer dev.Close()
 
-	skycoinGenerateMnemonic := &messages.GenerateMnemonic{}
+	skycoinGenerateMnemonic := &messages.GenerateMnemonic{
+		PassphraseProtection: proto.Bool(usePassphrase),
+	}
 
 	data, _ := proto.Marshal(skycoinGenerateMnemonic)
 	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_GenerateMnemonic)
