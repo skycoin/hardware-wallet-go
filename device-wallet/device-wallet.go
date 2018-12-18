@@ -260,7 +260,7 @@ func DeviceCancel(deviceType DeviceType) {
 }
 
 // DeviceFirmwareUpload Updates device's firmware
-func DeviceFirmwareUpload(payload []byte, hash []byte) {
+func DeviceFirmwareUpload(payload []byte, hash [32]byte) {
 	dev, err := getDevice(DeviceTypeUsb)
 	if err != nil {
 		log.Panicf(err.Error())
@@ -286,9 +286,10 @@ func DeviceFirmwareUpload(payload []byte, hash []byte) {
 	erasemsg, _ := sendToDevice(dev, chunks)
 	log.Printf("Success %d! FirmwareErase %s\n", erasemsg.Kind, erasemsg.Data)
 
+	log.Printf("Hash: %x\n", hash)
 	deviceFirmwareUpload := &messages.FirmwareUpload{
 		Payload: payload,
-		Hash:    hash,
+		Hash:    hash[:],
 	}
 
 	uploaddata, err := proto.Marshal(deviceFirmwareUpload)

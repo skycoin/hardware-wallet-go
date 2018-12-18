@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"crypto/sha256"
 	"fmt"
 	"io/ioutil"
 
@@ -29,7 +30,8 @@ func deviceFirmwareUpdate() gcli.Command {
 			if err != nil {
 				panic(err)
 			}
-			deviceWallet.DeviceFirmwareUpload(firmware, make([]byte, 0))
+			fmt.Printf("Hash: %x\n", sha256.Sum256(firmware[0x100:]))
+			deviceWallet.DeviceFirmwareUpload(firmware, sha256.Sum256(firmware[0x100:]))
 		},
 	}
 }
