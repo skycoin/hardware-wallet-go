@@ -26,14 +26,19 @@ func emulatorAddressGenCmd() gcli.Command {
 				Value: 0,
 				Usage: "Index where deterministic key generation will start from. Assume 0 if not set.",
 			},
+			gcli.BoolFlag{
+				Name:  "confirmAddress",
+				Usage: "If requesting one address it will be sent only if user confirms operation by pressing device's button.",
+			},
 		},
 		OnUsageError: onCommandUsageError(name),
 		Action: func(c *gcli.Context) {
 			addressN := c.Int("addressN")
 			startIndex := c.Int("startIndex")
+			confirmAddress := c.Bool("confirmAddress")
 			var data []byte
 			var pinEnc string
-			kind, data := deviceWallet.DeviceAddressGen(deviceWallet.DeviceTypeEmulator, addressN, startIndex)
+			kind, data := deviceWallet.DeviceAddressGen(deviceWallet.DeviceTypeEmulator, addressN, startIndex, confirmAddress)
 			for kind != uint16(messages.MessageType_MessageType_ResponseSkycoinAddress) && kind != uint16(messages.MessageType_MessageType_Failure) {
 
 				if kind == uint16(messages.MessageType_MessageType_PinMatrixRequest) {
@@ -47,6 +52,12 @@ func emulatorAddressGenCmd() gcli.Command {
 					fmt.Printf("Input passphrase: ")
 					fmt.Scanln(&passphrase)
 					kind, data = deviceWallet.DevicePassphraseAck(deviceWallet.DeviceTypeEmulator, passphrase)
+					continue
+				}
+
+				if kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
+					msg := deviceWallet.DeviceButtonAck(deviceWallet.DeviceTypeEmulator)
+					kind, data = msg.Kind, msg.Data
 					continue
 				}
 			}

@@ -49,7 +49,7 @@ func TestMain(t *testing.T) {
 
 	DeviceSetMnemonic(deviceType, "cloud flower upset remain green metal below cup stem infant art thank")
 
-	kind, data := DeviceAddressGen(deviceType, 9, 15)
+	kind, data := DeviceAddressGen(deviceType, 9, 15, false)
 	kind, addresses := DecodeResponseSkycoinAddress(kind, data)
 	require.Equal(t, uint16(messages.MessageType_MessageType_ResponseSkycoinAddress), kind)
 	i := 0
@@ -79,7 +79,7 @@ func TestMain(t *testing.T) {
 	// }
 	// fmt.Printf("Success %d! Answer is: %s\n", msg.Kind, msg.Data[2:])
 
-	kind, data = DeviceAddressGen(deviceType, 1, 1)
+	kind, data = DeviceAddressGen(deviceType, 1, 1, false)
 	kind, addresses = DecodeResponseSkycoinAddress(kind, data)
 	require.Equal(t, uint16(messages.MessageType_MessageType_ResponseSkycoinAddress), kind)
 	require.Equal(t, len(addresses), 1)
@@ -106,7 +106,7 @@ func TestGetAddressUsb(t *testing.T) {
 	WipeDevice(DeviceTypeUsb)
 	// need to connect the usb device
 	DeviceSetMnemonic(DeviceTypeUsb, "cloud flower upset remain green metal below cup stem infant art thank")
-	kind, data := DeviceAddressGen(DeviceTypeUsb, 2, 0)
+	kind, data := DeviceAddressGen(DeviceTypeUsb, 2, 0, false)
 	kind, addresses := DecodeResponseSkycoinAddress(kind, data)
 	log.Print(addresses)
 	require.Equal(t, kind, uint16(messages.MessageType_MessageType_ResponseSkycoinAddress)) //Success message
@@ -123,7 +123,7 @@ func TestGetAddressEmulator(t *testing.T) {
 	require.True(t, DeviceConnected(DeviceTypeEmulator))
 	WipeDevice(DeviceTypeEmulator)
 	DeviceSetMnemonic(DeviceTypeEmulator, "cloud flower upset remain green metal below cup stem infant art thank")
-	kind, data := DeviceAddressGen(DeviceTypeEmulator, 2, 0)
+	kind, data := DeviceAddressGen(DeviceTypeEmulator, 2, 0, false)
 	kind, addresses := DecodeResponseSkycoinAddress(kind, data)
 	log.Print(addresses)
 	require.Equal(t, kind, uint16(messages.MessageType_MessageType_ResponseSkycoinAddress)) //Success message

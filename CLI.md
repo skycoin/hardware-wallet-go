@@ -112,6 +112,7 @@ $skycoin-cli deviceAddressGen [number of addresses] [start index]
 OPTIONS:
         --addressN value            Number of addresses to generate (default: 1)
         --startIndex value          Start to genereate deterministic addresses from startIndex (default: 0)
+        --confirmAddress            If requesting one address it will be sent only if user confirms operation by pressing device's button.
 ```
 
 #### Examples

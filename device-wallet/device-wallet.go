@@ -473,7 +473,7 @@ func DecodeResponseSkycoinSignMessage(kind uint16, data []byte) (uint16, string)
 }
 
 // DeviceAddressGen Ask the device to generate an address
-func DeviceAddressGen(deviceType DeviceType, addressN int, startIndex int) (uint16, []byte) {
+func DeviceAddressGen(deviceType DeviceType, addressN int, startIndex int, confirmAddress bool) (uint16, []byte) {
 
 	dev, err := getDevice(deviceType)
 	if err != nil {
@@ -481,8 +481,9 @@ func DeviceAddressGen(deviceType DeviceType, addressN int, startIndex int) (uint
 	}
 	defer dev.Close()
 	skycoinAddress := &messages.SkycoinAddress{
-		AddressN:   proto.Uint32(uint32(addressN)),
-		StartIndex: proto.Uint32(uint32(startIndex)),
+		AddressN:       proto.Uint32(uint32(addressN)),
+		ConfirmAddress: proto.Bool(confirmAddress),
+		StartIndex:     proto.Uint32(uint32(startIndex)),
 	}
 	data, _ := proto.Marshal(skycoinAddress)
 

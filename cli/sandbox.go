@@ -51,7 +51,7 @@ func sandbox() gcli.Command {
 			}
 
 			var data []byte
-			kind, data = deviceWallet.DeviceAddressGen(deviceType, 9, 15)
+			kind, data = deviceWallet.DeviceAddressGen(deviceType, 9, 15, false)
 			if kind == uint16(messages.MessageType_MessageType_PinMatrixRequest) {
 				log.Printf("PinMatrixRequest response: ")
 				fmt.Scanln(&pinEnc)
