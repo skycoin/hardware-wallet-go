@@ -7,6 +7,7 @@ The CLI command APIs can be used directly from a Go application, see [Skycoin CL
 <!-- MarkdownTOC autolink="true" bracket="round" levels="1,2,3" -->
 
 - [Usage](#usage)
+    - [Apply settings](#apply-settings)
     - [Update firmware](#update-firmware)
     - [Ask device to generate addresses](#ask-device-to-generate-addresses)
     - [Configure device mnemonic](#configure-device-mnemonic)
@@ -49,6 +50,8 @@ VERSION:
    0.24.1
 
 COMMANDS:
+
+     deviceApplySettings            Apply settings.
      deviceSetMnemonic              Configure the device with a mnemonic.
      deviceFeatures                 Ask the device Features.
      deviceGenerateMnemonic         Ask the device to generate a mnemonic and configure itself with it.
@@ -83,6 +86,34 @@ GLOBAL OPTIONS:
    --help, -h     show help
    --version, -v  print the version
 ```
+
+### Apply settings
+
+Configure device with settings such as: using passphrase
+
+
+```bash
+$skycoin-cli emulatorApplySettings --usePassphrase
+```
+
+```
+OPTIONS:
+        --usePassphrase bool            Use this option if you want to activate passphrase on device
+```
+
+<details>
+ <summary>View Output</summary>
+
+```
+2018/12/21 16:14:25 language:"" label:"" use_passphrase:true 
+PinMatrixRequest response: 5959
+2018/12/21 16:14:34 Setting pin: 5959
+2018/12/21 16:14:34 Calling DecodeSuccessOrFailMsg on message kind 26
+2018/12/21 16:14:34 MessagePinMatrixAck Answer is: 26 / 
+Success with code:  Settings applied
+```
+</details>
+
 
 ### Update firmware
 

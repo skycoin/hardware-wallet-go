@@ -565,6 +565,29 @@ func initialize(dev io.ReadWriteCloser) {
 	}
 }
 
+// DeviceApplySettings send ApplySettings request to the device
+func DeviceApplySettings(deviceType DeviceType, usePassphrase bool) wire.Message {
+	dev, err := getDevice(deviceType)
+	if err != nil {
+		log.Panicf(err.Error())
+	}
+	defer dev.Close()
+
+	applySettings := &messages.ApplySettings{
+		Language:      proto.String(""),
+		Label:         proto.String(""),
+		UsePassphrase: proto.Bool(usePassphrase),
+	}
+	log.Println(applySettings)
+	data, _ := proto.Marshal(applySettings)
+	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_ApplySettings)
+	msg, err := sendToDevice(dev, chunks)
+	if err != nil {
+		log.Panicf(err.Error())
+	}
+	return msg
+}
+
 // DeviceGetFeatures send Features message to the device
 func DeviceGetFeatures(deviceType DeviceType) {
 	dev, err := getDevice(deviceType)

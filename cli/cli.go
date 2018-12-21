@@ -78,6 +78,7 @@ func NewApp() (*App, error) {
 	}
 
 	commands := []gcli.Command{
+		deviceApplySettingsCmd(),
 		deviceSetMnemonicCmd(),
 		deviceFeaturesCmd(),
 		deviceGenerateMnemonicCmd(),
@@ -91,6 +92,7 @@ func NewApp() (*App, error) {
 		deviceGetVersionCmd(),
 		deviceRecoveryCmd(),
 		deviceCancelCmd(),
+		emulatorApplySettingsCmd(),
 		emulatorSetMnemonicCmd(),
 		emulatorFeaturesCmd(),
 		emulatorGenerateMnemonicCmd(),
