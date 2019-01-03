@@ -12,5 +12,5 @@ matrix:
       - go get github.com/skycoin/hardware-wallet-go
       - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | bash -s -- -b $GOPATH/bin v1.10.2
     script:
-      - make format
+      - make check
       - make test
