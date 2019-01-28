@@ -521,9 +521,12 @@ func DeviceTransactionSign(deviceType DeviceType, inputs []*messages.SkycoinTran
 	defer dev.Close()
 
 	skycoinTransactionSignMessage := &messages.TransactionSign{
+		NbIn:           proto.Uint32(uint32(len(inputs))),
+		NbOut:          proto.Uint32(uint32(len(outputs))),
 		TransactionIn:  inputs,
 		TransactionOut: outputs,
 	}
+	log.Println(skycoinTransactionSignMessage)
 
 	data, _ := proto.Marshal(skycoinTransactionSignMessage)
 

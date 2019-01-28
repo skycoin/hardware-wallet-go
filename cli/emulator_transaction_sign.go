@@ -3,9 +3,10 @@ package cli
 import (
 	"fmt"
 
+	"github.com/gogo/protobuf/proto"
+	deviceWallet "github.com/skycoin/hardware-wallet-go/device-wallet"
+	"github.com/skycoin/hardware-wallet-go/device-wallet/messages"
 	gcli "github.com/urfave/cli"
-	// deviceWallet "github.com/skycoin/hardware-wallet-go/device-wallet"
-	// "github.com/skycoin/hardware-wallet-go/device-wallet/messages"
 )
 
 func emulatorTransactionSignCmd() gcli.Command {
@@ -45,43 +46,69 @@ func emulatorTransactionSignCmd() gcli.Command {
 			inputs := c.StringSlice("inputHash")
 			inputIndex := c.IntSlice("inputIndex")
 			outputs := c.StringSlice("outputAddress")
-			coin := c.IntSlice("coin")
-			hour := c.IntSlice("hour")
+			coins := c.IntSlice("coin")
+			hours := c.IntSlice("hour")
 			addressIndex := c.IntSlice("addressIndex")
 
 			fmt.Println(inputs, inputIndex)
-			fmt.Println(outputs, coin, hour, addressIndex)
-			/*
-				kind, data := deviceWallet.DeviceTransactionSign(deviceWallet.DeviceTypeEmulator, inputs, outputs)
-				for {
-					switch kind {
-					case uint16(messages.MessageType_MessageType_ResponseTransactionSign):
-						kind, signatures := deviceWallet.DecodeResponseTransactionSign(kind, data)
-						fmt.Println(signatures)
-						return
-					case uint16(messages.MessageType_MessageType_Success):
-						fmt.Println("Should end with ResponseTransactionSign request")
-						return
-					case uint16(messages.MessageType_MessageType_ButtonRequest):
-						msg := deviceWallet.DeviceButtonAck(deviceWallet.DeviceTypeUsb)
-						kind, data = msg.Kind, msg.Data
-					case uint16(messages.MessageType_MessageType_PassphraseRequest):
-						var passphrase string
-						fmt.Printf("Input passphrase: ")
-						fmt.Scanln(&passphrase)
-						kind, data = deviceWallet.DevicePassphraseAck(deviceWallet.DeviceTypeEmulator, passphrase)
-					case uint16(messages.MessageType_MessageType_PinMatrixRequest):
-						var pinEnc string
-						fmt.Printf("PinMatrixRequest response: ")
-						fmt.Scanln(&pinEnc)
-						kind, data = deviceWallet.DevicePinMatrixAck(deviceWallet.DeviceTypeEmulator, pinEnc)
-					case uint16(messages.MessageType_MessageType_Failure):
-					default:
-						fmt.Printf("Failed with message: %s\n", deviceWallet.DecodeFailMsg(kind, data))
-						return
-					}
+			if len(inputs) != len(inputIndex) {
+				fmt.Println("Every given input hash should have the an inputIndex")
+				return
+			}
+			if len(outputs) != len(coins) || len(outputs) != len(hours) {
+				fmt.Println("Every given output should have a coin and hour value")
+				return
+			}
+			fmt.Println(outputs, coins, hours, addressIndex)
+			var transactionInputs []*messages.SkycoinTransactionInput
+			var transactionOutputs []*messages.SkycoinTransactionOutput
+			for i, input := range inputs {
+				var transactionInput messages.SkycoinTransactionInput
+				transactionInput.HashIn = proto.String(input)
+				transactionInput.Index = proto.Uint32(uint32(inputIndex[i]))
+				transactionInputs = append(transactionInputs, &transactionInput)
+			}
+			for i, output := range outputs {
+				var transactionOutput messages.SkycoinTransactionOutput
+				transactionOutput.Address = proto.String(output)
+				transactionOutput.Coin = proto.Uint32(uint32(coins[i]))
+				transactionOutput.Hour = proto.Uint32(uint32(hours[i]))
+				if i < len(addressIndex) {
+					transactionOutput.AddressIndex = proto.Uint32(uint32(addressIndex[i]))
 				}
-			*/
+				transactionOutputs = append(transactionOutputs, &transactionOutput)
+			}
+			kind, data := deviceWallet.DeviceTransactionSign(deviceWallet.DeviceTypeEmulator, transactionInputs, transactionOutputs)
+			for {
+				switch kind {
+				case uint16(messages.MessageType_MessageType_ResponseTransactionSign):
+					_, signatures := deviceWallet.DecodeResponseTransactionSign(kind, data)
+					fmt.Println(signatures)
+					return
+				case uint16(messages.MessageType_MessageType_Success):
+					fmt.Println("Should end with ResponseTransactionSign request")
+					return
+				case uint16(messages.MessageType_MessageType_ButtonRequest):
+					msg := deviceWallet.DeviceButtonAck(deviceWallet.DeviceTypeEmulator)
+					kind, data = msg.Kind, msg.Data
+				case uint16(messages.MessageType_MessageType_PassphraseRequest):
+					var passphrase string
+					fmt.Printf("Input passphrase: ")
+					fmt.Scanln(&passphrase)
+					kind, data = deviceWallet.DevicePassphraseAck(deviceWallet.DeviceTypeEmulator, passphrase)
+				case uint16(messages.MessageType_MessageType_PinMatrixRequest):
+					var pinEnc string
+					fmt.Printf("PinMatrixRequest response: ")
+					fmt.Scanln(&pinEnc)
+					kind, data = deviceWallet.DevicePinMatrixAck(deviceWallet.DeviceTypeEmulator, pinEnc)
+				case uint16(messages.MessageType_MessageType_Failure):
+					fmt.Printf("Failed with message: %s\n", deviceWallet.DecodeFailMsg(kind, data))
+					return
+				default:
+					fmt.Printf("Failed with message: %s\n", deviceWallet.DecodeFailMsg(kind, data))
+					return
+				}
+			}
 		},
 	}
 }
