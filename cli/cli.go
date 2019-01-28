@@ -92,6 +92,7 @@ func NewApp() (*App, error) {
 		deviceGetVersionCmd(),
 		deviceRecoveryCmd(),
 		deviceCancelCmd(),
+		deviceTransactionSignCmd(),
 		emulatorApplySettingsCmd(),
 		emulatorSetMnemonicCmd(),
 		emulatorFeaturesCmd(),
