@@ -105,6 +105,7 @@ func NewApp() (*App, error) {
 		emulatorGetVersionCmd(),
 		emulatorRecoveryCmd(),
 		emulatorCancelCmd(),
+		emulatorTransactionSignCmd(),
 		sandbox(),
 	}
 
