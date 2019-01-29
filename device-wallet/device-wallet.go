@@ -9,11 +9,10 @@ import (
 	"net"
 	"time"
 
-	"github.com/skycoin/hardware-wallet-go/device-wallet/usb"
-	"github.com/skycoin/hardware-wallet-go/device-wallet/wire"
-
 	proto "github.com/golang/protobuf/proto"
 	messages "github.com/skycoin/hardware-wallet-go/device-wallet/messages"
+	"github.com/skycoin/hardware-wallet-go/device-wallet/usb"
+	"github.com/skycoin/hardware-wallet-go/device-wallet/wire"
 )
 
 // DeviceType type of device: emulated or usb
@@ -714,7 +713,6 @@ func RecoveryDevice(deviceType DeviceType, usePassphrase bool) wire.Message {
 	log.Printf("Using passphrase %t\n", usePassphrase)
 
 	recoveryDevice := &messages.RecoveryDevice{
-		DryRun:               proto.Bool(false),
 		EnforceWordlist:      proto.Bool(true),
 		WordCount:            proto.Uint32(12),
 		PassphraseProtection: proto.Bool(usePassphrase),
