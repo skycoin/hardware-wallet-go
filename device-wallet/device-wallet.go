@@ -713,7 +713,6 @@ func RecoveryDevice(deviceType DeviceType, usePassphrase bool) wire.Message {
 	log.Printf("Using passphrase %t\n", usePassphrase)
 
 	recoveryDevice := &messages.RecoveryDevice{
-		EnforceWordlist:      proto.Bool(true),
 		WordCount:            proto.Uint32(12),
 		PassphraseProtection: proto.Bool(usePassphrase),
 	}
