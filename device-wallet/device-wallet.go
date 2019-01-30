@@ -370,7 +370,7 @@ func DeviceGetVersion(deviceType DeviceType) string {
 }
 
 // DeviceGenerateMnemonic Ask the device to generate a mnemonic and configure itself with it.
-func DeviceGenerateMnemonic(deviceType DeviceType, usePassphrase bool) {
+func DeviceGenerateMnemonic(deviceType DeviceType, wordCount uint32, usePassphrase bool) {
 
 	dev, err := getDevice(deviceType)
 	if err != nil {
@@ -381,6 +381,7 @@ func DeviceGenerateMnemonic(deviceType DeviceType, usePassphrase bool) {
 
 	skycoinGenerateMnemonic := &messages.GenerateMnemonic{
 		PassphraseProtection: proto.Bool(usePassphrase),
+		WordCount:            proto.Uint32(wordCount),
 	}
 
 	data, _ := proto.Marshal(skycoinGenerateMnemonic)
