@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   - In `deviceGenerateMnemonic | emulatorGenerateMnemonic` argument you can specify the `--wordCount` (default 12) for the seed.
 
-  - In `emulatorRecovery` message you can specify the `--wordCount` (default 12) for the seed.
+  - In `deviceRecovery | emulatorRecovery` argument you can specify the `--wordCount` (default 12) for the seed.
 
 ### Fixed
 
