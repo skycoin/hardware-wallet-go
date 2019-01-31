@@ -702,7 +702,7 @@ func DeviceWordAck(deviceType DeviceType, word string) wire.Message {
 }
 
 // RecoveryDevice ask the device to perform the seed backup
-func RecoveryDevice(deviceType DeviceType, usePassphrase bool) wire.Message {
+func RecoveryDevice(deviceType DeviceType, wordCount uint32, usePassphrase bool) wire.Message {
 	dev, err := getDevice(deviceType)
 	if err != nil {
 		log.Panicf(err.Error())
@@ -714,7 +714,7 @@ func RecoveryDevice(deviceType DeviceType, usePassphrase bool) wire.Message {
 	log.Printf("Using passphrase %t\n", usePassphrase)
 
 	recoveryDevice := &messages.RecoveryDevice{
-		WordCount:            proto.Uint32(12),
+		WordCount:            proto.Uint32(wordCount),
 		PassphraseProtection: proto.Bool(usePassphrase),
 	}
 	data, _ := proto.Marshal(recoveryDevice)
