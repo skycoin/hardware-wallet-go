@@ -18,7 +18,7 @@ func deviceGenerateMnemonicCmd() gcli.Command {
 			},
 			gcli.IntFlag{
 				Name:  "wordCount",
-				Usage: "Use a specific (12 | 24) number of words (default 12) for the Mnemonic",
+				Usage: "Use a specific (12 | 24) number of words for the Mnemonic",
 				Value: 12,
 			},
 		},
