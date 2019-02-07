@@ -21,6 +21,7 @@ The CLI command APIs can be used directly from a Go application, see [Skycoin CL
     - [Ask the device to perform the seed recovery procedure](#recovery-device)
     - [Ask the device Features](#device-features)
     - [Ask the device to cancel the ongoing procedure](#device-cancel)
+    - [Ask the device to sign a transaction using the provided information](#transaction-sign)
 - [Note](#note)
 
 <!-- /MarkdownTOC -->
@@ -77,6 +78,7 @@ COMMANDS:
      emulatorGetVersion             Ask firmware version.
      emulatorRecovery               Ask the emulator to perform the seed recovery procedure.
      emulatorCancel                 Ask the emulator to cancel the ongoing procedure.
+     emulatorTransactionSign        Ask the device to sign a transaction using the provided information.
      sandbox                        Sandbox.
      help, h                        Shows a list of commands or help for one command
 
@@ -506,5 +508,32 @@ $skycoin-cli deviceCancel
 
 ```
 2018/12/10 15:06:42 Action cancelled by user
+```
+</details>
+
+### Transaction sign
+
+Ask the device to sign a message using the secret key at given index.
+
+```
+OPTIONS:
+        --inputHash value                   Hash of the Input of the transaction we expect the device to sign
+        --inputIndex value                  Index of the input in the wallet
+        --outputAddress string              Addresses of the output for the transaction
+        --coin value                        Amount of coins
+        --hour value                        Number of hours
+        --addressIndex value                If the address is a return address tell its index in the wallet
+```
+
+```bash
+$skycoin emulatorTransactionSign --inputHash a885343cc57aedaab56ad88d860f2bd436289b0248d1adc55bcfa0d9b9b807c3 --inputIndex=0 --outputAddress=zC8GAQGQBfwk7vtTxVoRG7iMperHNuyYPs --coin=1000000 --hour=1
+```
+
+<details>
+ <summary>View Output</summary>
+
+```
+[a885343cc57aedaab56ad88d860f2bd436289b0248d1adc55bcfa0d9b9b807c3] [0]
+[zC8GAQGQBfwk7vtTxVoRG7iMperHNuyYPs] [1000000] [1] []
 ```
 </details>
