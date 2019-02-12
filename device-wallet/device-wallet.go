@@ -457,6 +457,21 @@ func DecodeResponseSkycoinAddress(kind uint16, data []byte) (uint16, []string) {
 	return kind, make([]string, 0)
 }
 
+// DecodeResponseTransactionSign convert byte data into list of signatures
+func DecodeResponseTransactionSign(kind uint16, data []byte) (uint16, []string) {
+	if kind == uint16(messages.MessageType_MessageType_ResponseTransactionSign) {
+		responseSkycoinTransactionSign := &messages.ResponseTransactionSign{}
+		err := proto.Unmarshal(data, responseSkycoinTransactionSign)
+		if err != nil {
+			log.Panicf("unmarshaling error: %s\n", err.Error())
+			return kind, make([]string, 0)
+		}
+		return kind, responseSkycoinTransactionSign.GetSignatures()
+	}
+	log.Panic("Calling DecodeResponseeSkycoinSignMessage with wrong message type")
+	return kind, make([]string, 0)
+}
+
 // DecodeResponseSkycoinSignMessage convert byte data into signed message, meant to be used after DevicePinMatrixAck
 func DecodeResponseSkycoinSignMessage(kind uint16, data []byte) (uint16, string) {
 	if kind == uint16(messages.MessageType_MessageType_ResponseSkycoinSignMessage) {
@@ -492,6 +507,34 @@ func DeviceAddressGen(deviceType DeviceType, addressN int, startIndex int, confi
 	msg, err := sendToDevice(dev, chunks)
 	if err != nil {
 		log.Panicf("sendToDevice error: %s\n", err.Error())
+	}
+	return msg.Kind, msg.Data
+}
+
+// DeviceTransactionSign Ask the device to sign a transaction using the given information.
+func DeviceTransactionSign(deviceType DeviceType, inputs []*messages.SkycoinTransactionInput, outputs []*messages.SkycoinTransactionOutput) (uint16, []byte) {
+
+	dev, err := getDevice(deviceType)
+	if err != nil {
+		log.Panicf(err.Error())
+	}
+	defer dev.Close()
+
+	skycoinTransactionSignMessage := &messages.TransactionSign{
+		NbIn:           proto.Uint32(uint32(len(inputs))),
+		NbOut:          proto.Uint32(uint32(len(outputs))),
+		TransactionIn:  inputs,
+		TransactionOut: outputs,
+	}
+	log.Println(skycoinTransactionSignMessage)
+
+	data, _ := proto.Marshal(skycoinTransactionSignMessage)
+
+	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_TransactionSign)
+
+	msg, err := sendToDevice(dev, chunks)
+	if err != nil {
+		log.Panicf(err.Error())
 	}
 	return msg.Kind, msg.Data
 }
