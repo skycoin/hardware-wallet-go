@@ -3,10 +3,9 @@ package cli
 import (
 	"fmt"
 
-	gcli "github.com/urfave/cli"
-
 	deviceWallet "github.com/skycoin/hardware-wallet-go/device-wallet"
 	"github.com/skycoin/hardware-wallet-go/device-wallet/messages"
+	gcli "github.com/urfave/cli"
 )
 
 func emulatorRecoveryCmd() gcli.Command {
@@ -21,11 +20,17 @@ func emulatorRecoveryCmd() gcli.Command {
 				Name:  "usePassphrase",
 				Usage: "Configure a passphrase",
 			},
+			gcli.IntFlag{
+				Name:  "wordCount",
+				Usage: "Use a specific (12 | 24) number of words for the Mnemonic recovery",
+				Value: 12,
+			},
 		},
 		OnUsageError: onCommandUsageError(name),
 		Action: func(c *gcli.Context) {
 			passphrase := c.Bool("usePassphrase")
-			msg := deviceWallet.RecoveryDevice(deviceWallet.DeviceTypeEmulator, passphrase)
+			wordCount := uint32(c.Uint64("wordCount"))
+			msg := deviceWallet.RecoveryDevice(deviceWallet.DeviceTypeEmulator, wordCount, passphrase)
 			for msg.Kind == uint16(messages.MessageType_MessageType_WordRequest) {
 				var word string
 				fmt.Printf("Word: ")

@@ -1,9 +1,8 @@
 package cli
 
 import (
-	gcli "github.com/urfave/cli"
-
 	deviceWallet "github.com/skycoin/hardware-wallet-go/device-wallet"
+	gcli "github.com/urfave/cli"
 )
 
 func emulatorGenerateMnemonicCmd() gcli.Command {
@@ -17,11 +16,17 @@ func emulatorGenerateMnemonicCmd() gcli.Command {
 				Name:  "usePassphrase",
 				Usage: "Configure a passphrase",
 			},
+			gcli.IntFlag{
+				Name:  "wordCount",
+				Usage: "Use a specific (12 | 24) number of words for the Mnemonic",
+				Value: 12,
+			},
 		},
 		OnUsageError: onCommandUsageError(name),
 		Action: func(c *gcli.Context) {
 			passphrase := c.Bool("usePassphrase")
-			deviceWallet.DeviceGenerateMnemonic(deviceWallet.DeviceTypeEmulator, passphrase)
+			wordCount := uint32(c.Uint64("wordCount"))
+			deviceWallet.DeviceGenerateMnemonic(deviceWallet.DeviceTypeEmulator, wordCount, passphrase)
 		},
 	}
 }

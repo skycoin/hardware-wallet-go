@@ -9,11 +9,10 @@ import (
 	"net"
 	"time"
 
-	"github.com/skycoin/hardware-wallet-go/device-wallet/usb"
-	"github.com/skycoin/hardware-wallet-go/device-wallet/wire"
-
 	proto "github.com/golang/protobuf/proto"
 	messages "github.com/skycoin/hardware-wallet-go/device-wallet/messages"
+	"github.com/skycoin/hardware-wallet-go/device-wallet/usb"
+	"github.com/skycoin/hardware-wallet-go/device-wallet/wire"
 )
 
 // DeviceType type of device: emulated or usb
@@ -371,7 +370,7 @@ func DeviceGetVersion(deviceType DeviceType) string {
 }
 
 // DeviceGenerateMnemonic Ask the device to generate a mnemonic and configure itself with it.
-func DeviceGenerateMnemonic(deviceType DeviceType, usePassphrase bool) {
+func DeviceGenerateMnemonic(deviceType DeviceType, wordCount uint32, usePassphrase bool) {
 
 	dev, err := getDevice(deviceType)
 	if err != nil {
@@ -382,6 +381,7 @@ func DeviceGenerateMnemonic(deviceType DeviceType, usePassphrase bool) {
 
 	skycoinGenerateMnemonic := &messages.GenerateMnemonic{
 		PassphraseProtection: proto.Bool(usePassphrase),
+		WordCount:            proto.Uint32(wordCount),
 	}
 
 	data, _ := proto.Marshal(skycoinGenerateMnemonic)
@@ -745,7 +745,7 @@ func DeviceWordAck(deviceType DeviceType, word string) wire.Message {
 }
 
 // RecoveryDevice ask the device to perform the seed backup
-func RecoveryDevice(deviceType DeviceType, usePassphrase bool) wire.Message {
+func RecoveryDevice(deviceType DeviceType, wordCount uint32, usePassphrase bool) wire.Message {
 	dev, err := getDevice(deviceType)
 	if err != nil {
 		log.Panicf(err.Error())
@@ -757,9 +757,7 @@ func RecoveryDevice(deviceType DeviceType, usePassphrase bool) wire.Message {
 	log.Printf("Using passphrase %t\n", usePassphrase)
 
 	recoveryDevice := &messages.RecoveryDevice{
-		DryRun:               proto.Bool(false),
-		EnforceWordlist:      proto.Bool(true),
-		WordCount:            proto.Uint32(12),
+		WordCount:            proto.Uint32(wordCount),
 		PassphraseProtection: proto.Bool(usePassphrase),
 	}
 	data, _ := proto.Marshal(recoveryDevice)
