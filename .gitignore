@@ -12,3 +12,10 @@
 *.out
 
 vendor/*
+
+# Temporary files
+*.swp
+*.swo
+*.orig
+DS_Store
+
