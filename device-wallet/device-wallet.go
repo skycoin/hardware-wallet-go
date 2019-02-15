@@ -759,6 +759,7 @@ func RecoveryDevice(deviceType DeviceType, wordCount uint32, usePassphrase, dryR
 	recoveryDevice := &messages.RecoveryDevice{
 		WordCount:            proto.Uint32(wordCount),
 		PassphraseProtection: proto.Bool(usePassphrase),
+		DryRun:               proto.Bool(dryRun),
 	}
 	data, _ := proto.Marshal(recoveryDevice)
 	chunks = makeTrezorMessage(data, messages.MessageType_MessageType_RecoveryDevice)
