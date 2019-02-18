@@ -2,16 +2,22 @@ package cli
 
 import (
 	"fmt"
-
-	gcli "github.com/urfave/cli"
+	"os"
+	"strconv"
+	"time"
 
 	deviceWallet "github.com/skycoin/hardware-wallet-go/device-wallet"
 	"github.com/skycoin/hardware-wallet-go/device-wallet/messages"
 	"github.com/skycoin/hardware-wallet-go/device-wallet/wire"
+	gcli "github.com/urfave/cli"
 )
 
 func deviceApplySettingsCmd() gcli.Command {
 	name := "deviceApplySettings"
+	hostName, err := os.Hostname()
+	if err != nil {
+		hostName = strconv.FormatInt(time.Now().UnixNano(), 10)
+	}
 	return gcli.Command{
 		Name:        name,
 		Usage:       "Apply settings.",
@@ -21,11 +27,17 @@ func deviceApplySettingsCmd() gcli.Command {
 				Name:  "usePassphrase",
 				Usage: "Configure a passphrase",
 			},
+			gcli.StringFlag{
+				Name:  "label",
+				Usage: "Configure a device label",
+				Value: hostName,
+			},
 		},
 		OnUsageError: onCommandUsageError(name),
 		Action: func(c *gcli.Context) {
 			passphrase := c.Bool("usePassphrase")
-			msg := deviceWallet.DeviceApplySettings(deviceWallet.DeviceTypeUsb, passphrase)
+			label := c.String("label")
+			msg := deviceWallet.DeviceApplySettings(deviceWallet.DeviceTypeUsb, passphrase, label)
 			for msg.Kind != uint16(messages.MessageType_MessageType_Failure) && msg.Kind != uint16(messages.MessageType_MessageType_Success) {
 
 				if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
