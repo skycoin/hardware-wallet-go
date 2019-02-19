@@ -2,9 +2,6 @@ package cli
 
 import (
 	"fmt"
-	"os"
-	"strconv"
-	"time"
 
 	deviceWallet "github.com/skycoin/hardware-wallet-go/device-wallet"
 	"github.com/skycoin/hardware-wallet-go/device-wallet/messages"
@@ -14,10 +11,6 @@ import (
 
 func emulatorApplySettingsCmd() gcli.Command {
 	name := "emulatorApplySettings"
-	hostName, err := os.Hostname()
-	if err != nil {
-		hostName = strconv.FormatInt(time.Now().UnixNano(), 10)
-	}
 	return gcli.Command{
 		Name:        name,
 		Usage:       "Apply settings.",
@@ -30,7 +23,6 @@ func emulatorApplySettingsCmd() gcli.Command {
 			gcli.StringFlag{
 				Name:  "label",
 				Usage: "Configure a device label",
-				Value: hostName,
 			},
 		},
 		OnUsageError: onCommandUsageError(name),

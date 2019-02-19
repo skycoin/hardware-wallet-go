@@ -618,7 +618,7 @@ func DeviceApplySettings(deviceType DeviceType, usePassphrase bool, label string
 
 	applySettings := &messages.ApplySettings{
 		Label:         proto.String(label),
-		Language:      proto.String("en"),
+		Language:      proto.String(""),
 		UsePassphrase: proto.Bool(usePassphrase),
 	}
 	log.Println(applySettings)
