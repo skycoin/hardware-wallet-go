@@ -20,6 +20,10 @@ func emulatorRecoveryCmd() gcli.Command {
 				Name:  "usePassphrase",
 				Usage: "Configure a passphrase",
 			},
+			gcli.BoolFlag{
+				Name:  "dryRun",
+				Usage: "perform dry-run recovery workflow (for safe mnemonic validation)",
+			},
 			gcli.IntFlag{
 				Name:  "wordCount",
 				Usage: "Use a specific (12 | 24) number of words for the Mnemonic recovery",
@@ -29,8 +33,9 @@ func emulatorRecoveryCmd() gcli.Command {
 		OnUsageError: onCommandUsageError(name),
 		Action: func(c *gcli.Context) {
 			passphrase := c.Bool("usePassphrase")
+			dryRun := c.Bool("dryRun")
 			wordCount := uint32(c.Uint64("wordCount"))
-			msg := deviceWallet.RecoveryDevice(deviceWallet.DeviceTypeEmulator, wordCount, passphrase)
+			msg := deviceWallet.RecoveryDevice(deviceWallet.DeviceTypeEmulator, wordCount, passphrase, dryRun)
 			for msg.Kind == uint16(messages.MessageType_MessageType_WordRequest) {
 				var word string
 				fmt.Printf("Word: ")
