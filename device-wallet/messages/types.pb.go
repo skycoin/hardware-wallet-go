@@ -3,11 +3,9 @@
 
 package messages
 
-import (
-	fmt "fmt"
-	proto "github.com/golang/protobuf/proto"
-	math "math"
-)
+import proto "github.com/golang/protobuf/proto"
+import fmt "fmt"
+import math "math"
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal
@@ -18,9 +16,9 @@ var _ = math.Inf
 // is compatible with the proto package it is being compiled against.
 // A compilation error at this line likely means your copy of the
 // proto package needs to be updated.
-const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
+const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
 
-//*
+// *
 // Type of failures returned by Failure message
 // @used_in Failure
 type FailureType int32
@@ -58,7 +56,6 @@ var FailureType_name = map[int32]string{
 	13: "Failure_AddressGeneration",
 	99: "Failure_FirmwareError",
 }
-
 var FailureType_value = map[string]int32{
 	"Failure_UnexpectedMessage": 1,
 	"Failure_ButtonExpected":    2,
@@ -81,11 +78,9 @@ func (x FailureType) Enum() *FailureType {
 	*p = x
 	return p
 }
-
 func (x FailureType) String() string {
 	return proto.EnumName(FailureType_name, int32(x))
 }
-
 func (x *FailureType) UnmarshalJSON(data []byte) error {
 	value, err := proto.UnmarshalJSONEnum(FailureType_value, data, "FailureType")
 	if err != nil {
@@ -94,12 +89,11 @@ func (x *FailureType) UnmarshalJSON(data []byte) error {
 	*x = FailureType(value)
 	return nil
 }
-
 func (FailureType) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_d938547f84707355, []int{0}
+	return fileDescriptor_types_264f33b6cffc9810, []int{0}
 }
 
-//*
+// *
 // Type of script which will be used for transaction output
 // @used_in TxOutputType
 type OutputScriptType int32
@@ -121,7 +115,6 @@ var OutputScriptType_name = map[int32]string{
 	4: "PAYTOWITNESS",
 	5: "PAYTOP2SHWITNESS",
 }
-
 var OutputScriptType_value = map[string]int32{
 	"PAYTOADDRESS":     0,
 	"PAYTOSCRIPTHASH":  1,
@@ -136,11 +129,9 @@ func (x OutputScriptType) Enum() *OutputScriptType {
 	*p = x
 	return p
 }
-
 func (x OutputScriptType) String() string {
 	return proto.EnumName(OutputScriptType_name, int32(x))
 }
-
 func (x *OutputScriptType) UnmarshalJSON(data []byte) error {
 	value, err := proto.UnmarshalJSONEnum(OutputScriptType_value, data, "OutputScriptType")
 	if err != nil {
@@ -149,12 +140,11 @@ func (x *OutputScriptType) UnmarshalJSON(data []byte) error {
 	*x = OutputScriptType(value)
 	return nil
 }
-
 func (OutputScriptType) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_d938547f84707355, []int{1}
+	return fileDescriptor_types_264f33b6cffc9810, []int{1}
 }
 
-//*
+// *
 // Type of script which will be used for transaction output
 // @used_in TxInputType
 type InputScriptType int32
@@ -174,7 +164,6 @@ var InputScriptType_name = map[int32]string{
 	3: "SPENDWITNESS",
 	4: "SPENDP2SHWITNESS",
 }
-
 var InputScriptType_value = map[string]int32{
 	"SPENDADDRESS":     0,
 	"SPENDMULTISIG":    1,
@@ -188,11 +177,9 @@ func (x InputScriptType) Enum() *InputScriptType {
 	*p = x
 	return p
 }
-
 func (x InputScriptType) String() string {
 	return proto.EnumName(InputScriptType_name, int32(x))
 }
-
 func (x *InputScriptType) UnmarshalJSON(data []byte) error {
 	value, err := proto.UnmarshalJSONEnum(InputScriptType_value, data, "InputScriptType")
 	if err != nil {
@@ -201,12 +188,11 @@ func (x *InputScriptType) UnmarshalJSON(data []byte) error {
 	*x = InputScriptType(value)
 	return nil
 }
-
 func (InputScriptType) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_d938547f84707355, []int{2}
+	return fileDescriptor_types_264f33b6cffc9810, []int{2}
 }
 
-//*
+// *
 // Type of information required by transaction signing process
 // @used_in TxRequest
 type RequestType int32
@@ -226,7 +212,6 @@ var RequestType_name = map[int32]string{
 	3: "TXFINISHED",
 	4: "TXEXTRADATA",
 }
-
 var RequestType_value = map[string]int32{
 	"TXINPUT":     0,
 	"TXOUTPUT":    1,
@@ -240,11 +225,9 @@ func (x RequestType) Enum() *RequestType {
 	*p = x
 	return p
 }
-
 func (x RequestType) String() string {
 	return proto.EnumName(RequestType_name, int32(x))
 }
-
 func (x *RequestType) UnmarshalJSON(data []byte) error {
 	value, err := proto.UnmarshalJSONEnum(RequestType_value, data, "RequestType")
 	if err != nil {
@@ -253,12 +236,11 @@ func (x *RequestType) UnmarshalJSON(data []byte) error {
 	*x = RequestType(value)
 	return nil
 }
-
 func (RequestType) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_d938547f84707355, []int{3}
+	return fileDescriptor_types_264f33b6cffc9810, []int{3}
 }
 
-//*
+// *
 // Type of button request
 // @used_in ButtonRequest
 type ButtonRequestType int32
@@ -296,7 +278,6 @@ var ButtonRequestType_name = map[int32]string{
 	13: "ButtonRequest_MnemonicInput",
 	14: "ButtonRequest_PassphraseType",
 }
-
 var ButtonRequestType_value = map[string]int32{
 	"ButtonRequest_Other":             1,
 	"ButtonRequest_FeeOverThreshold":  2,
@@ -319,11 +300,9 @@ func (x ButtonRequestType) Enum() *ButtonRequestType {
 	*p = x
 	return p
 }
-
 func (x ButtonRequestType) String() string {
 	return proto.EnumName(ButtonRequestType_name, int32(x))
 }
-
 func (x *ButtonRequestType) UnmarshalJSON(data []byte) error {
 	value, err := proto.UnmarshalJSONEnum(ButtonRequestType_value, data, "ButtonRequestType")
 	if err != nil {
@@ -332,12 +311,11 @@ func (x *ButtonRequestType) UnmarshalJSON(data []byte) error {
 	*x = ButtonRequestType(value)
 	return nil
 }
-
 func (ButtonRequestType) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_d938547f84707355, []int{4}
+	return fileDescriptor_types_264f33b6cffc9810, []int{4}
 }
 
-//*
+// *
 // Type of PIN request
 // @used_in PinMatrixRequest
 type PinMatrixRequestType int32
@@ -353,7 +331,6 @@ var PinMatrixRequestType_name = map[int32]string{
 	2: "PinMatrixRequestType_NewFirst",
 	3: "PinMatrixRequestType_NewSecond",
 }
-
 var PinMatrixRequestType_value = map[string]int32{
 	"PinMatrixRequestType_Current":   1,
 	"PinMatrixRequestType_NewFirst":  2,
@@ -365,11 +342,9 @@ func (x PinMatrixRequestType) Enum() *PinMatrixRequestType {
 	*p = x
 	return p
 }
-
 func (x PinMatrixRequestType) String() string {
 	return proto.EnumName(PinMatrixRequestType_name, int32(x))
 }
-
 func (x *PinMatrixRequestType) UnmarshalJSON(data []byte) error {
 	value, err := proto.UnmarshalJSONEnum(PinMatrixRequestType_value, data, "PinMatrixRequestType")
 	if err != nil {
@@ -378,12 +353,11 @@ func (x *PinMatrixRequestType) UnmarshalJSON(data []byte) error {
 	*x = PinMatrixRequestType(value)
 	return nil
 }
-
 func (PinMatrixRequestType) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_d938547f84707355, []int{5}
+	return fileDescriptor_types_264f33b6cffc9810, []int{5}
 }
 
-//*
+// *
 // Type of Recovery Word request
 // @used_in WordRequest
 type WordRequestType int32
@@ -399,7 +373,6 @@ var WordRequestType_name = map[int32]string{
 	1: "WordRequestType_Matrix9",
 	2: "WordRequestType_Matrix6",
 }
-
 var WordRequestType_value = map[string]int32{
 	"WordRequestType_Plain":   0,
 	"WordRequestType_Matrix9": 1,
@@ -411,11 +384,9 @@ func (x WordRequestType) Enum() *WordRequestType {
 	*p = x
 	return p
 }
-
 func (x WordRequestType) String() string {
 	return proto.EnumName(WordRequestType_name, int32(x))
 }
-
 func (x *WordRequestType) UnmarshalJSON(data []byte) error {
 	value, err := proto.UnmarshalJSONEnum(WordRequestType_value, data, "WordRequestType")
 	if err != nil {
@@ -424,12 +395,11 @@ func (x *WordRequestType) UnmarshalJSON(data []byte) error {
 	*x = WordRequestType(value)
 	return nil
 }
-
 func (WordRequestType) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_d938547f84707355, []int{6}
+	return fileDescriptor_types_264f33b6cffc9810, []int{6}
 }
 
-//*
+// *
 // Ask trezor to generate a skycoin address
 // @used_in SkycoinAddress｛
 type SkycoinAddressType int32
@@ -443,7 +413,6 @@ var SkycoinAddressType_name = map[int32]string{
 	1: "AddressTypeSkycoin",
 	2: "AddressTypeBitcoin",
 }
-
 var SkycoinAddressType_value = map[string]int32{
 	"AddressTypeSkycoin": 1,
 	"AddressTypeBitcoin": 2,
@@ -454,11 +423,9 @@ func (x SkycoinAddressType) Enum() *SkycoinAddressType {
 	*p = x
 	return p
 }
-
 func (x SkycoinAddressType) String() string {
 	return proto.EnumName(SkycoinAddressType_name, int32(x))
 }
-
 func (x *SkycoinAddressType) UnmarshalJSON(data []byte) error {
 	value, err := proto.UnmarshalJSONEnum(SkycoinAddressType_value, data, "SkycoinAddressType")
 	if err != nil {
@@ -467,12 +434,11 @@ func (x *SkycoinAddressType) UnmarshalJSON(data []byte) error {
 	*x = SkycoinAddressType(value)
 	return nil
 }
-
 func (SkycoinAddressType) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_d938547f84707355, []int{7}
+	return fileDescriptor_types_264f33b6cffc9810, []int{7}
 }
 
-//*
+// *
 // Structure representing BIP32 (hierarchical deterministic) node
 // Used for imports of private key into the device and exporting public key out of device
 // @used_in PublicKey
@@ -495,17 +461,16 @@ func (m *HDNodeType) Reset()         { *m = HDNodeType{} }
 func (m *HDNodeType) String() string { return proto.CompactTextString(m) }
 func (*HDNodeType) ProtoMessage()    {}
 func (*HDNodeType) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d938547f84707355, []int{0}
+	return fileDescriptor_types_264f33b6cffc9810, []int{0}
 }
-
 func (m *HDNodeType) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_HDNodeType.Unmarshal(m, b)
 }
 func (m *HDNodeType) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_HDNodeType.Marshal(b, m, deterministic)
 }
-func (m *HDNodeType) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_HDNodeType.Merge(m, src)
+func (dst *HDNodeType) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_HDNodeType.Merge(dst, src)
 }
 func (m *HDNodeType) XXX_Size() int {
 	return xxx_messageInfo_HDNodeType.Size(m)
@@ -570,17 +535,16 @@ func (m *HDNodePathType) Reset()         { *m = HDNodePathType{} }
 func (m *HDNodePathType) String() string { return proto.CompactTextString(m) }
 func (*HDNodePathType) ProtoMessage()    {}
 func (*HDNodePathType) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d938547f84707355, []int{1}
+	return fileDescriptor_types_264f33b6cffc9810, []int{1}
 }
-
 func (m *HDNodePathType) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_HDNodePathType.Unmarshal(m, b)
 }
 func (m *HDNodePathType) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_HDNodePathType.Marshal(b, m, deterministic)
 }
-func (m *HDNodePathType) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_HDNodePathType.Merge(m, src)
+func (dst *HDNodePathType) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_HDNodePathType.Merge(dst, src)
 }
 func (m *HDNodePathType) XXX_Size() int {
 	return xxx_messageInfo_HDNodePathType.Size(m)
@@ -605,7 +569,7 @@ func (m *HDNodePathType) GetAddressN() []uint32 {
 	return nil
 }
 
-//*
+// *
 // Structure representing Coin
 // @used_in Features
 type CoinType struct {
@@ -629,17 +593,16 @@ func (m *CoinType) Reset()         { *m = CoinType{} }
 func (m *CoinType) String() string { return proto.CompactTextString(m) }
 func (*CoinType) ProtoMessage()    {}
 func (*CoinType) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d938547f84707355, []int{2}
+	return fileDescriptor_types_264f33b6cffc9810, []int{2}
 }
-
 func (m *CoinType) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_CoinType.Unmarshal(m, b)
 }
 func (m *CoinType) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_CoinType.Marshal(b, m, deterministic)
 }
-func (m *CoinType) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_CoinType.Merge(m, src)
+func (dst *CoinType) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_CoinType.Merge(dst, src)
 }
 func (m *CoinType) XXX_Size() int {
 	return xxx_messageInfo_CoinType.Size(m)
@@ -732,7 +695,7 @@ func (m *CoinType) GetForceBip143() bool {
 	return false
 }
 
-//*
+// *
 // Type of redeem script used in input
 // @used_in TxInputType
 type MultisigRedeemScriptType struct {
@@ -748,17 +711,16 @@ func (m *MultisigRedeemScriptType) Reset()         { *m = MultisigRedeemScriptTy
 func (m *MultisigRedeemScriptType) String() string { return proto.CompactTextString(m) }
 func (*MultisigRedeemScriptType) ProtoMessage()    {}
 func (*MultisigRedeemScriptType) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d938547f84707355, []int{3}
+	return fileDescriptor_types_264f33b6cffc9810, []int{3}
 }
-
 func (m *MultisigRedeemScriptType) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_MultisigRedeemScriptType.Unmarshal(m, b)
 }
 func (m *MultisigRedeemScriptType) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_MultisigRedeemScriptType.Marshal(b, m, deterministic)
 }
-func (m *MultisigRedeemScriptType) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MultisigRedeemScriptType.Merge(m, src)
+func (dst *MultisigRedeemScriptType) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MultisigRedeemScriptType.Merge(dst, src)
 }
 func (m *MultisigRedeemScriptType) XXX_Size() int {
 	return xxx_messageInfo_MultisigRedeemScriptType.Size(m)
@@ -790,7 +752,7 @@ func (m *MultisigRedeemScriptType) GetM() uint32 {
 	return 0
 }
 
-//*
+// *
 // Structure representing transaction input
 // @used_in SimpleSignTx
 // @used_in TransactionType
@@ -814,17 +776,16 @@ func (m *TxInputType) Reset()         { *m = TxInputType{} }
 func (m *TxInputType) String() string { return proto.CompactTextString(m) }
 func (*TxInputType) ProtoMessage()    {}
 func (*TxInputType) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d938547f84707355, []int{4}
+	return fileDescriptor_types_264f33b6cffc9810, []int{4}
 }
-
 func (m *TxInputType) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_TxInputType.Unmarshal(m, b)
 }
 func (m *TxInputType) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_TxInputType.Marshal(b, m, deterministic)
 }
-func (m *TxInputType) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_TxInputType.Merge(m, src)
+func (dst *TxInputType) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TxInputType.Merge(dst, src)
 }
 func (m *TxInputType) XXX_Size() int {
 	return xxx_messageInfo_TxInputType.Size(m)
@@ -908,7 +869,7 @@ func (m *TxInputType) GetDecredScriptVersion() uint32 {
 	return 0
 }
 
-//*
+// *
 // Structure representing transaction output
 // @used_in SimpleSignTx
 // @used_in TransactionType
@@ -929,17 +890,16 @@ func (m *TxOutputType) Reset()         { *m = TxOutputType{} }
 func (m *TxOutputType) String() string { return proto.CompactTextString(m) }
 func (*TxOutputType) ProtoMessage()    {}
 func (*TxOutputType) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d938547f84707355, []int{5}
+	return fileDescriptor_types_264f33b6cffc9810, []int{5}
 }
-
 func (m *TxOutputType) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_TxOutputType.Unmarshal(m, b)
 }
 func (m *TxOutputType) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_TxOutputType.Marshal(b, m, deterministic)
 }
-func (m *TxOutputType) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_TxOutputType.Merge(m, src)
+func (dst *TxOutputType) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TxOutputType.Merge(dst, src)
 }
 func (m *TxOutputType) XXX_Size() int {
 	return xxx_messageInfo_TxOutputType.Size(m)
@@ -999,7 +959,7 @@ func (m *TxOutputType) GetDecredScriptVersion() uint32 {
 	return 0
 }
 
-//*
+// *
 // Structure representing compiled transaction output
 // @used_in TransactionType
 type TxOutputBinType struct {
@@ -1015,17 +975,16 @@ func (m *TxOutputBinType) Reset()         { *m = TxOutputBinType{} }
 func (m *TxOutputBinType) String() string { return proto.CompactTextString(m) }
 func (*TxOutputBinType) ProtoMessage()    {}
 func (*TxOutputBinType) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d938547f84707355, []int{6}
+	return fileDescriptor_types_264f33b6cffc9810, []int{6}
 }
-
 func (m *TxOutputBinType) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_TxOutputBinType.Unmarshal(m, b)
 }
 func (m *TxOutputBinType) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_TxOutputBinType.Marshal(b, m, deterministic)
 }
-func (m *TxOutputBinType) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_TxOutputBinType.Merge(m, src)
+func (dst *TxOutputBinType) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TxOutputBinType.Merge(dst, src)
 }
 func (m *TxOutputBinType) XXX_Size() int {
 	return xxx_messageInfo_TxOutputBinType.Size(m)
@@ -1057,7 +1016,7 @@ func (m *TxOutputBinType) GetDecredScriptVersion() uint32 {
 	return 0
 }
 
-//*
+// *
 // Structure representing transaction
 // @used_in SimpleSignTx
 type TransactionType struct {
@@ -1080,17 +1039,16 @@ func (m *TransactionType) Reset()         { *m = TransactionType{} }
 func (m *TransactionType) String() string { return proto.CompactTextString(m) }
 func (*TransactionType) ProtoMessage()    {}
 func (*TransactionType) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d938547f84707355, []int{7}
+	return fileDescriptor_types_264f33b6cffc9810, []int{7}
 }
-
 func (m *TransactionType) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_TransactionType.Unmarshal(m, b)
 }
 func (m *TransactionType) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_TransactionType.Marshal(b, m, deterministic)
 }
-func (m *TransactionType) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_TransactionType.Merge(m, src)
+func (dst *TransactionType) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TransactionType.Merge(dst, src)
 }
 func (m *TransactionType) XXX_Size() int {
 	return xxx_messageInfo_TransactionType.Size(m)
@@ -1171,7 +1129,7 @@ func (m *TransactionType) GetDecredExpiry() uint32 {
 	return 0
 }
 
-//*
+// *
 // Structure representing request details
 // @used_in TxRequest
 type TxRequestDetailsType struct {
@@ -1188,17 +1146,16 @@ func (m *TxRequestDetailsType) Reset()         { *m = TxRequestDetailsType{} }
 func (m *TxRequestDetailsType) String() string { return proto.CompactTextString(m) }
 func (*TxRequestDetailsType) ProtoMessage()    {}
 func (*TxRequestDetailsType) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d938547f84707355, []int{8}
+	return fileDescriptor_types_264f33b6cffc9810, []int{8}
 }
-
 func (m *TxRequestDetailsType) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_TxRequestDetailsType.Unmarshal(m, b)
 }
 func (m *TxRequestDetailsType) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_TxRequestDetailsType.Marshal(b, m, deterministic)
 }
-func (m *TxRequestDetailsType) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_TxRequestDetailsType.Merge(m, src)
+func (dst *TxRequestDetailsType) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TxRequestDetailsType.Merge(dst, src)
 }
 func (m *TxRequestDetailsType) XXX_Size() int {
 	return xxx_messageInfo_TxRequestDetailsType.Size(m)
@@ -1237,7 +1194,7 @@ func (m *TxRequestDetailsType) GetExtraDataOffset() uint32 {
 	return 0
 }
 
-//*
+// *
 // Structure representing serialized data
 // @used_in TxRequest
 type TxRequestSerializedType struct {
@@ -1253,17 +1210,16 @@ func (m *TxRequestSerializedType) Reset()         { *m = TxRequestSerializedType
 func (m *TxRequestSerializedType) String() string { return proto.CompactTextString(m) }
 func (*TxRequestSerializedType) ProtoMessage()    {}
 func (*TxRequestSerializedType) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d938547f84707355, []int{9}
+	return fileDescriptor_types_264f33b6cffc9810, []int{9}
 }
-
 func (m *TxRequestSerializedType) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_TxRequestSerializedType.Unmarshal(m, b)
 }
 func (m *TxRequestSerializedType) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_TxRequestSerializedType.Marshal(b, m, deterministic)
 }
-func (m *TxRequestSerializedType) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_TxRequestSerializedType.Merge(m, src)
+func (dst *TxRequestSerializedType) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TxRequestSerializedType.Merge(dst, src)
 }
 func (m *TxRequestSerializedType) XXX_Size() int {
 	return xxx_messageInfo_TxRequestSerializedType.Size(m)
@@ -1295,7 +1251,7 @@ func (m *TxRequestSerializedType) GetSerializedTx() []byte {
 	return nil
 }
 
-//*
+// *
 // Structure representing identity data
 // @used_in IdentityType
 type IdentityType struct {
@@ -1314,17 +1270,16 @@ func (m *IdentityType) Reset()         { *m = IdentityType{} }
 func (m *IdentityType) String() string { return proto.CompactTextString(m) }
 func (*IdentityType) ProtoMessage()    {}
 func (*IdentityType) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d938547f84707355, []int{10}
+	return fileDescriptor_types_264f33b6cffc9810, []int{10}
 }
-
 func (m *IdentityType) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_IdentityType.Unmarshal(m, b)
 }
 func (m *IdentityType) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_IdentityType.Marshal(b, m, deterministic)
 }
-func (m *IdentityType) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_IdentityType.Merge(m, src)
+func (dst *IdentityType) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_IdentityType.Merge(dst, src)
 }
 func (m *IdentityType) XXX_Size() int {
 	return xxx_messageInfo_IdentityType.Size(m)
@@ -1391,17 +1346,16 @@ func (m *SkycoinTransactionInput) Reset()         { *m = SkycoinTransactionInput
 func (m *SkycoinTransactionInput) String() string { return proto.CompactTextString(m) }
 func (*SkycoinTransactionInput) ProtoMessage()    {}
 func (*SkycoinTransactionInput) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d938547f84707355, []int{11}
+	return fileDescriptor_types_264f33b6cffc9810, []int{11}
 }
-
 func (m *SkycoinTransactionInput) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_SkycoinTransactionInput.Unmarshal(m, b)
 }
 func (m *SkycoinTransactionInput) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_SkycoinTransactionInput.Marshal(b, m, deterministic)
 }
-func (m *SkycoinTransactionInput) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_SkycoinTransactionInput.Merge(m, src)
+func (dst *SkycoinTransactionInput) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SkycoinTransactionInput.Merge(dst, src)
 }
 func (m *SkycoinTransactionInput) XXX_Size() int {
 	return xxx_messageInfo_SkycoinTransactionInput.Size(m)
@@ -1440,17 +1394,16 @@ func (m *SkycoinTransactionOutput) Reset()         { *m = SkycoinTransactionOutp
 func (m *SkycoinTransactionOutput) String() string { return proto.CompactTextString(m) }
 func (*SkycoinTransactionOutput) ProtoMessage()    {}
 func (*SkycoinTransactionOutput) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d938547f84707355, []int{12}
+	return fileDescriptor_types_264f33b6cffc9810, []int{12}
 }
-
 func (m *SkycoinTransactionOutput) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_SkycoinTransactionOutput.Unmarshal(m, b)
 }
 func (m *SkycoinTransactionOutput) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_SkycoinTransactionOutput.Marshal(b, m, deterministic)
 }
-func (m *SkycoinTransactionOutput) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_SkycoinTransactionOutput.Merge(m, src)
+func (dst *SkycoinTransactionOutput) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SkycoinTransactionOutput.Merge(dst, src)
 }
 func (m *SkycoinTransactionOutput) XXX_Size() int {
 	return xxx_messageInfo_SkycoinTransactionOutput.Size(m)
@@ -1494,7 +1447,7 @@ var E_WireIn = &proto.ExtensionDesc{
 	ExtensionType: (*bool)(nil),
 	Field:         50002,
 	Name:          "wire_in",
-	Tag:           "varint,50002,opt,name=wire_in",
+	Tag:           "varint,50002,opt,name=wire_in,json=wireIn",
 	Filename:      "types.proto",
 }
 
@@ -1503,7 +1456,7 @@ var E_WireOut = &proto.ExtensionDesc{
 	ExtensionType: (*bool)(nil),
 	Field:         50003,
 	Name:          "wire_out",
-	Tag:           "varint,50003,opt,name=wire_out",
+	Tag:           "varint,50003,opt,name=wire_out,json=wireOut",
 	Filename:      "types.proto",
 }
 
@@ -1512,7 +1465,7 @@ var E_WireDebugIn = &proto.ExtensionDesc{
 	ExtensionType: (*bool)(nil),
 	Field:         50004,
 	Name:          "wire_debug_in",
-	Tag:           "varint,50004,opt,name=wire_debug_in",
+	Tag:           "varint,50004,opt,name=wire_debug_in,json=wireDebugIn",
 	Filename:      "types.proto",
 }
 
@@ -1521,7 +1474,7 @@ var E_WireDebugOut = &proto.ExtensionDesc{
 	ExtensionType: (*bool)(nil),
 	Field:         50005,
 	Name:          "wire_debug_out",
-	Tag:           "varint,50005,opt,name=wire_debug_out",
+	Tag:           "varint,50005,opt,name=wire_debug_out,json=wireDebugOut",
 	Filename:      "types.proto",
 }
 
@@ -1530,7 +1483,7 @@ var E_WireTiny = &proto.ExtensionDesc{
 	ExtensionType: (*bool)(nil),
 	Field:         50006,
 	Name:          "wire_tiny",
-	Tag:           "varint,50006,opt,name=wire_tiny",
+	Tag:           "varint,50006,opt,name=wire_tiny,json=wireTiny",
 	Filename:      "types.proto",
 }
 
@@ -1539,19 +1492,11 @@ var E_WireBootloader = &proto.ExtensionDesc{
 	ExtensionType: (*bool)(nil),
 	Field:         50007,
 	Name:          "wire_bootloader",
-	Tag:           "varint,50007,opt,name=wire_bootloader",
+	Tag:           "varint,50007,opt,name=wire_bootloader,json=wireBootloader",
 	Filename:      "types.proto",
 }
 
 func init() {
-	proto.RegisterEnum("FailureType", FailureType_name, FailureType_value)
-	proto.RegisterEnum("OutputScriptType", OutputScriptType_name, OutputScriptType_value)
-	proto.RegisterEnum("InputScriptType", InputScriptType_name, InputScriptType_value)
-	proto.RegisterEnum("RequestType", RequestType_name, RequestType_value)
-	proto.RegisterEnum("ButtonRequestType", ButtonRequestType_name, ButtonRequestType_value)
-	proto.RegisterEnum("PinMatrixRequestType", PinMatrixRequestType_name, PinMatrixRequestType_value)
-	proto.RegisterEnum("WordRequestType", WordRequestType_name, WordRequestType_value)
-	proto.RegisterEnum("SkycoinAddressType", SkycoinAddressType_name, SkycoinAddressType_value)
 	proto.RegisterType((*HDNodeType)(nil), "HDNodeType")
 	proto.RegisterType((*HDNodePathType)(nil), "HDNodePathType")
 	proto.RegisterType((*CoinType)(nil), "CoinType")
@@ -1565,6 +1510,14 @@ func init() {
 	proto.RegisterType((*IdentityType)(nil), "IdentityType")
 	proto.RegisterType((*SkycoinTransactionInput)(nil), "SkycoinTransactionInput")
 	proto.RegisterType((*SkycoinTransactionOutput)(nil), "SkycoinTransactionOutput")
+	proto.RegisterEnum("FailureType", FailureType_name, FailureType_value)
+	proto.RegisterEnum("OutputScriptType", OutputScriptType_name, OutputScriptType_value)
+	proto.RegisterEnum("InputScriptType", InputScriptType_name, InputScriptType_value)
+	proto.RegisterEnum("RequestType", RequestType_name, RequestType_value)
+	proto.RegisterEnum("ButtonRequestType", ButtonRequestType_name, ButtonRequestType_value)
+	proto.RegisterEnum("PinMatrixRequestType", PinMatrixRequestType_name, PinMatrixRequestType_value)
+	proto.RegisterEnum("WordRequestType", WordRequestType_name, WordRequestType_value)
+	proto.RegisterEnum("SkycoinAddressType", SkycoinAddressType_name, SkycoinAddressType_value)
 	proto.RegisterExtension(E_WireIn)
 	proto.RegisterExtension(E_WireOut)
 	proto.RegisterExtension(E_WireDebugIn)
@@ -1573,9 +1526,9 @@ func init() {
 	proto.RegisterExtension(E_WireBootloader)
 }
 
-func init() { proto.RegisterFile("types.proto", fileDescriptor_d938547f84707355) }
+func init() { proto.RegisterFile("types.proto", fileDescriptor_types_264f33b6cffc9810) }
 
-var fileDescriptor_d938547f84707355 = []byte{
+var fileDescriptor_types_264f33b6cffc9810 = []byte{
 	// 2106 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x58, 0x4b, 0x6f, 0xdb, 0xca,
 	0xf5, 0x0f, 0x25, 0xd9, 0x96, 0x8e, 0x28, 0x9b, 0x9e, 0x3c, 0xcc, 0xdc, 0x24, 0x37, 0x8a, 0x13,

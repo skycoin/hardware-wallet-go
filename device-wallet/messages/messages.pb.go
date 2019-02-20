@@ -3,11 +3,9 @@
 
 package messages
 
-import (
-	fmt "fmt"
-	proto "github.com/golang/protobuf/proto"
-	math "math"
-)
+import proto "github.com/golang/protobuf/proto"
+import fmt "fmt"
+import math "math"
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal
@@ -18,9 +16,9 @@ var _ = math.Inf
 // is compatible with the proto package it is being compiled against.
 // A compilation error at this line likely means your copy of the
 // proto package needs to be updated.
-const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
+const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
 
-//*
+// *
 // Mapping between Trezor wire identifier (uint) and a protobuf message
 type MessageType int32
 
@@ -110,7 +108,6 @@ var MessageType_name = map[int32]string{
 	122: "MessageType_TransactionSign",
 	123: "MessageType_ResponseTransactionSign",
 }
-
 var MessageType_value = map[string]int32{
 	"MessageType_Initialize":                   0,
 	"MessageType_Ping":                         1,
@@ -159,11 +156,9 @@ func (x MessageType) Enum() *MessageType {
 	*p = x
 	return p
 }
-
 func (x MessageType) String() string {
 	return proto.EnumName(MessageType_name, int32(x))
 }
-
 func (x *MessageType) UnmarshalJSON(data []byte) error {
 	value, err := proto.UnmarshalJSONEnum(MessageType_value, data, "MessageType")
 	if err != nil {
@@ -172,12 +167,11 @@ func (x *MessageType) UnmarshalJSON(data []byte) error {
 	*x = MessageType(value)
 	return nil
 }
-
 func (MessageType) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_4dc296cbfe5ffcd5, []int{0}
+	return fileDescriptor_messages_f768b930d6a59aa7, []int{0}
 }
 
-//*
+// *
 // Request: Reset device to default state and ask for device details
 // @next Features
 type Initialize struct {
@@ -191,17 +185,16 @@ func (m *Initialize) Reset()         { *m = Initialize{} }
 func (m *Initialize) String() string { return proto.CompactTextString(m) }
 func (*Initialize) ProtoMessage()    {}
 func (*Initialize) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4dc296cbfe5ffcd5, []int{0}
+	return fileDescriptor_messages_f768b930d6a59aa7, []int{0}
 }
-
 func (m *Initialize) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Initialize.Unmarshal(m, b)
 }
 func (m *Initialize) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_Initialize.Marshal(b, m, deterministic)
 }
-func (m *Initialize) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Initialize.Merge(m, src)
+func (dst *Initialize) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Initialize.Merge(dst, src)
 }
 func (m *Initialize) XXX_Size() int {
 	return xxx_messageInfo_Initialize.Size(m)
@@ -219,7 +212,7 @@ func (m *Initialize) GetState() []byte {
 	return nil
 }
 
-//*
+// *
 // Request: Ask for device details (no device reset)
 // @next Features
 type GetFeatures struct {
@@ -232,17 +225,16 @@ func (m *GetFeatures) Reset()         { *m = GetFeatures{} }
 func (m *GetFeatures) String() string { return proto.CompactTextString(m) }
 func (*GetFeatures) ProtoMessage()    {}
 func (*GetFeatures) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4dc296cbfe5ffcd5, []int{1}
+	return fileDescriptor_messages_f768b930d6a59aa7, []int{1}
 }
-
 func (m *GetFeatures) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_GetFeatures.Unmarshal(m, b)
 }
 func (m *GetFeatures) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_GetFeatures.Marshal(b, m, deterministic)
 }
-func (m *GetFeatures) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_GetFeatures.Merge(m, src)
+func (dst *GetFeatures) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetFeatures.Merge(dst, src)
 }
 func (m *GetFeatures) XXX_Size() int {
 	return xxx_messageInfo_GetFeatures.Size(m)
@@ -253,7 +245,7 @@ func (m *GetFeatures) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_GetFeatures proto.InternalMessageInfo
 
-//*
+// *
 // Response: Reports various information about the device
 // @prev Initialize
 // @prev GetFeatures
@@ -290,17 +282,16 @@ func (m *Features) Reset()         { *m = Features{} }
 func (m *Features) String() string { return proto.CompactTextString(m) }
 func (*Features) ProtoMessage()    {}
 func (*Features) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4dc296cbfe5ffcd5, []int{2}
+	return fileDescriptor_messages_f768b930d6a59aa7, []int{2}
 }
-
 func (m *Features) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Features.Unmarshal(m, b)
 }
 func (m *Features) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_Features.Marshal(b, m, deterministic)
 }
-func (m *Features) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Features.Merge(m, src)
+func (dst *Features) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Features.Merge(dst, src)
 }
 func (m *Features) XXX_Size() int {
 	return xxx_messageInfo_Features.Size(m)
@@ -472,7 +463,7 @@ func (m *Features) GetUnfinishedBackup() bool {
 	return false
 }
 
-//*
+// *
 // Request: change language and/or label of the device
 // @start
 // @next Success
@@ -491,17 +482,16 @@ func (m *ApplySettings) Reset()         { *m = ApplySettings{} }
 func (m *ApplySettings) String() string { return proto.CompactTextString(m) }
 func (*ApplySettings) ProtoMessage()    {}
 func (*ApplySettings) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4dc296cbfe5ffcd5, []int{3}
+	return fileDescriptor_messages_f768b930d6a59aa7, []int{3}
 }
-
 func (m *ApplySettings) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_ApplySettings.Unmarshal(m, b)
 }
 func (m *ApplySettings) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_ApplySettings.Marshal(b, m, deterministic)
 }
-func (m *ApplySettings) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ApplySettings.Merge(m, src)
+func (dst *ApplySettings) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ApplySettings.Merge(dst, src)
 }
 func (m *ApplySettings) XXX_Size() int {
 	return xxx_messageInfo_ApplySettings.Size(m)
@@ -540,7 +530,7 @@ func (m *ApplySettings) GetHomescreen() []byte {
 	return nil
 }
 
-//*
+// *
 // Request: Ask the device to generate a mnemonic and configure itself with it
 // @next Success
 type GenerateMnemonic struct {
@@ -555,17 +545,16 @@ func (m *GenerateMnemonic) Reset()         { *m = GenerateMnemonic{} }
 func (m *GenerateMnemonic) String() string { return proto.CompactTextString(m) }
 func (*GenerateMnemonic) ProtoMessage()    {}
 func (*GenerateMnemonic) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4dc296cbfe5ffcd5, []int{4}
+	return fileDescriptor_messages_f768b930d6a59aa7, []int{4}
 }
-
 func (m *GenerateMnemonic) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_GenerateMnemonic.Unmarshal(m, b)
 }
 func (m *GenerateMnemonic) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_GenerateMnemonic.Marshal(b, m, deterministic)
 }
-func (m *GenerateMnemonic) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_GenerateMnemonic.Merge(m, src)
+func (dst *GenerateMnemonic) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GenerateMnemonic.Merge(dst, src)
 }
 func (m *GenerateMnemonic) XXX_Size() int {
 	return xxx_messageInfo_GenerateMnemonic.Size(m)
@@ -590,7 +579,7 @@ func (m *GenerateMnemonic) GetWordCount() uint32 {
 	return 0
 }
 
-//*
+// *
 // Request: Send a mnemonic to the device
 // @next Success
 type SetMnemonic struct {
@@ -604,17 +593,16 @@ func (m *SetMnemonic) Reset()         { *m = SetMnemonic{} }
 func (m *SetMnemonic) String() string { return proto.CompactTextString(m) }
 func (*SetMnemonic) ProtoMessage()    {}
 func (*SetMnemonic) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4dc296cbfe5ffcd5, []int{5}
+	return fileDescriptor_messages_f768b930d6a59aa7, []int{5}
 }
-
 func (m *SetMnemonic) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_SetMnemonic.Unmarshal(m, b)
 }
 func (m *SetMnemonic) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_SetMnemonic.Marshal(b, m, deterministic)
 }
-func (m *SetMnemonic) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_SetMnemonic.Merge(m, src)
+func (dst *SetMnemonic) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SetMnemonic.Merge(dst, src)
 }
 func (m *SetMnemonic) XXX_Size() int {
 	return xxx_messageInfo_SetMnemonic.Size(m)
@@ -632,7 +620,7 @@ func (m *SetMnemonic) GetMnemonic() string {
 	return ""
 }
 
-//*
+// *
 // Request: Starts workflow for setting/changing/removing the PIN
 // @next ButtonRequest
 // @next PinMatrixRequest
@@ -647,17 +635,16 @@ func (m *ChangePin) Reset()         { *m = ChangePin{} }
 func (m *ChangePin) String() string { return proto.CompactTextString(m) }
 func (*ChangePin) ProtoMessage()    {}
 func (*ChangePin) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4dc296cbfe5ffcd5, []int{6}
+	return fileDescriptor_messages_f768b930d6a59aa7, []int{6}
 }
-
 func (m *ChangePin) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_ChangePin.Unmarshal(m, b)
 }
 func (m *ChangePin) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_ChangePin.Marshal(b, m, deterministic)
 }
-func (m *ChangePin) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ChangePin.Merge(m, src)
+func (dst *ChangePin) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ChangePin.Merge(dst, src)
 }
 func (m *ChangePin) XXX_Size() int {
 	return xxx_messageInfo_ChangePin.Size(m)
@@ -675,7 +662,7 @@ func (m *ChangePin) GetRemove() bool {
 	return false
 }
 
-//*
+// *
 // Request: Generate a Skycoin or a Bitcoin address from a seed, device sends back the address in a Success message
 // @next Failure
 // @next ResponseSkycoinAddress
@@ -692,17 +679,16 @@ func (m *SkycoinAddress) Reset()         { *m = SkycoinAddress{} }
 func (m *SkycoinAddress) String() string { return proto.CompactTextString(m) }
 func (*SkycoinAddress) ProtoMessage()    {}
 func (*SkycoinAddress) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4dc296cbfe5ffcd5, []int{7}
+	return fileDescriptor_messages_f768b930d6a59aa7, []int{7}
 }
-
 func (m *SkycoinAddress) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_SkycoinAddress.Unmarshal(m, b)
 }
 func (m *SkycoinAddress) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_SkycoinAddress.Marshal(b, m, deterministic)
 }
-func (m *SkycoinAddress) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_SkycoinAddress.Merge(m, src)
+func (dst *SkycoinAddress) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SkycoinAddress.Merge(dst, src)
 }
 func (m *SkycoinAddress) XXX_Size() int {
 	return xxx_messageInfo_SkycoinAddress.Size(m)
@@ -734,7 +720,7 @@ func (m *SkycoinAddress) GetConfirmAddress() bool {
 	return false
 }
 
-//*
+// *
 // Response: Return the generated skycoin address
 // @prev SkycoinAddress
 type ResponseSkycoinAddress struct {
@@ -748,17 +734,16 @@ func (m *ResponseSkycoinAddress) Reset()         { *m = ResponseSkycoinAddress{}
 func (m *ResponseSkycoinAddress) String() string { return proto.CompactTextString(m) }
 func (*ResponseSkycoinAddress) ProtoMessage()    {}
 func (*ResponseSkycoinAddress) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4dc296cbfe5ffcd5, []int{8}
+	return fileDescriptor_messages_f768b930d6a59aa7, []int{8}
 }
-
 func (m *ResponseSkycoinAddress) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_ResponseSkycoinAddress.Unmarshal(m, b)
 }
 func (m *ResponseSkycoinAddress) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_ResponseSkycoinAddress.Marshal(b, m, deterministic)
 }
-func (m *ResponseSkycoinAddress) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ResponseSkycoinAddress.Merge(m, src)
+func (dst *ResponseSkycoinAddress) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ResponseSkycoinAddress.Merge(dst, src)
 }
 func (m *ResponseSkycoinAddress) XXX_Size() int {
 	return xxx_messageInfo_ResponseSkycoinAddress.Size(m)
@@ -776,7 +761,7 @@ func (m *ResponseSkycoinAddress) GetAddresses() []string {
 	return nil
 }
 
-//*
+// *
 // Response: Return the signatures necessary for the transaction
 // @prev TransactionSign
 type ResponseTransactionSign struct {
@@ -791,17 +776,16 @@ func (m *ResponseTransactionSign) Reset()         { *m = ResponseTransactionSign
 func (m *ResponseTransactionSign) String() string { return proto.CompactTextString(m) }
 func (*ResponseTransactionSign) ProtoMessage()    {}
 func (*ResponseTransactionSign) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4dc296cbfe5ffcd5, []int{9}
+	return fileDescriptor_messages_f768b930d6a59aa7, []int{9}
 }
-
 func (m *ResponseTransactionSign) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_ResponseTransactionSign.Unmarshal(m, b)
 }
 func (m *ResponseTransactionSign) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_ResponseTransactionSign.Marshal(b, m, deterministic)
 }
-func (m *ResponseTransactionSign) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ResponseTransactionSign.Merge(m, src)
+func (dst *ResponseTransactionSign) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ResponseTransactionSign.Merge(dst, src)
 }
 func (m *ResponseTransactionSign) XXX_Size() int {
 	return xxx_messageInfo_ResponseTransactionSign.Size(m)
@@ -826,7 +810,7 @@ func (m *ResponseTransactionSign) GetPadding() bool {
 	return false
 }
 
-//*
+// *
 // Request: Check a message signature matches the given address.
 // @next Success
 type SkycoinCheckMessageSignature struct {
@@ -842,17 +826,16 @@ func (m *SkycoinCheckMessageSignature) Reset()         { *m = SkycoinCheckMessag
 func (m *SkycoinCheckMessageSignature) String() string { return proto.CompactTextString(m) }
 func (*SkycoinCheckMessageSignature) ProtoMessage()    {}
 func (*SkycoinCheckMessageSignature) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4dc296cbfe5ffcd5, []int{10}
+	return fileDescriptor_messages_f768b930d6a59aa7, []int{10}
 }
-
 func (m *SkycoinCheckMessageSignature) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_SkycoinCheckMessageSignature.Unmarshal(m, b)
 }
 func (m *SkycoinCheckMessageSignature) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_SkycoinCheckMessageSignature.Marshal(b, m, deterministic)
 }
-func (m *SkycoinCheckMessageSignature) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_SkycoinCheckMessageSignature.Merge(m, src)
+func (dst *SkycoinCheckMessageSignature) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SkycoinCheckMessageSignature.Merge(dst, src)
 }
 func (m *SkycoinCheckMessageSignature) XXX_Size() int {
 	return xxx_messageInfo_SkycoinCheckMessageSignature.Size(m)
@@ -884,7 +867,7 @@ func (m *SkycoinCheckMessageSignature) GetSignature() string {
 	return ""
 }
 
-//*
+// *
 // Request: Sign a message digest using the given secret key.
 // @next Failure
 // @next ResponseSkycoinSignMessage
@@ -900,17 +883,16 @@ func (m *SkycoinSignMessage) Reset()         { *m = SkycoinSignMessage{} }
 func (m *SkycoinSignMessage) String() string { return proto.CompactTextString(m) }
 func (*SkycoinSignMessage) ProtoMessage()    {}
 func (*SkycoinSignMessage) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4dc296cbfe5ffcd5, []int{11}
+	return fileDescriptor_messages_f768b930d6a59aa7, []int{11}
 }
-
 func (m *SkycoinSignMessage) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_SkycoinSignMessage.Unmarshal(m, b)
 }
 func (m *SkycoinSignMessage) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_SkycoinSignMessage.Marshal(b, m, deterministic)
 }
-func (m *SkycoinSignMessage) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_SkycoinSignMessage.Merge(m, src)
+func (dst *SkycoinSignMessage) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SkycoinSignMessage.Merge(dst, src)
 }
 func (m *SkycoinSignMessage) XXX_Size() int {
 	return xxx_messageInfo_SkycoinSignMessage.Size(m)
@@ -935,7 +917,7 @@ func (m *SkycoinSignMessage) GetMessage() string {
 	return ""
 }
 
-//*
+// *
 // Response: Return the generated skycoin address
 // @prev SkycoinAddress
 type ResponseSkycoinSignMessage struct {
@@ -949,17 +931,16 @@ func (m *ResponseSkycoinSignMessage) Reset()         { *m = ResponseSkycoinSignM
 func (m *ResponseSkycoinSignMessage) String() string { return proto.CompactTextString(m) }
 func (*ResponseSkycoinSignMessage) ProtoMessage()    {}
 func (*ResponseSkycoinSignMessage) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4dc296cbfe5ffcd5, []int{12}
+	return fileDescriptor_messages_f768b930d6a59aa7, []int{12}
 }
-
 func (m *ResponseSkycoinSignMessage) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_ResponseSkycoinSignMessage.Unmarshal(m, b)
 }
 func (m *ResponseSkycoinSignMessage) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_ResponseSkycoinSignMessage.Marshal(b, m, deterministic)
 }
-func (m *ResponseSkycoinSignMessage) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ResponseSkycoinSignMessage.Merge(m, src)
+func (dst *ResponseSkycoinSignMessage) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ResponseSkycoinSignMessage.Merge(dst, src)
 }
 func (m *ResponseSkycoinSignMessage) XXX_Size() int {
 	return xxx_messageInfo_ResponseSkycoinSignMessage.Size(m)
@@ -977,7 +958,7 @@ func (m *ResponseSkycoinSignMessage) GetSignedMessage() string {
 	return ""
 }
 
-//*
+// *
 // Request: Test if the device is alive, device sends back the message in Success response
 // @next Success
 type Ping struct {
@@ -994,17 +975,16 @@ func (m *Ping) Reset()         { *m = Ping{} }
 func (m *Ping) String() string { return proto.CompactTextString(m) }
 func (*Ping) ProtoMessage()    {}
 func (*Ping) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4dc296cbfe5ffcd5, []int{13}
+	return fileDescriptor_messages_f768b930d6a59aa7, []int{13}
 }
-
 func (m *Ping) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Ping.Unmarshal(m, b)
 }
 func (m *Ping) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_Ping.Marshal(b, m, deterministic)
 }
-func (m *Ping) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Ping.Merge(m, src)
+func (dst *Ping) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Ping.Merge(dst, src)
 }
 func (m *Ping) XXX_Size() int {
 	return xxx_messageInfo_Ping.Size(m)
@@ -1043,7 +1023,7 @@ func (m *Ping) GetPassphraseProtection() bool {
 	return false
 }
 
-//*
+// *
 // Response: Success of the previous request
 type Success struct {
 	Message              *string  `protobuf:"bytes,1,opt,name=message" json:"message,omitempty"`
@@ -1056,17 +1036,16 @@ func (m *Success) Reset()         { *m = Success{} }
 func (m *Success) String() string { return proto.CompactTextString(m) }
 func (*Success) ProtoMessage()    {}
 func (*Success) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4dc296cbfe5ffcd5, []int{14}
+	return fileDescriptor_messages_f768b930d6a59aa7, []int{14}
 }
-
 func (m *Success) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Success.Unmarshal(m, b)
 }
 func (m *Success) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_Success.Marshal(b, m, deterministic)
 }
-func (m *Success) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Success.Merge(m, src)
+func (dst *Success) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Success.Merge(dst, src)
 }
 func (m *Success) XXX_Size() int {
 	return xxx_messageInfo_Success.Size(m)
@@ -1084,7 +1063,7 @@ func (m *Success) GetMessage() string {
 	return ""
 }
 
-//*
+// *
 // Response: Failure of the previous request
 type Failure struct {
 	Code                 *FailureType `protobuf:"varint,1,opt,name=code,enum=FailureType" json:"code,omitempty"`
@@ -1098,17 +1077,16 @@ func (m *Failure) Reset()         { *m = Failure{} }
 func (m *Failure) String() string { return proto.CompactTextString(m) }
 func (*Failure) ProtoMessage()    {}
 func (*Failure) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4dc296cbfe5ffcd5, []int{15}
+	return fileDescriptor_messages_f768b930d6a59aa7, []int{15}
 }
-
 func (m *Failure) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Failure.Unmarshal(m, b)
 }
 func (m *Failure) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_Failure.Marshal(b, m, deterministic)
 }
-func (m *Failure) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Failure.Merge(m, src)
+func (dst *Failure) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Failure.Merge(dst, src)
 }
 func (m *Failure) XXX_Size() int {
 	return xxx_messageInfo_Failure.Size(m)
@@ -1133,7 +1111,7 @@ func (m *Failure) GetMessage() string {
 	return ""
 }
 
-//*
+// *
 // Response: Device is waiting for HW button press.
 // @next ButtonAck
 // @next Cancel
@@ -1149,17 +1127,16 @@ func (m *ButtonRequest) Reset()         { *m = ButtonRequest{} }
 func (m *ButtonRequest) String() string { return proto.CompactTextString(m) }
 func (*ButtonRequest) ProtoMessage()    {}
 func (*ButtonRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4dc296cbfe5ffcd5, []int{16}
+	return fileDescriptor_messages_f768b930d6a59aa7, []int{16}
 }
-
 func (m *ButtonRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_ButtonRequest.Unmarshal(m, b)
 }
 func (m *ButtonRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_ButtonRequest.Marshal(b, m, deterministic)
 }
-func (m *ButtonRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ButtonRequest.Merge(m, src)
+func (dst *ButtonRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ButtonRequest.Merge(dst, src)
 }
 func (m *ButtonRequest) XXX_Size() int {
 	return xxx_messageInfo_ButtonRequest.Size(m)
@@ -1184,7 +1161,7 @@ func (m *ButtonRequest) GetData() string {
 	return ""
 }
 
-//*
+// *
 // Request: Computer agrees to wait for HW button press
 // @prev ButtonRequest
 type ButtonAck struct {
@@ -1197,17 +1174,16 @@ func (m *ButtonAck) Reset()         { *m = ButtonAck{} }
 func (m *ButtonAck) String() string { return proto.CompactTextString(m) }
 func (*ButtonAck) ProtoMessage()    {}
 func (*ButtonAck) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4dc296cbfe5ffcd5, []int{17}
+	return fileDescriptor_messages_f768b930d6a59aa7, []int{17}
 }
-
 func (m *ButtonAck) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_ButtonAck.Unmarshal(m, b)
 }
 func (m *ButtonAck) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_ButtonAck.Marshal(b, m, deterministic)
 }
-func (m *ButtonAck) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ButtonAck.Merge(m, src)
+func (dst *ButtonAck) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ButtonAck.Merge(dst, src)
 }
 func (m *ButtonAck) XXX_Size() int {
 	return xxx_messageInfo_ButtonAck.Size(m)
@@ -1218,7 +1194,7 @@ func (m *ButtonAck) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_ButtonAck proto.InternalMessageInfo
 
-//*
+// *
 // Response: Device is asking computer to show PIN matrix and awaits PIN encoded using this matrix scheme
 // @next PinMatrixAck
 // @next Cancel
@@ -1233,17 +1209,16 @@ func (m *PinMatrixRequest) Reset()         { *m = PinMatrixRequest{} }
 func (m *PinMatrixRequest) String() string { return proto.CompactTextString(m) }
 func (*PinMatrixRequest) ProtoMessage()    {}
 func (*PinMatrixRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4dc296cbfe5ffcd5, []int{18}
+	return fileDescriptor_messages_f768b930d6a59aa7, []int{18}
 }
-
 func (m *PinMatrixRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_PinMatrixRequest.Unmarshal(m, b)
 }
 func (m *PinMatrixRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_PinMatrixRequest.Marshal(b, m, deterministic)
 }
-func (m *PinMatrixRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_PinMatrixRequest.Merge(m, src)
+func (dst *PinMatrixRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_PinMatrixRequest.Merge(dst, src)
 }
 func (m *PinMatrixRequest) XXX_Size() int {
 	return xxx_messageInfo_PinMatrixRequest.Size(m)
@@ -1261,7 +1236,7 @@ func (m *PinMatrixRequest) GetType() PinMatrixRequestType {
 	return PinMatrixRequestType_PinMatrixRequestType_Current
 }
 
-//*
+// *
 // Request: Computer responds with encoded PIN
 // @prev PinMatrixRequest
 type PinMatrixAck struct {
@@ -1275,17 +1250,16 @@ func (m *PinMatrixAck) Reset()         { *m = PinMatrixAck{} }
 func (m *PinMatrixAck) String() string { return proto.CompactTextString(m) }
 func (*PinMatrixAck) ProtoMessage()    {}
 func (*PinMatrixAck) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4dc296cbfe5ffcd5, []int{19}
+	return fileDescriptor_messages_f768b930d6a59aa7, []int{19}
 }
-
 func (m *PinMatrixAck) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_PinMatrixAck.Unmarshal(m, b)
 }
 func (m *PinMatrixAck) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_PinMatrixAck.Marshal(b, m, deterministic)
 }
-func (m *PinMatrixAck) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_PinMatrixAck.Merge(m, src)
+func (dst *PinMatrixAck) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_PinMatrixAck.Merge(dst, src)
 }
 func (m *PinMatrixAck) XXX_Size() int {
 	return xxx_messageInfo_PinMatrixAck.Size(m)
@@ -1303,7 +1277,7 @@ func (m *PinMatrixAck) GetPin() string {
 	return ""
 }
 
-//*
+// *
 // Request: Abort last operation that required user interaction
 // @prev ButtonRequest
 // @prev PinMatrixRequest
@@ -1318,17 +1292,16 @@ func (m *Cancel) Reset()         { *m = Cancel{} }
 func (m *Cancel) String() string { return proto.CompactTextString(m) }
 func (*Cancel) ProtoMessage()    {}
 func (*Cancel) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4dc296cbfe5ffcd5, []int{20}
+	return fileDescriptor_messages_f768b930d6a59aa7, []int{20}
 }
-
 func (m *Cancel) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Cancel.Unmarshal(m, b)
 }
 func (m *Cancel) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_Cancel.Marshal(b, m, deterministic)
 }
-func (m *Cancel) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Cancel.Merge(m, src)
+func (dst *Cancel) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Cancel.Merge(dst, src)
 }
 func (m *Cancel) XXX_Size() int {
 	return xxx_messageInfo_Cancel.Size(m)
@@ -1339,7 +1312,7 @@ func (m *Cancel) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_Cancel proto.InternalMessageInfo
 
-//*
+// *
 // Response: Device awaits encryption passphrase
 // @next PassphraseAck
 // @next Cancel
@@ -1354,17 +1327,16 @@ func (m *PassphraseRequest) Reset()         { *m = PassphraseRequest{} }
 func (m *PassphraseRequest) String() string { return proto.CompactTextString(m) }
 func (*PassphraseRequest) ProtoMessage()    {}
 func (*PassphraseRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4dc296cbfe5ffcd5, []int{21}
+	return fileDescriptor_messages_f768b930d6a59aa7, []int{21}
 }
-
 func (m *PassphraseRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_PassphraseRequest.Unmarshal(m, b)
 }
 func (m *PassphraseRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_PassphraseRequest.Marshal(b, m, deterministic)
 }
-func (m *PassphraseRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_PassphraseRequest.Merge(m, src)
+func (dst *PassphraseRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_PassphraseRequest.Merge(dst, src)
 }
 func (m *PassphraseRequest) XXX_Size() int {
 	return xxx_messageInfo_PassphraseRequest.Size(m)
@@ -1382,7 +1354,7 @@ func (m *PassphraseRequest) GetOnDevice() bool {
 	return false
 }
 
-//*
+// *
 // Request: Send passphrase back
 // @prev PassphraseRequest
 // @next PassphraseStateRequest
@@ -1398,17 +1370,16 @@ func (m *PassphraseAck) Reset()         { *m = PassphraseAck{} }
 func (m *PassphraseAck) String() string { return proto.CompactTextString(m) }
 func (*PassphraseAck) ProtoMessage()    {}
 func (*PassphraseAck) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4dc296cbfe5ffcd5, []int{22}
+	return fileDescriptor_messages_f768b930d6a59aa7, []int{22}
 }
-
 func (m *PassphraseAck) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_PassphraseAck.Unmarshal(m, b)
 }
 func (m *PassphraseAck) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_PassphraseAck.Marshal(b, m, deterministic)
 }
-func (m *PassphraseAck) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_PassphraseAck.Merge(m, src)
+func (dst *PassphraseAck) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_PassphraseAck.Merge(dst, src)
 }
 func (m *PassphraseAck) XXX_Size() int {
 	return xxx_messageInfo_PassphraseAck.Size(m)
@@ -1433,7 +1404,7 @@ func (m *PassphraseAck) GetState() []byte {
 	return nil
 }
 
-//*
+// *
 // @prev PassphraseAck
 // @next PassphraseStateAck
 type PassphraseStateRequest struct {
@@ -1447,17 +1418,16 @@ func (m *PassphraseStateRequest) Reset()         { *m = PassphraseStateRequest{}
 func (m *PassphraseStateRequest) String() string { return proto.CompactTextString(m) }
 func (*PassphraseStateRequest) ProtoMessage()    {}
 func (*PassphraseStateRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4dc296cbfe5ffcd5, []int{23}
+	return fileDescriptor_messages_f768b930d6a59aa7, []int{23}
 }
-
 func (m *PassphraseStateRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_PassphraseStateRequest.Unmarshal(m, b)
 }
 func (m *PassphraseStateRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_PassphraseStateRequest.Marshal(b, m, deterministic)
 }
-func (m *PassphraseStateRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_PassphraseStateRequest.Merge(m, src)
+func (dst *PassphraseStateRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_PassphraseStateRequest.Merge(dst, src)
 }
 func (m *PassphraseStateRequest) XXX_Size() int {
 	return xxx_messageInfo_PassphraseStateRequest.Size(m)
@@ -1475,7 +1445,7 @@ func (m *PassphraseStateRequest) GetState() []byte {
 	return nil
 }
 
-//*
+// *
 // @prev PassphraseStateRequest
 type PassphraseStateAck struct {
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
@@ -1487,17 +1457,16 @@ func (m *PassphraseStateAck) Reset()         { *m = PassphraseStateAck{} }
 func (m *PassphraseStateAck) String() string { return proto.CompactTextString(m) }
 func (*PassphraseStateAck) ProtoMessage()    {}
 func (*PassphraseStateAck) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4dc296cbfe5ffcd5, []int{24}
+	return fileDescriptor_messages_f768b930d6a59aa7, []int{24}
 }
-
 func (m *PassphraseStateAck) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_PassphraseStateAck.Unmarshal(m, b)
 }
 func (m *PassphraseStateAck) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_PassphraseStateAck.Marshal(b, m, deterministic)
 }
-func (m *PassphraseStateAck) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_PassphraseStateAck.Merge(m, src)
+func (dst *PassphraseStateAck) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_PassphraseStateAck.Merge(dst, src)
 }
 func (m *PassphraseStateAck) XXX_Size() int {
 	return xxx_messageInfo_PassphraseStateAck.Size(m)
@@ -1508,7 +1477,7 @@ func (m *PassphraseStateAck) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_PassphraseStateAck proto.InternalMessageInfo
 
-//*
+// *
 // Request: Request a sample of random data generated by hardware RNG. May be used for testing.
 // @next ButtonRequest
 // @next Entropy
@@ -1524,17 +1493,16 @@ func (m *GetEntropy) Reset()         { *m = GetEntropy{} }
 func (m *GetEntropy) String() string { return proto.CompactTextString(m) }
 func (*GetEntropy) ProtoMessage()    {}
 func (*GetEntropy) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4dc296cbfe5ffcd5, []int{25}
+	return fileDescriptor_messages_f768b930d6a59aa7, []int{25}
 }
-
 func (m *GetEntropy) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_GetEntropy.Unmarshal(m, b)
 }
 func (m *GetEntropy) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_GetEntropy.Marshal(b, m, deterministic)
 }
-func (m *GetEntropy) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_GetEntropy.Merge(m, src)
+func (dst *GetEntropy) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetEntropy.Merge(dst, src)
 }
 func (m *GetEntropy) XXX_Size() int {
 	return xxx_messageInfo_GetEntropy.Size(m)
@@ -1552,7 +1520,7 @@ func (m *GetEntropy) GetSize() uint32 {
 	return 0
 }
 
-//*
+// *
 // Request: Request firmware version
 // @next Success
 type GetVersion struct {
@@ -1565,17 +1533,16 @@ func (m *GetVersion) Reset()         { *m = GetVersion{} }
 func (m *GetVersion) String() string { return proto.CompactTextString(m) }
 func (*GetVersion) ProtoMessage()    {}
 func (*GetVersion) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4dc296cbfe5ffcd5, []int{26}
+	return fileDescriptor_messages_f768b930d6a59aa7, []int{26}
 }
-
 func (m *GetVersion) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_GetVersion.Unmarshal(m, b)
 }
 func (m *GetVersion) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_GetVersion.Marshal(b, m, deterministic)
 }
-func (m *GetVersion) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_GetVersion.Merge(m, src)
+func (dst *GetVersion) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetVersion.Merge(dst, src)
 }
 func (m *GetVersion) XXX_Size() int {
 	return xxx_messageInfo_GetVersion.Size(m)
@@ -1586,7 +1553,7 @@ func (m *GetVersion) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_GetVersion proto.InternalMessageInfo
 
-//*
+// *
 // Response: Reply with random data generated by internal RNG
 // @prev GetEntropy
 type Entropy struct {
@@ -1600,17 +1567,16 @@ func (m *Entropy) Reset()         { *m = Entropy{} }
 func (m *Entropy) String() string { return proto.CompactTextString(m) }
 func (*Entropy) ProtoMessage()    {}
 func (*Entropy) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4dc296cbfe5ffcd5, []int{27}
+	return fileDescriptor_messages_f768b930d6a59aa7, []int{27}
 }
-
 func (m *Entropy) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Entropy.Unmarshal(m, b)
 }
 func (m *Entropy) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_Entropy.Marshal(b, m, deterministic)
 }
-func (m *Entropy) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Entropy.Merge(m, src)
+func (dst *Entropy) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Entropy.Merge(dst, src)
 }
 func (m *Entropy) XXX_Size() int {
 	return xxx_messageInfo_Entropy.Size(m)
@@ -1628,7 +1594,7 @@ func (m *Entropy) GetEntropy() []byte {
 	return nil
 }
 
-//*
+// *
 // Request: Request device to wipe all sensitive data and settings
 // @next ButtonRequest
 type WipeDevice struct {
@@ -1641,17 +1607,16 @@ func (m *WipeDevice) Reset()         { *m = WipeDevice{} }
 func (m *WipeDevice) String() string { return proto.CompactTextString(m) }
 func (*WipeDevice) ProtoMessage()    {}
 func (*WipeDevice) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4dc296cbfe5ffcd5, []int{28}
+	return fileDescriptor_messages_f768b930d6a59aa7, []int{28}
 }
-
 func (m *WipeDevice) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_WipeDevice.Unmarshal(m, b)
 }
 func (m *WipeDevice) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_WipeDevice.Marshal(b, m, deterministic)
 }
-func (m *WipeDevice) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_WipeDevice.Merge(m, src)
+func (dst *WipeDevice) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_WipeDevice.Merge(dst, src)
 }
 func (m *WipeDevice) XXX_Size() int {
 	return xxx_messageInfo_WipeDevice.Size(m)
@@ -1662,7 +1627,7 @@ func (m *WipeDevice) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_WipeDevice proto.InternalMessageInfo
 
-//*
+// *
 // Request: Load seed and related internal settings from the computer
 // @next ButtonRequest
 // @next Success
@@ -1685,17 +1650,16 @@ func (m *LoadDevice) Reset()         { *m = LoadDevice{} }
 func (m *LoadDevice) String() string { return proto.CompactTextString(m) }
 func (*LoadDevice) ProtoMessage()    {}
 func (*LoadDevice) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4dc296cbfe5ffcd5, []int{29}
+	return fileDescriptor_messages_f768b930d6a59aa7, []int{29}
 }
-
 func (m *LoadDevice) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_LoadDevice.Unmarshal(m, b)
 }
 func (m *LoadDevice) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_LoadDevice.Marshal(b, m, deterministic)
 }
-func (m *LoadDevice) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_LoadDevice.Merge(m, src)
+func (dst *LoadDevice) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_LoadDevice.Merge(dst, src)
 }
 func (m *LoadDevice) XXX_Size() int {
 	return xxx_messageInfo_LoadDevice.Size(m)
@@ -1764,7 +1728,7 @@ func (m *LoadDevice) GetU2FCounter() uint32 {
 	return 0
 }
 
-//*
+// *
 // Request: Ask device to do initialization involving user interaction
 // @next EntropyRequest
 // @next Failure
@@ -1786,17 +1750,16 @@ func (m *ResetDevice) Reset()         { *m = ResetDevice{} }
 func (m *ResetDevice) String() string { return proto.CompactTextString(m) }
 func (*ResetDevice) ProtoMessage()    {}
 func (*ResetDevice) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4dc296cbfe5ffcd5, []int{30}
+	return fileDescriptor_messages_f768b930d6a59aa7, []int{30}
 }
-
 func (m *ResetDevice) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_ResetDevice.Unmarshal(m, b)
 }
 func (m *ResetDevice) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_ResetDevice.Marshal(b, m, deterministic)
 }
-func (m *ResetDevice) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ResetDevice.Merge(m, src)
+func (dst *ResetDevice) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ResetDevice.Merge(dst, src)
 }
 func (m *ResetDevice) XXX_Size() int {
 	return xxx_messageInfo_ResetDevice.Size(m)
@@ -1866,7 +1829,7 @@ func (m *ResetDevice) GetSkipBackup() bool {
 	return false
 }
 
-//*
+// *
 // Request: Perform backup of the device seed if not backed up using ResetDevice
 // @next ButtonRequest
 type BackupDevice struct {
@@ -1879,17 +1842,16 @@ func (m *BackupDevice) Reset()         { *m = BackupDevice{} }
 func (m *BackupDevice) String() string { return proto.CompactTextString(m) }
 func (*BackupDevice) ProtoMessage()    {}
 func (*BackupDevice) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4dc296cbfe5ffcd5, []int{31}
+	return fileDescriptor_messages_f768b930d6a59aa7, []int{31}
 }
-
 func (m *BackupDevice) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_BackupDevice.Unmarshal(m, b)
 }
 func (m *BackupDevice) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_BackupDevice.Marshal(b, m, deterministic)
 }
-func (m *BackupDevice) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_BackupDevice.Merge(m, src)
+func (dst *BackupDevice) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_BackupDevice.Merge(dst, src)
 }
 func (m *BackupDevice) XXX_Size() int {
 	return xxx_messageInfo_BackupDevice.Size(m)
@@ -1900,7 +1862,7 @@ func (m *BackupDevice) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_BackupDevice proto.InternalMessageInfo
 
-//*
+// *
 // Response: Ask for additional entropy from host computer
 // @prev ResetDevice
 // @next EntropyAck
@@ -1914,17 +1876,16 @@ func (m *EntropyRequest) Reset()         { *m = EntropyRequest{} }
 func (m *EntropyRequest) String() string { return proto.CompactTextString(m) }
 func (*EntropyRequest) ProtoMessage()    {}
 func (*EntropyRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4dc296cbfe5ffcd5, []int{32}
+	return fileDescriptor_messages_f768b930d6a59aa7, []int{32}
 }
-
 func (m *EntropyRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_EntropyRequest.Unmarshal(m, b)
 }
 func (m *EntropyRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_EntropyRequest.Marshal(b, m, deterministic)
 }
-func (m *EntropyRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_EntropyRequest.Merge(m, src)
+func (dst *EntropyRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EntropyRequest.Merge(dst, src)
 }
 func (m *EntropyRequest) XXX_Size() int {
 	return xxx_messageInfo_EntropyRequest.Size(m)
@@ -1935,7 +1896,7 @@ func (m *EntropyRequest) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_EntropyRequest proto.InternalMessageInfo
 
-//*
+// *
 // Request: Provide additional entropy for seed generation function
 // @prev EntropyRequest
 // @next ButtonRequest
@@ -1950,17 +1911,16 @@ func (m *EntropyAck) Reset()         { *m = EntropyAck{} }
 func (m *EntropyAck) String() string { return proto.CompactTextString(m) }
 func (*EntropyAck) ProtoMessage()    {}
 func (*EntropyAck) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4dc296cbfe5ffcd5, []int{33}
+	return fileDescriptor_messages_f768b930d6a59aa7, []int{33}
 }
-
 func (m *EntropyAck) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_EntropyAck.Unmarshal(m, b)
 }
 func (m *EntropyAck) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_EntropyAck.Marshal(b, m, deterministic)
 }
-func (m *EntropyAck) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_EntropyAck.Merge(m, src)
+func (dst *EntropyAck) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EntropyAck.Merge(dst, src)
 }
 func (m *EntropyAck) XXX_Size() int {
 	return xxx_messageInfo_EntropyAck.Size(m)
@@ -1978,7 +1938,7 @@ func (m *EntropyAck) GetEntropy() []byte {
 	return nil
 }
 
-//*
+// *
 // Request: Start recovery workflow asking user for specific words of mnemonic
 // Used to recovery device safely even on untrusted computer.
 // @next WordRequest
@@ -1998,17 +1958,16 @@ func (m *RecoveryDevice) Reset()         { *m = RecoveryDevice{} }
 func (m *RecoveryDevice) String() string { return proto.CompactTextString(m) }
 func (*RecoveryDevice) ProtoMessage()    {}
 func (*RecoveryDevice) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4dc296cbfe5ffcd5, []int{34}
+	return fileDescriptor_messages_f768b930d6a59aa7, []int{34}
 }
-
 func (m *RecoveryDevice) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_RecoveryDevice.Unmarshal(m, b)
 }
 func (m *RecoveryDevice) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_RecoveryDevice.Marshal(b, m, deterministic)
 }
-func (m *RecoveryDevice) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_RecoveryDevice.Merge(m, src)
+func (dst *RecoveryDevice) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_RecoveryDevice.Merge(dst, src)
 }
 func (m *RecoveryDevice) XXX_Size() int {
 	return xxx_messageInfo_RecoveryDevice.Size(m)
@@ -2063,7 +2022,7 @@ func (m *RecoveryDevice) GetDryRun() bool {
 	return false
 }
 
-//*
+// *
 // Response: Device is waiting for user to enter word of the mnemonic
 // Its position is shown only on device's internal display.
 // @prev RecoveryDevice
@@ -2079,17 +2038,16 @@ func (m *WordRequest) Reset()         { *m = WordRequest{} }
 func (m *WordRequest) String() string { return proto.CompactTextString(m) }
 func (*WordRequest) ProtoMessage()    {}
 func (*WordRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4dc296cbfe5ffcd5, []int{35}
+	return fileDescriptor_messages_f768b930d6a59aa7, []int{35}
 }
-
 func (m *WordRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_WordRequest.Unmarshal(m, b)
 }
 func (m *WordRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_WordRequest.Marshal(b, m, deterministic)
 }
-func (m *WordRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_WordRequest.Merge(m, src)
+func (dst *WordRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_WordRequest.Merge(dst, src)
 }
 func (m *WordRequest) XXX_Size() int {
 	return xxx_messageInfo_WordRequest.Size(m)
@@ -2107,7 +2065,7 @@ func (m *WordRequest) GetType() WordRequestType {
 	return WordRequestType_WordRequestType_Plain
 }
 
-//*
+// *
 // Request: Computer replies with word from the mnemonic
 // @prev WordRequest
 // @next WordRequest
@@ -2124,17 +2082,16 @@ func (m *WordAck) Reset()         { *m = WordAck{} }
 func (m *WordAck) String() string { return proto.CompactTextString(m) }
 func (*WordAck) ProtoMessage()    {}
 func (*WordAck) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4dc296cbfe5ffcd5, []int{36}
+	return fileDescriptor_messages_f768b930d6a59aa7, []int{36}
 }
-
 func (m *WordAck) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_WordAck.Unmarshal(m, b)
 }
 func (m *WordAck) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_WordAck.Marshal(b, m, deterministic)
 }
-func (m *WordAck) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_WordAck.Merge(m, src)
+func (dst *WordAck) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_WordAck.Merge(dst, src)
 }
 func (m *WordAck) XXX_Size() int {
 	return xxx_messageInfo_WordAck.Size(m)
@@ -2152,7 +2109,7 @@ func (m *WordAck) GetWord() string {
 	return ""
 }
 
-//*
+// *
 // Request: Ask device to erase its firmware (so it can be replaced via FirmwareUpload)
 // @start
 // @next FirmwareRequest
@@ -2167,17 +2124,16 @@ func (m *FirmwareErase) Reset()         { *m = FirmwareErase{} }
 func (m *FirmwareErase) String() string { return proto.CompactTextString(m) }
 func (*FirmwareErase) ProtoMessage()    {}
 func (*FirmwareErase) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4dc296cbfe5ffcd5, []int{37}
+	return fileDescriptor_messages_f768b930d6a59aa7, []int{37}
 }
-
 func (m *FirmwareErase) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_FirmwareErase.Unmarshal(m, b)
 }
 func (m *FirmwareErase) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_FirmwareErase.Marshal(b, m, deterministic)
 }
-func (m *FirmwareErase) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_FirmwareErase.Merge(m, src)
+func (dst *FirmwareErase) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_FirmwareErase.Merge(dst, src)
 }
 func (m *FirmwareErase) XXX_Size() int {
 	return xxx_messageInfo_FirmwareErase.Size(m)
@@ -2195,7 +2151,7 @@ func (m *FirmwareErase) GetLength() uint32 {
 	return 0
 }
 
-//*
+// *
 // Response: Ask for firmware chunk
 // @next FirmwareUpload
 type FirmwareRequest struct {
@@ -2210,17 +2166,16 @@ func (m *FirmwareRequest) Reset()         { *m = FirmwareRequest{} }
 func (m *FirmwareRequest) String() string { return proto.CompactTextString(m) }
 func (*FirmwareRequest) ProtoMessage()    {}
 func (*FirmwareRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4dc296cbfe5ffcd5, []int{38}
+	return fileDescriptor_messages_f768b930d6a59aa7, []int{38}
 }
-
 func (m *FirmwareRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_FirmwareRequest.Unmarshal(m, b)
 }
 func (m *FirmwareRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_FirmwareRequest.Marshal(b, m, deterministic)
 }
-func (m *FirmwareRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_FirmwareRequest.Merge(m, src)
+func (dst *FirmwareRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_FirmwareRequest.Merge(dst, src)
 }
 func (m *FirmwareRequest) XXX_Size() int {
 	return xxx_messageInfo_FirmwareRequest.Size(m)
@@ -2245,7 +2200,7 @@ func (m *FirmwareRequest) GetLength() uint32 {
 	return 0
 }
 
-//*
+// *
 // Request: Ask device to upload its firmware
 // @start
 // @next FirmwareUpload
@@ -2261,17 +2216,16 @@ func (m *FirmwareUpload) Reset()         { *m = FirmwareUpload{} }
 func (m *FirmwareUpload) String() string { return proto.CompactTextString(m) }
 func (*FirmwareUpload) ProtoMessage()    {}
 func (*FirmwareUpload) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4dc296cbfe5ffcd5, []int{39}
+	return fileDescriptor_messages_f768b930d6a59aa7, []int{39}
 }
-
 func (m *FirmwareUpload) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_FirmwareUpload.Unmarshal(m, b)
 }
 func (m *FirmwareUpload) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_FirmwareUpload.Marshal(b, m, deterministic)
 }
-func (m *FirmwareUpload) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_FirmwareUpload.Merge(m, src)
+func (dst *FirmwareUpload) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_FirmwareUpload.Merge(dst, src)
 }
 func (m *FirmwareUpload) XXX_Size() int {
 	return xxx_messageInfo_FirmwareUpload.Size(m)
@@ -2296,7 +2250,7 @@ func (m *FirmwareUpload) GetHash() []byte {
 	return nil
 }
 
-//*
+// *
 // Request: Ask device to sign transactions one by one
 // @next ResponseSkycoinSignMessage
 // @next Success
@@ -2315,17 +2269,16 @@ func (m *TransactionSign) Reset()         { *m = TransactionSign{} }
 func (m *TransactionSign) String() string { return proto.CompactTextString(m) }
 func (*TransactionSign) ProtoMessage()    {}
 func (*TransactionSign) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4dc296cbfe5ffcd5, []int{40}
+	return fileDescriptor_messages_f768b930d6a59aa7, []int{40}
 }
-
 func (m *TransactionSign) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_TransactionSign.Unmarshal(m, b)
 }
 func (m *TransactionSign) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_TransactionSign.Marshal(b, m, deterministic)
 }
-func (m *TransactionSign) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_TransactionSign.Merge(m, src)
+func (dst *TransactionSign) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TransactionSign.Merge(dst, src)
 }
 func (m *TransactionSign) XXX_Size() int {
 	return xxx_messageInfo_TransactionSign.Size(m)
@@ -2365,7 +2318,6 @@ func (m *TransactionSign) GetTransactionOut() []*SkycoinTransactionOutput {
 }
 
 func init() {
-	proto.RegisterEnum("MessageType", MessageType_name, MessageType_value)
 	proto.RegisterType((*Initialize)(nil), "Initialize")
 	proto.RegisterType((*GetFeatures)(nil), "GetFeatures")
 	proto.RegisterType((*Features)(nil), "Features")
@@ -2407,11 +2359,12 @@ func init() {
 	proto.RegisterType((*FirmwareRequest)(nil), "FirmwareRequest")
 	proto.RegisterType((*FirmwareUpload)(nil), "FirmwareUpload")
 	proto.RegisterType((*TransactionSign)(nil), "TransactionSign")
+	proto.RegisterEnum("MessageType", MessageType_name, MessageType_value)
 }
 
-func init() { proto.RegisterFile("messages.proto", fileDescriptor_4dc296cbfe5ffcd5) }
+func init() { proto.RegisterFile("messages.proto", fileDescriptor_messages_f768b930d6a59aa7) }
 
-var fileDescriptor_4dc296cbfe5ffcd5 = []byte{
+var fileDescriptor_messages_f768b930d6a59aa7 = []byte{
 	// 1968 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x58, 0xcd, 0x72, 0xdb, 0xc8,
 	0x11, 0x0e, 0x7f, 0x2c, 0x92, 0xcd, 0x1f, 0x8f, 0x60, 0x59, 0x86, 0x28, 0xcb, 0xe6, 0x82, 0x96,
