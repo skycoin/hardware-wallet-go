@@ -3,9 +3,8 @@ go:
   - "1.10.x"
 matrix:
   include:
-    os:
-      - linux
-      - osx
+    - os: linux
+    - os: osx
 env:
   - PROTOC_VERSION=3.6.1
   - PROTOC_ZIP=protoc-$PROTOC_VERSION-$TRAVIS_OS_NAME-x86_64.zip
