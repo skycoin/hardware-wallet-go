@@ -13,6 +13,7 @@ before_install:
   - curl -OL https://github.com/google/protobuf/releases/download/v$PROTOC_VERSION/$PROTOC_ZIP
   - sudo unzip -o $PROTOC_ZIP -d /usr/local bin/protoc
   - rm -f $PROTOC_ZIP
+  - go get -u github.com/golang/protobuf/protoc-gen-go
 install:
   - make proto
   - go get github.com/skycoin/hardware-wallet-go
