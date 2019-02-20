@@ -6,8 +6,7 @@ matrix:
     - os: linux
     - os: osx
 env:
-  - PROTOC_VERSION=3.6.1
-  - PROTOC_ZIP=protoc-$PROTOC_VERSION-$TRAVIS_OS_NAME-x86_64.zip
+  - PROTOC_VERSION=3.6.1 PROTOC_ZIP="protoc-$PROTOC_VERSION-$TRAVIS_OS_NAME-x86_64.zip"
 before_install:
   - sudo apt-get update
   - sudo apt install libudev-dev libusb-1.0-0-dev
