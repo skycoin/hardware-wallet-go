@@ -94,9 +94,9 @@ func NewApp() (*App, error) {
 		sandbox(),
 	}
 
-	app.Name = "hardware-wallet-cli"
+	app.Name = "skycoin-hw-cli"
 	app.Version = Version
-	app.Usage = "the hardware wallet command line interface"
+	app.Usage = "the skycoin hardware wallet command line interface"
 	app.Commands = commands
 	app.EnableBashCompletion = true
 	app.OnUsageError = func(context *gcli.Context, err error, _ bool) error {
