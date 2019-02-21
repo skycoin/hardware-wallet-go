@@ -3,8 +3,10 @@ all: build
 build:
 	go build ./...
 
-deps:
+dep:
 	dep ensure
+	# Ensure sources for protoc-gen-go and protobuf/proto are in sync
+	dep ensure -add github.com/golang/protobuf/protoc-gen-go
 
 test:
 	go test github.com/skycoin/hardware-wallet-go/device-wallet/
