@@ -3,7 +3,7 @@ package cli
 import (
 	"fmt"
 
-	"github.com/golang/protobuf/proto"
+	"github.com/gogo/protobuf/proto"
 	deviceWallet "github.com/skycoin/hardware-wallet-go/device-wallet"
 	"github.com/skycoin/hardware-wallet-go/device-wallet/messages"
 	gcli "github.com/urfave/cli"

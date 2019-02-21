@@ -9,7 +9,7 @@ import (
 	"net"
 	"time"
 
-	proto "github.com/golang/protobuf/proto"
+	proto "github.com/gogo/protobuf/proto"
 	messages "github.com/skycoin/hardware-wallet-go/device-wallet/messages"
 	"github.com/skycoin/hardware-wallet-go/device-wallet/usb"
 	"github.com/skycoin/hardware-wallet-go/device-wallet/wire"
