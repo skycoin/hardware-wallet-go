@@ -9,6 +9,9 @@ env:
 before_install:
   - sudo apt-get update
   - sudo apt install libudev-dev libusb-1.0-0-dev
+  - curl -OL https://github.com/google/protobuf/releases/download/$PROTOC_VERSION/$PROTOC_ZIP
+  - sudo unzip -o $PROTOC_ZIP -d /usr/local bin/protoc
+  - rm -f $PROTOC_ZIP
   - git clone --branch v1.2.0 --depth 1 https://github.com/gogo/protobuf $GOPATH/src/github.com/gogo/protobuf
   - ( cd $GOPATH/src/github.com/gogo/protobuf/protoc-gen-gogo && go install )
 install:
