@@ -609,7 +609,7 @@ func initialize(dev io.ReadWriteCloser) {
 }
 
 // DeviceApplySettings send ApplySettings request to the device
-func DeviceApplySettings(deviceType DeviceType, usePassphrase bool) wire.Message {
+func DeviceApplySettings(deviceType DeviceType, usePassphrase bool, label string) wire.Message {
 	dev, err := getDevice(deviceType)
 	if err != nil {
 		log.Panicf(err.Error())
@@ -617,8 +617,8 @@ func DeviceApplySettings(deviceType DeviceType, usePassphrase bool) wire.Message
 	defer dev.Close()
 
 	applySettings := &messages.ApplySettings{
+		Label:         proto.String(label),
 		Language:      proto.String(""),
-		Label:         proto.String(""),
 		UsePassphrase: proto.Bool(usePassphrase),
 	}
 	log.Println(applySettings)
