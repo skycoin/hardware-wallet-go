@@ -9,7 +9,7 @@ env:
 before_install:
   - sudo apt-get update
   - sudo apt install libudev-dev libusb-1.0-0-dev
-  - ( cd ./vendor/github.com/golang/protobuf/protoc-gen-go && go install )
+  - ( cd $TRAVIS_BUILD_DIR/vendor/github.com/golang/protobuf/protoc-gen-go && go install )
 install:
   - make proto
   - go get github.com/skycoin/hardware-wallet-go
