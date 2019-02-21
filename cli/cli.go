@@ -6,8 +6,8 @@ package cli
 import (
 	"fmt"
 
-	gcli "github.com/urfave/cli"
 	"github.com/skycoin/skycoin/src/util/logging"
+	gcli "github.com/urfave/cli"
 )
 
 const (
@@ -57,7 +57,6 @@ GLOBAL OPTIONS:
 COPYRIGHT:
    {{.Copyright}}{{end}}
 `)
-
 
 	log = logging.MustGetLogger("skycoin-hw-cli")
 )

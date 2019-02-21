@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	gcli "github.com/urfave/cli"
+
 	deviceWallet "github.com/skycoin/hardware-wallet-go/device-wallet"
 )
 

@@ -4,9 +4,10 @@ import (
 	"fmt"
 
 	"github.com/gogo/protobuf/proto"
+	gcli "github.com/urfave/cli"
+
 	deviceWallet "github.com/skycoin/hardware-wallet-go/device-wallet"
 	"github.com/skycoin/hardware-wallet-go/device-wallet/messages"
-	gcli "github.com/urfave/cli"
 )
 
 func transactionSignCmd() gcli.Command {
