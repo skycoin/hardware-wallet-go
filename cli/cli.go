@@ -7,11 +7,12 @@ import (
 	"fmt"
 
 	gcli "github.com/urfave/cli"
+	"github.com/skycoin/skycoin/src/util/logging"
 )
 
 const (
 	// Version is the CLI Version
-	Version = "0.0.1"
+	Version = "1.7.0"
 )
 
 var (
@@ -56,6 +57,9 @@ GLOBAL OPTIONS:
 COPYRIGHT:
    {{.Copyright}}{{end}}
 `)
+
+
+	log = logging.MustGetLogger("skycoin-hw-cli")
 )
 
 // App Wraps the app so that main package won't use the raw App directly,

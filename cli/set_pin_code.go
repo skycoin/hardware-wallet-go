@@ -5,8 +5,6 @@ import (
 
 	gcli "github.com/urfave/cli"
 
-	"log"
-
 	deviceWallet "github.com/skycoin/hardware-wallet-go/device-wallet"
 	"github.com/skycoin/hardware-wallet-go/device-wallet/messages"
 )
@@ -22,7 +20,6 @@ func setPinCode() gcli.Command {
 				Name:   "deviceType",
 				Usage:  "Device type to send instructions to, hardware wallet (USB) or emulator.",
 				EnvVar: "DEVICE_TYPE",
-				Value:  "USB",
 			},
 		},
 		OnUsageError: onCommandUsageError(name),
@@ -34,7 +31,7 @@ func setPinCode() gcli.Command {
 			case "EMULATOR":
 				deviceType = deviceWallet.DeviceTypeEmulator
 			default:
-				log.Println("No device detected")
+				log.Error("device type not set")
 				return
 			}
 

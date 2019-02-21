@@ -2,8 +2,6 @@ package cli
 
 import (
 	"fmt"
-	"log"
-
 	gcli "github.com/urfave/cli"
 
 	deviceWallet "github.com/skycoin/hardware-wallet-go/device-wallet"
@@ -25,7 +23,7 @@ func sandbox() gcli.Command {
 			} else if deviceWallet.DeviceConnected(deviceType) {
 				deviceType = deviceWallet.DeviceTypeUsb
 			} else {
-				log.Println("No device detected")
+				log.Println("no device detected")
 				return
 			}
 

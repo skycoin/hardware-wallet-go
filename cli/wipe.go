@@ -2,9 +2,6 @@ package cli
 
 import (
 	gcli "github.com/urfave/cli"
-
-	"log"
-
 	deviceWallet "github.com/skycoin/hardware-wallet-go/device-wallet"
 )
 
@@ -31,7 +28,7 @@ func wipeCmd() gcli.Command {
 			case "EMULATOR":
 				deviceType = deviceWallet.DeviceTypeEmulator
 			default:
-				log.Println("No device detected")
+				log.Error("No device detected")
 				return
 			}
 

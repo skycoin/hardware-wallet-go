@@ -7,8 +7,6 @@ import (
 
 	deviceWallet "github.com/skycoin/hardware-wallet-go/device-wallet"
 
-	"log"
-
 	"github.com/skycoin/hardware-wallet-go/device-wallet/messages"
 )
 
@@ -24,7 +22,6 @@ func backupCmd() gcli.Command {
 				Name:   "deviceType",
 				Usage:  "Device type to send instructions to, hardware wallet (USB) or emulator.",
 				EnvVar: "DEVICE_TYPE",
-				Value:  "USB",
 			},
 		},
 		Action: func(c *gcli.Context) {
@@ -35,7 +32,7 @@ func backupCmd() gcli.Command {
 			case "EMULATOR":
 				deviceType = deviceWallet.DeviceTypeEmulator
 			default:
-				log.Println("No device detected")
+				log.Error("device type not set")
 				return
 			}
 

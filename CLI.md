@@ -46,7 +46,7 @@ USAGE:
    skycoin-hw-cli [global options] command [command options] [arguments...]
 
 VERSION:
-   0.0.1
+   1.7.0
 
 COMMANDS:
 
