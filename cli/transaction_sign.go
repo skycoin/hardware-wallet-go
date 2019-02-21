@@ -3,14 +3,16 @@ package cli
 import (
 	"fmt"
 
+	"log"
+
 	"github.com/gogo/protobuf/proto"
 	deviceWallet "github.com/skycoin/hardware-wallet-go/device-wallet"
 	"github.com/skycoin/hardware-wallet-go/device-wallet/messages"
 	gcli "github.com/urfave/cli"
 )
 
-func emulatorTransactionSignCmd() gcli.Command {
-	name := "emulatorTransactionSign"
+func transactionSignCmd() gcli.Command {
+	name := "transactionSign"
 	return gcli.Command{
 		Name:        name,
 		Usage:       "Ask the device to sign a transaction using the provided information.",
@@ -40,6 +42,12 @@ func emulatorTransactionSignCmd() gcli.Command {
 				Name:  "addressIndex",
 				Usage: "If the address is a return address tell its index in the wallet",
 			},
+			gcli.StringFlag{
+				Name:   "deviceType",
+				Usage:  "Device type to send instructions to, hardware wallet (USB) or emulator.",
+				EnvVar: "DEVICE_TYPE",
+				Value:  "USB",
+			},
 		},
 		OnUsageError: onCommandUsageError(name),
 		Action: func(c *gcli.Context) {
@@ -49,6 +57,17 @@ func emulatorTransactionSignCmd() gcli.Command {
 			coins := c.Int64Slice("coin")
 			hours := c.Int64Slice("hour")
 			addressIndex := c.IntSlice("addressIndex")
+
+			var deviceType deviceWallet.DeviceType
+			switch c.String("deviceType") {
+			case "USB":
+				deviceType = deviceWallet.DeviceTypeUsb
+			case "EMULATOR":
+				deviceType = deviceWallet.DeviceTypeEmulator
+			default:
+				log.Println("No device detected")
+				return
+			}
 
 			fmt.Println(inputs, inputIndex)
 			if len(inputs) != len(inputIndex) {
@@ -78,7 +97,7 @@ func emulatorTransactionSignCmd() gcli.Command {
 				}
 				transactionOutputs = append(transactionOutputs, &transactionOutput)
 			}
-			kind, data := deviceWallet.DeviceTransactionSign(deviceWallet.DeviceTypeEmulator, transactionInputs, transactionOutputs)
+			kind, data := deviceWallet.DeviceTransactionSign(deviceType, transactionInputs, transactionOutputs)
 			for {
 				switch kind {
 				case uint16(messages.MessageType_MessageType_ResponseTransactionSign):
@@ -89,18 +108,18 @@ func emulatorTransactionSignCmd() gcli.Command {
 					fmt.Println("Should end with ResponseTransactionSign request")
 					return
 				case uint16(messages.MessageType_MessageType_ButtonRequest):
-					msg := deviceWallet.DeviceButtonAck(deviceWallet.DeviceTypeEmulator)
+					msg := deviceWallet.DeviceButtonAck(deviceType)
 					kind, data = msg.Kind, msg.Data
 				case uint16(messages.MessageType_MessageType_PassphraseRequest):
 					var passphrase string
 					fmt.Printf("Input passphrase: ")
 					fmt.Scanln(&passphrase)
-					kind, data = deviceWallet.DevicePassphraseAck(deviceWallet.DeviceTypeEmulator, passphrase)
+					kind, data = deviceWallet.DevicePassphraseAck(deviceType, passphrase)
 				case uint16(messages.MessageType_MessageType_PinMatrixRequest):
 					var pinEnc string
 					fmt.Printf("PinMatrixRequest response: ")
 					fmt.Scanln(&pinEnc)
-					kind, data = deviceWallet.DevicePinMatrixAck(deviceWallet.DeviceTypeEmulator, pinEnc)
+					kind, data = deviceWallet.DevicePinMatrixAck(deviceType, pinEnc)
 				case uint16(messages.MessageType_MessageType_Failure):
 					fmt.Printf("Failed with message: %s\n", deviceWallet.DecodeFailMsg(kind, data))
 					return

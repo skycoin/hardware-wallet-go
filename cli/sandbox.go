@@ -7,7 +7,7 @@ import (
 	gcli "github.com/urfave/cli"
 
 	deviceWallet "github.com/skycoin/hardware-wallet-go/device-wallet"
-	messages "github.com/skycoin/hardware-wallet-go/device-wallet/messages"
+	"github.com/skycoin/hardware-wallet-go/device-wallet/messages"
 )
 
 func sandbox() gcli.Command {
@@ -18,11 +18,11 @@ func sandbox() gcli.Command {
 		Description:  "",
 		Flags:        []gcli.Flag{},
 		OnUsageError: onCommandUsageError(name),
-		Action: func(c *gcli.Context) {
+		Action: func(_ *gcli.Context) {
 			var deviceType deviceWallet.DeviceType
 			if deviceWallet.DeviceConnected(deviceWallet.DeviceTypeEmulator) {
 				deviceType = deviceWallet.DeviceTypeEmulator
-			} else if deviceWallet.DeviceConnected(deviceWallet.DeviceTypeUsb) {
+			} else if deviceWallet.DeviceConnected(deviceType) {
 				deviceType = deviceWallet.DeviceTypeUsb
 			} else {
 				log.Println("No device detected")

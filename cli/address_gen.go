@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"log"
 
 	gcli "github.com/urfave/cli"
 
@@ -9,11 +10,11 @@ import (
 	"github.com/skycoin/hardware-wallet-go/device-wallet/messages"
 )
 
-func emulatorAddressGenCmd() gcli.Command {
-	name := "emulatorAddressGen"
+func addressGenCmd() gcli.Command {
+	name := "addressGen"
 	return gcli.Command{
 		Name:        name,
-		Usage:       "Generate skycoin addresses using an emulated device.",
+		Usage:       "Generate skycoin addresses using the firmware",
 		Description: "",
 		Flags: []gcli.Flag{
 			gcli.IntFlag{
@@ -30,33 +31,51 @@ func emulatorAddressGenCmd() gcli.Command {
 				Name:  "confirmAddress",
 				Usage: "If requesting one address it will be sent only if user confirms operation by pressing device's button.",
 			},
+			gcli.StringFlag{
+				Name:   "deviceType",
+				Usage:  "Device type to send instructions to, hardware wallet (USB) or emulator.",
+				EnvVar: "DEVICE_TYPE",
+				Value:  "USB",
+			},
 		},
 		OnUsageError: onCommandUsageError(name),
 		Action: func(c *gcli.Context) {
 			addressN := c.Int("addressN")
 			startIndex := c.Int("startIndex")
 			confirmAddress := c.Bool("confirmAddress")
+
+			var deviceType deviceWallet.DeviceType
+			switch c.String("deviceType") {
+			case "USB":
+				deviceType = deviceWallet.DeviceTypeUsb
+			case "EMULATOR":
+				deviceType = deviceWallet.DeviceTypeEmulator
+			default:
+				log.Println("No device detected")
+				return
+			}
+
 			var data []byte
 			var pinEnc string
-			kind, data := deviceWallet.DeviceAddressGen(deviceWallet.DeviceTypeEmulator, addressN, startIndex, confirmAddress)
+			kind, data := deviceWallet.DeviceAddressGen(deviceType, addressN, startIndex, confirmAddress)
 			for kind != uint16(messages.MessageType_MessageType_ResponseSkycoinAddress) && kind != uint16(messages.MessageType_MessageType_Failure) {
 
 				if kind == uint16(messages.MessageType_MessageType_PinMatrixRequest) {
 					fmt.Printf("PinMatrixRequest response: ")
 					fmt.Scanln(&pinEnc)
-					kind, data = deviceWallet.DevicePinMatrixAck(deviceWallet.DeviceTypeEmulator, pinEnc)
+					kind, data = deviceWallet.DevicePinMatrixAck(deviceType, pinEnc)
 					continue
 				}
 				if kind == uint16(messages.MessageType_MessageType_PassphraseRequest) {
 					var passphrase string
 					fmt.Printf("Input passphrase: ")
 					fmt.Scanln(&passphrase)
-					kind, data = deviceWallet.DevicePassphraseAck(deviceWallet.DeviceTypeEmulator, passphrase)
+					kind, data = deviceWallet.DevicePassphraseAck(deviceType, passphrase)
 					continue
 				}
 
 				if kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-					msg := deviceWallet.DeviceButtonAck(deviceWallet.DeviceTypeEmulator)
+					msg := deviceWallet.DeviceButtonAck(deviceType)
 					kind, data = msg.Kind, msg.Data
 					continue
 				}
