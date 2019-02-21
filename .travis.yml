@@ -9,6 +9,7 @@ env:
 before_install:
   - sudo apt-get update
   - sudo apt install libudev-dev libusb-1.0-0-dev
+  - echo "Downloading protobuf from https://github.com/google/protobuf/releases/download/$PROTOC_VERSION/$PROTOC_ZIP"
   - curl -OL https://github.com/google/protobuf/releases/download/$PROTOC_VERSION/$PROTOC_ZIP
   - sudo unzip -o $PROTOC_ZIP -d /usr/local bin/protoc
   - rm -f $PROTOC_ZIP
