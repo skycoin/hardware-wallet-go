@@ -9,7 +9,7 @@ env:
 before_install:
   - sudo apt-get update
   - sudo apt install libudev-dev libusb-1.0-0-dev
-  - go get -d -v github.com/gogo/protobuf/protoc-gen-gogo@v1.2.0
+  - git clone --branch v1.2.0 --depth 1 https://github.com/gogo/protobuf $GOPATH/src/github.com/gogo/protobuf
   - ( cd $GOPATH/src/github.com/gogo/protobuf/protoc-gen-gogo && go install )
 install:
   - make proto
