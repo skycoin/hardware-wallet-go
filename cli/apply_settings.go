@@ -3,14 +3,15 @@ package cli
 import (
 	"fmt"
 
+	gcli "github.com/urfave/cli"
+
 	deviceWallet "github.com/skycoin/hardware-wallet-go/device-wallet"
 	"github.com/skycoin/hardware-wallet-go/device-wallet/messages"
 	"github.com/skycoin/hardware-wallet-go/device-wallet/wire"
-	gcli "github.com/urfave/cli"
 )
 
-func deviceApplySettingsCmd() gcli.Command {
-	name := "deviceApplySettings"
+func applySettingsCmd() gcli.Command {
+	name := "applySettings"
 	return gcli.Command{
 		Name:        name,
 		Usage:       "Apply settings.",
@@ -24,16 +25,33 @@ func deviceApplySettingsCmd() gcli.Command {
 				Name:  "label",
 				Usage: "Configure a device label",
 			},
+			gcli.StringFlag{
+				Name:   "deviceType",
+				Usage:  "Device type to send instructions to, hardware wallet (USB) or emulator.",
+				EnvVar: "DEVICE_TYPE",
+			},
 		},
 		OnUsageError: onCommandUsageError(name),
 		Action: func(c *gcli.Context) {
 			passphrase := c.Bool("usePassphrase")
 			label := c.String("label")
-			msg := deviceWallet.DeviceApplySettings(deviceWallet.DeviceTypeUsb, passphrase, label)
+
+			var deviceType deviceWallet.DeviceType
+			switch c.String("deviceType") {
+			case "USB":
+				deviceType = deviceWallet.DeviceTypeUsb
+			case "EMULATOR":
+				deviceType = deviceWallet.DeviceTypeEmulator
+			default:
+				log.Error("device type not set")
+				return
+			}
+
+			msg := deviceWallet.DeviceApplySettings(deviceType, passphrase, label)
 			for msg.Kind != uint16(messages.MessageType_MessageType_Failure) && msg.Kind != uint16(messages.MessageType_MessageType_Success) {
 
 				if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-					msg = deviceWallet.DeviceButtonAck(deviceWallet.DeviceTypeUsb)
+					msg = deviceWallet.DeviceButtonAck(deviceType)
 					continue
 				}
 
@@ -41,7 +59,7 @@ func deviceApplySettingsCmd() gcli.Command {
 					var pinEnc string
 					fmt.Printf("PinMatrixRequest response: ")
 					fmt.Scanln(&pinEnc)
-					kind, data := deviceWallet.DevicePinMatrixAck(deviceWallet.DeviceTypeUsb, pinEnc)
+					kind, data := deviceWallet.DevicePinMatrixAck(deviceType, pinEnc)
 					msg = wire.Message{
 						Kind: kind,
 						Data: data,

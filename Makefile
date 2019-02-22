@@ -20,4 +20,5 @@ lint:
 check: lint
 
 format:
-	goimports -w ./*.go device-wallet/
+	goimports -w -local github.com/skycoin/hardware-wallet-go ./cli
+	goimports -w -local github.com/skycoin/hardware-wallet-go ./device-wallet

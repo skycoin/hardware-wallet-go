@@ -10,8 +10,8 @@ import (
 	deviceWallet "github.com/skycoin/hardware-wallet-go/device-wallet"
 )
 
-func deviceFirmwareUpdate() gcli.Command {
-	name := "deviceFirmwareUpdate"
+func firmwareUpdate() gcli.Command {
+	name := "firmwareUpdate"
 	return gcli.Command{
 		Name:        name,
 		Usage:       "Update device's firmware.",

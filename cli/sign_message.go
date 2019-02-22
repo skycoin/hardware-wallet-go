@@ -9,11 +9,11 @@ import (
 	"github.com/skycoin/hardware-wallet-go/device-wallet/messages"
 )
 
-func emulatorSignMessageCmd() gcli.Command {
-	name := "emulatorSignMessage"
+func signMessageCmd() gcli.Command {
+	name := "signMessage"
 	return gcli.Command{
 		Name:        name,
-		Usage:       "Ask the emulated device to sign a message using the secret key at given index.",
+		Usage:       "Ask the device to sign a message using the secret key at given index.",
 		Description: "",
 		Flags: []gcli.Flag{
 			gcli.IntFlag{
@@ -25,19 +25,35 @@ func emulatorSignMessageCmd() gcli.Command {
 				Name:  "message",
 				Usage: "The message that the signature claims to be signing.",
 			},
+			gcli.StringFlag{
+				Name:   "deviceType",
+				Usage:  "Device type to send instructions to, hardware wallet (USB) or emulator.",
+				EnvVar: "DEVICE_TYPE",
+			},
 		},
 		OnUsageError: onCommandUsageError(name),
 		Action: func(c *gcli.Context) {
+			var deviceType deviceWallet.DeviceType
+			switch c.String("deviceType") {
+			case "USB":
+				deviceType = deviceWallet.DeviceTypeUsb
+			case "EMULATOR":
+				deviceType = deviceWallet.DeviceTypeEmulator
+			default:
+				log.Error("device type not set")
+				return
+			}
+
 			addressN := c.Int("addressN")
 			message := c.String("message")
 			var signature string
-			kind, data := deviceWallet.DeviceSignMessage(deviceWallet.DeviceTypeEmulator, addressN, message)
+			kind, data := deviceWallet.DeviceSignMessage(deviceType, addressN, message)
 			for kind != uint16(messages.MessageType_MessageType_ResponseSkycoinSignMessage) && kind != uint16(messages.MessageType_MessageType_Failure) {
 				if kind == uint16(messages.MessageType_MessageType_PinMatrixRequest) {
 					var pinEnc string
 					fmt.Printf("PinMatrixRequest response: ")
 					fmt.Scanln(&pinEnc)
-					kind, data = deviceWallet.DevicePinMatrixAck(deviceWallet.DeviceTypeEmulator, pinEnc)
+					kind, data = deviceWallet.DevicePinMatrixAck(deviceType, pinEnc)
 					continue
 				}
 
@@ -45,7 +61,7 @@ func emulatorSignMessageCmd() gcli.Command {
 					var passphrase string
 					fmt.Printf("Input passphrase: ")
 					fmt.Scanln(&passphrase)
-					kind, data = deviceWallet.DevicePassphraseAck(deviceWallet.DeviceTypeEmulator, passphrase)
+					kind, data = deviceWallet.DevicePassphraseAck(deviceType, passphrase)
 					continue
 				}
 			}

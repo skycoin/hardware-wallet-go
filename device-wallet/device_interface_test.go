@@ -6,8 +6,9 @@ import (
 	"testing"
 
 	proto "github.com/gogo/protobuf/proto"
-	messages "github.com/skycoin/hardware-wallet-go/device-wallet/messages"
 	"github.com/stretchr/testify/require"
+
+	messages "github.com/skycoin/hardware-wallet-go/device-wallet/messages"
 )
 
 func TestMain(t *testing.T) {
