@@ -4,11 +4,11 @@ go:
 matrix:
   include:
     - os: linux
+    - os: osx
 env:
   - PROTOC_VERSION=3.6.1 PROTOC_ZIP="protoc-$PROTOC_VERSION-$TRAVIS_OS_NAME-x86_64.zip" PROTOC_URL="https://github.com/google/protobuf/releases/download/v$PROTOC_VERSION/$PROTOC_ZIP"
 before_install:
-  - sudo apt-get update
-  - sudo apt install libudev-dev libusb-1.0-0-dev
+  - source ./ci-scripts/install-$TRAVIS_OS_NAME.sh
   - echo "Downloading protobuf from $PROTOC_URL"
   - curl -OL $PROTOC_URL
   - sudo unzip -o $PROTOC_ZIP -d /usr/local bin/protoc
