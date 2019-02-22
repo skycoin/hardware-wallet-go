@@ -28,11 +28,11 @@ func emulatorTransactionSignCmd() gcli.Command {
 				Name:  "outputAddress",
 				Usage: "Addresses of the output for the transaction",
 			},
-			gcli.IntSliceFlag{
+			gcli.Int64SliceFlag{
 				Name:  "coin",
 				Usage: "Amount of coins",
 			},
-			gcli.IntSliceFlag{
+			gcli.Int64SliceFlag{
 				Name:  "hour",
 				Usage: "Number of hours",
 			},
@@ -46,8 +46,8 @@ func emulatorTransactionSignCmd() gcli.Command {
 			inputs := c.StringSlice("inputHash")
 			inputIndex := c.IntSlice("inputIndex")
 			outputs := c.StringSlice("outputAddress")
-			coins := c.IntSlice("coin")
-			hours := c.IntSlice("hour")
+			coins := c.Int64Slice("coin")
+			hours := c.Int64Slice("hour")
 			addressIndex := c.IntSlice("addressIndex")
 
 			fmt.Println(inputs, inputIndex)
@@ -71,8 +71,8 @@ func emulatorTransactionSignCmd() gcli.Command {
 			for i, output := range outputs {
 				var transactionOutput messages.SkycoinTransactionOutput
 				transactionOutput.Address = proto.String(output)
-				transactionOutput.Coin = proto.Uint32(uint32(coins[i]))
-				transactionOutput.Hour = proto.Uint32(uint32(hours[i]))
+				transactionOutput.Coin = proto.Uint64(uint64(coins[i]))
+				transactionOutput.Hour = proto.Uint64(uint64(hours[i]))
 				if i < len(addressIndex) {
 					transactionOutput.AddressIndex = proto.Uint32(uint32(addressIndex[i]))
 				}
