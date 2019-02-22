@@ -17,6 +17,3 @@
 *.orig
 DS_Store
 
-# Protobuffer files (generated)
-*.pb.go
-
