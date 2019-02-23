@@ -90,7 +90,6 @@ func NewApp() (*App, error) {
 		setPinCode(),
 		wipeCmd(),
 		backupCmd(),
-		getVersionCmd(),
 		recoveryCmd(),
 		cancelCmd(),
 		transactionSignCmd(),
