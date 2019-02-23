@@ -61,7 +61,6 @@ COMMANDS:
      setPinCode               Configure a PIN code on a device.
      wipe                     Ask the device to wipe clean all the configuration it contains.
      backup                   Ask the device to perform the seed backup procedure.
-     getVersion               Ask firmware version.
      recovery                 Ask the device to perform the seed recovery procedure.
      cancel                   Ask the device to cancel the ongoing procedure.
      transactionSign        Ask the device to sign a transaction using the provided information.
@@ -175,29 +174,6 @@ $ skycoin-hw-cli setMnemonic --mnemonic="cloud flower upset remain green metal b
 ```
 MessageButtonAck Answer is: 2 / 
 Ecloud flower upset remain green metal below cup stem infant art thank
-```
-</details>
-
-
-### Get version
-
-Ask firmware version.
-
-```bash
-$ skycoin-hw-cli getVersion
-```
-
-#### Examples
-##### Text output
-
-```bash
-$ skycoin-hw-cli getVersion
-```
-<details>
- <summary>View Output</summary>
-
-```
-Firmware version is Firmware Version 1.6.1
 ```
 </details>
 
