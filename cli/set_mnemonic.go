@@ -21,7 +21,6 @@ func setMnemonicCmd() gcli.Command {
 				Name:   "deviceType",
 				Usage:  "Device type to send instructions to, hardware wallet (USB) or emulator.",
 				EnvVar: "DEVICE_TYPE",
-				Value:  "USB",
 			},
 		},
 		OnUsageError: onCommandUsageError(name),
