@@ -11,7 +11,6 @@ import (
 	"time"
 
 	proto "github.com/gogo/protobuf/proto"
-
 	messages "github.com/skycoin/hardware-wallet-go/device-wallet/messages"
 	"github.com/skycoin/hardware-wallet-go/device-wallet/usb"
 	"github.com/skycoin/hardware-wallet-go/device-wallet/wire"
@@ -358,8 +357,18 @@ func DeviceGenerateMnemonic(deviceType DeviceType, wordCount uint32, usePassphra
 	}
 	defer dev.Close()
 
-	entropy := make([]byte, 32)
-	rand.Read(entropy)
+	entropySize := 32
+	entropy := make([]byte, entropySize)
+	if generatedEntropySize, err := rand.Read(entropy); err != nil || entropySize != generatedEntropySize {
+		if err != nil {
+			log.Panicln("Unable to generate entropy", err)
+			return
+		}
+		if entropySize != generatedEntropySize {
+			log.Panicf("Should generate %d bytes of entropy", generatedEntropySize)
+			return
+		}
+	}
 	skycoinGenerateMnemonic := &messages.GenerateMnemonic{
 		PassphraseProtection: proto.Bool(usePassphrase),
 		WordCount:            proto.Uint32(wordCount),
