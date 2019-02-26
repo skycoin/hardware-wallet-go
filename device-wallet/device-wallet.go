@@ -2,6 +2,7 @@ package devicewallet
 
 import (
 	"bytes"
+	"crypto/rand"
 	"encoding/binary"
 	"errors"
 	"io"
@@ -379,9 +380,12 @@ func DeviceGenerateMnemonic(deviceType DeviceType, wordCount uint32, usePassphra
 	}
 	defer dev.Close()
 
+	entropy := make([]byte, 32)
+	rand.Read(entropy)
 	skycoinGenerateMnemonic := &messages.GenerateMnemonic{
 		PassphraseProtection: proto.Bool(usePassphrase),
 		WordCount:            proto.Uint32(wordCount),
+		Entropy:              entropy,
 	}
 
 	data, _ := proto.Marshal(skycoinGenerateMnemonic)
