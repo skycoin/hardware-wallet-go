@@ -5,9 +5,10 @@ import (
 	"log"
 	"testing"
 
-	proto "github.com/golang/protobuf/proto"
-	messages "github.com/skycoin/hardware-wallet-go/device-wallet/messages"
+	proto "github.com/gogo/protobuf/proto"
 	"github.com/stretchr/testify/require"
+
+	messages "github.com/skycoin/hardware-wallet-go/device-wallet/messages"
 )
 
 func TestMain(t *testing.T) {
@@ -198,8 +199,8 @@ func TestTransactions(t *testing.T) {
 	transactionInputs = append(transactionInputs, &transactionInput)
 
 	transactionOutput.Address = proto.String("K9TzLrgqz7uXn3QJHGxmzdRByAzH33J2ot")
-	transactionOutput.Coin = proto.Uint32(100000)
-	transactionOutput.Hour = proto.Uint32(2)
+	transactionOutput.Coin = proto.Uint64(100000)
+	transactionOutput.Hour = proto.Uint64(2)
 	transactionOutputs = append(transactionOutputs, &transactionOutput)
 
 	kind, data := TransactionToDevice(deviceType, transactionInputs, transactionOutputs)
@@ -226,8 +227,8 @@ func TestTransactions(t *testing.T) {
 	transactionInputs = append(transactionInputs, &transactionInput1)
 
 	transactionOutput.Address = proto.String("K9TzLrgqz7uXn3QJHGxmzdRByAzH33J2ot")
-	transactionOutput.Coin = proto.Uint32(20800000)
-	transactionOutput.Hour = proto.Uint32(255)
+	transactionOutput.Coin = proto.Uint64(20800000)
+	transactionOutput.Hour = proto.Uint64(255)
 	transactionOutputs = append(transactionOutputs, &transactionOutput)
 
 	kind, data = TransactionToDevice(deviceType, transactionInputs, transactionOutputs)
@@ -262,12 +263,12 @@ func TestTransactions(t *testing.T) {
 	transactionInputs = append(transactionInputs, &transactionInput2)
 
 	transactionOutput.Address = proto.String("K9TzLrgqz7uXn3QJHGxmzdRByAzH33J2ot")
-	transactionOutput.Coin = proto.Uint32(111000000)
-	transactionOutput.Hour = proto.Uint32(6464556)
+	transactionOutput.Coin = proto.Uint64(111000000)
+	transactionOutput.Hour = proto.Uint64(6464556)
 	transactionOutputs = append(transactionOutputs, &transactionOutput)
 	transactionOutput1.Address = proto.String("2iNNt6fm9LszSWe51693BeyNUKX34pPaLx8")
-	transactionOutput1.Coin = proto.Uint32(1900000)
-	transactionOutput1.Hour = proto.Uint32(1)
+	transactionOutput1.Coin = proto.Uint64(1900000)
+	transactionOutput1.Hour = proto.Uint64(1)
 	transactionOutputs = append(transactionOutputs, &transactionOutput1)
 
 	kind, data = TransactionToDevice(deviceType, transactionInputs, transactionOutputs)
@@ -304,8 +305,8 @@ func TestTransactions(t *testing.T) {
 	transactionInputs = append(transactionInputs, &transactionInput1)
 
 	transactionOutput.Address = proto.String("22S8njPeKUNJBijQjNCzaasXVyf22rWv7gF")
-	transactionOutput.Coin = proto.Uint32(23100000)
-	transactionOutput.Hour = proto.Uint32(0)
+	transactionOutput.Coin = proto.Uint64(23100000)
+	transactionOutput.Hour = proto.Uint64(0)
 	transactionOutputs = append(transactionOutputs, &transactionOutput)
 
 	kind, data = TransactionToDevice(deviceType, transactionInputs, transactionOutputs)
@@ -334,8 +335,8 @@ func TestTransactions(t *testing.T) {
 	transactionInputs = append(transactionInputs, &transactionInput)
 
 	transactionOutput.Address = proto.String("2iNNt6fm9LszSWe51693BeyNUKX34pPaLx8")
-	transactionOutput.Coin = proto.Uint32(1000000)
-	transactionOutput.Hour = proto.Uint32(0)
+	transactionOutput.Coin = proto.Uint64(1000000)
+	transactionOutput.Hour = proto.Uint64(0)
 	transactionOutputs = append(transactionOutputs, &transactionOutput)
 
 	kind, data = TransactionToDevice(deviceType, transactionInputs, transactionOutputs)
@@ -359,16 +360,16 @@ func TestTransactions(t *testing.T) {
 	transactionInputs = append(transactionInputs, &transactionInput)
 
 	transactionOutput.Address = proto.String("K9TzLrgqz7uXn3QJHGxmzdRByAzH33J2ot")
-	transactionOutput.Coin = proto.Uint32(10000000)
-	transactionOutput.Hour = proto.Uint32(1)
+	transactionOutput.Coin = proto.Uint64(10000000)
+	transactionOutput.Hour = proto.Uint64(1)
 	transactionOutputs = append(transactionOutputs, &transactionOutput)
 	transactionOutput1.Address = proto.String("VNz8LR9JTSoz5o7qPHm3QHj4EiJB6LV18L")
-	transactionOutput1.Coin = proto.Uint32(5500000)
-	transactionOutput1.Hour = proto.Uint32(0)
+	transactionOutput1.Coin = proto.Uint64(5500000)
+	transactionOutput1.Hour = proto.Uint64(0)
 	transactionOutputs = append(transactionOutputs, &transactionOutput1)
 	transactionOutput2.Address = proto.String("22S8njPeKUNJBijQjNCzaasXVyf22rWv7gF")
-	transactionOutput2.Coin = proto.Uint32(4500000)
-	transactionOutput2.Hour = proto.Uint32(1)
+	transactionOutput2.Coin = proto.Uint64(4500000)
+	transactionOutput2.Hour = proto.Uint64(1)
 	transactionOutputs = append(transactionOutputs, &transactionOutput2)
 
 	kind, data = TransactionToDevice(deviceType, transactionInputs, transactionOutputs)
@@ -398,8 +399,8 @@ func TestTransactions(t *testing.T) {
 	transactionInputs = append(transactionInputs, &transactionInput2)
 
 	transactionOutput.Address = proto.String("22S8njPeKUNJBijQjNCzaasXVyf22rWv7gF")
-	transactionOutput.Coin = proto.Uint32(25000000)
-	transactionOutput.Hour = proto.Uint32(33)
+	transactionOutput.Coin = proto.Uint64(25000000)
+	transactionOutput.Hour = proto.Uint64(33)
 	transactionOutputs = append(transactionOutputs, &transactionOutput)
 
 	kind, data = TransactionToDevice(deviceType, transactionInputs, transactionOutputs)
@@ -434,8 +435,8 @@ func TestTransactions(t *testing.T) {
 	transactionInputs = append(transactionInputs, &transactionInput)
 
 	transactionOutput.Address = proto.String("3pXt9MSQJkwgPXLNePLQkjKq8tsRnFZGQA")
-	transactionOutput.Coin = proto.Uint32(1000000)
-	transactionOutput.Hour = proto.Uint32(1000)
+	transactionOutput.Coin = proto.Uint64(1000000)
+	transactionOutput.Hour = proto.Uint64(1000)
 	transactionOutputs = append(transactionOutputs, &transactionOutput)
 
 	kind, data = TransactionToDevice(deviceType, transactionInputs, transactionOutputs)
@@ -459,12 +460,12 @@ func TestTransactions(t *testing.T) {
 	transactionInputs = append(transactionInputs, &transactionInput)
 
 	transactionOutput.Address = proto.String("3pXt9MSQJkwgPXLNePLQkjKq8tsRnFZGQA")
-	transactionOutput.Coin = proto.Uint32(300000)
-	transactionOutput.Hour = proto.Uint32(500)
+	transactionOutput.Coin = proto.Uint64(300000)
+	transactionOutput.Hour = proto.Uint64(500)
 	transactionOutputs = append(transactionOutputs, &transactionOutput)
 	transactionOutput1.Address = proto.String("S6Dnv6gRTgsHCmZQxjN7cX5aRjJvDvqwp9")
-	transactionOutput1.Coin = proto.Uint32(700000)
-	transactionOutput1.Hour = proto.Uint32(500)
+	transactionOutput1.Coin = proto.Uint64(700000)
+	transactionOutput1.Hour = proto.Uint64(500)
 	transactionOutputs = append(transactionOutputs, &transactionOutput1)
 
 	kind, data = TransactionToDevice(deviceType, transactionInputs, transactionOutputs)
@@ -488,8 +489,8 @@ func TestTransactions(t *testing.T) {
 	transactionInputs = append(transactionInputs, &transactionInput)
 
 	transactionOutput.Address = proto.String("S6Dnv6gRTgsHCmZQxjN7cX5aRjJvDvqwp9")
-	transactionOutput.Coin = proto.Uint32(1000000)
-	transactionOutput.Hour = proto.Uint32(1000)
+	transactionOutput.Coin = proto.Uint64(1000000)
+	transactionOutput.Hour = proto.Uint64(1000)
 	transactionOutputs = append(transactionOutputs, &transactionOutput)
 
 	kind, data = TransactionToDevice(deviceType, transactionInputs, transactionOutputs)

@@ -26,16 +26,22 @@ Download dependencies using command:
 
 ### Generate protobuf files
 
-If you need to generate google protobuf files yourself (if you are creating a new message for instance). You need to [install protoc](http://google.github.io/proto-lens/installing-protoc.html) first, then run the following:
+If you need to generate google protobuf files yourself (if you are creating a new message for instance). You need to 
+
+- [Install protoc](http://google.github.io/proto-lens/installing-protoc.html)
+- [Install `protoc-gen-gogofaster`](https://github.com/gogo/protobuf#more-speed-and-more-generated-code)
+
+- Run the following:
 
 ```bash
-cd device-wallet
-protoc -I ./messages  --go_out=./messages messages/messages.proto messages/types.proto messages/descriptor.proto 
+make proto
 ```
 
 ### Run
 
-    go run cli.go
+```bash
+go run cli.go
+```
 
 See also [CLI.md](https://github.com/skycoin/hardware-wallet-go/blob/master/CLI.md) for information about the Command Line Interface.
 

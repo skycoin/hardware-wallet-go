@@ -1,19 +1,18 @@
 /*
 Package cli implements an interface for creating a CLI application.
-Includes methods for manipulating wallets files and interacting with the
-webrpc API to query a skycoin node's status.
 */
 package cli
 
 import (
 	"fmt"
 
+	"github.com/skycoin/skycoin/src/util/logging"
 	gcli "github.com/urfave/cli"
 )
 
 const (
 	// Version is the CLI Version
-	Version = "0.24.1"
+	Version = "1.7.0"
 )
 
 var (
@@ -58,6 +57,8 @@ GLOBAL OPTIONS:
 COPYRIGHT:
    {{.Copyright}}{{end}}
 `)
+
+	log = logging.MustGetLogger("skycoin-hw-cli")
 )
 
 // App Wraps the app so that main package won't use the raw App directly,
@@ -78,48 +79,33 @@ func NewApp() (*App, error) {
 	}
 
 	commands := []gcli.Command{
-		deviceApplySettingsCmd(),
-		deviceSetMnemonicCmd(),
-		deviceFeaturesCmd(),
-		deviceGenerateMnemonicCmd(),
-		deviceAddressGenCmd(),
-		deviceFirmwareUpdate(),
-		deviceSignMessageCmd(),
-		deviceCheckMessageSignatureCmd(),
-		deviceSetPinCode(),
-		deviceWipeCmd(),
-		deviceBackupCmd(),
-		deviceGetVersionCmd(),
-		deviceRecoveryCmd(),
-		deviceCancelCmd(),
-		deviceTransactionSignCmd(),
-		emulatorApplySettingsCmd(),
-		emulatorSetMnemonicCmd(),
-		emulatorFeaturesCmd(),
-		emulatorGenerateMnemonicCmd(),
-		emulatorAddressGenCmd(),
-		emulatorSignMessageCmd(),
-		emulatorCheckMessageSignatureCmd(),
-		emulatorSetPinCode(),
-		emulatorWipeCmd(),
-		emulatorBackupCmd(),
-		emulatorGetVersionCmd(),
-		emulatorRecoveryCmd(),
-		emulatorCancelCmd(),
-		emulatorTransactionSignCmd(),
+		applySettingsCmd(),
+		setMnemonicCmd(),
+		featuresCmd(),
+		generateMnemonicCmd(),
+		addressGenCmd(),
+		firmwareUpdate(),
+		signMessageCmd(),
+		checkMessageSignatureCmd(),
+		setPinCode(),
+		wipeCmd(),
+		backupCmd(),
+		recoveryCmd(),
+		cancelCmd(),
+		transactionSignCmd(),
 		sandbox(),
 	}
 
-	app.Name = "skycoin-cli"
+	app.Name = "skycoin-hw-cli"
 	app.Version = Version
-	app.Usage = "the skycoin command line interface"
+	app.Usage = "the skycoin hardware wallet command line interface"
 	app.Commands = commands
 	app.EnableBashCompletion = true
-	app.OnUsageError = func(context *gcli.Context, err error, isSubcommand bool) error {
+	app.OnUsageError = func(context *gcli.Context, err error, _ bool) error {
 		fmt.Fprintf(context.App.Writer, "Error: %v\n\n", err)
 		return gcli.ShowAppHelp(context)
 	}
-	app.CommandNotFound = func(ctx *gcli.Context, command string) {
+	app.CommandNotFound = func(_ *gcli.Context, command string) {
 		tmp := fmt.Sprintf("{{.HelpName}}: '%s' is not a {{.HelpName}} command. See '{{.HelpName}} --help'.\n", command)
 		gcli.HelpPrinter(app.Writer, tmp, app)
 		gcli.OsExiter(1)
@@ -134,7 +120,7 @@ func (app *App) Run(args []string) error {
 }
 
 func onCommandUsageError(command string) gcli.OnUsageErrorFunc {
-	return func(c *gcli.Context, err error, isSubcommand bool) error {
+	return func(c *gcli.Context, err error, _ bool) error {
 		fmt.Fprintf(c.App.Writer, "Error: %v\n\n", err)
 		return gcli.ShowCommandHelp(c, command)
 	}

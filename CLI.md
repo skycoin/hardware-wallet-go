@@ -1,8 +1,6 @@
 # CLI Documentation
 
-Skycoin command line interface
-
-The CLI command APIs can be used directly from a Go application, see [Skycoin CLI Godoc](https://godoc.org/github.com/skycoin/skycoin/src/cli).
+Skycoin Hardware wallet command line interface
 
 <!-- MarkdownTOC autolink="true" bracket="round" levels="1,2,3" -->
 
@@ -36,51 +34,38 @@ $ ./install.sh
 
 ## Usage
 
-After the installation, you can run `skycoin-cli` to see the usage:
+After the installation, you can run `skycoin-hw-cli` to see the usage:
 
 ```
-$ skycoin-cli
+$ skycoin-hw-cli
 
 NAME:
-   skycoin-cli - the skycoin command line interface
+   skycoin-hw-cli - the skycoin hardware wallet command line interface
 
 USAGE:
-   skycoin-cli [global options] command [command options] [arguments...]
+   skycoin-hw-cli [global options] command [command options] [arguments...]
 
 VERSION:
-   0.24.1
+   1.7.0
 
 COMMANDS:
 
-     deviceApplySettings            Apply settings.
-     deviceSetMnemonic              Configure the device with a mnemonic.
-     deviceFeatures                 Ask the device Features.
-     deviceGenerateMnemonic         Ask the device to generate a mnemonic and configure itself with it.
-     deviceAddressGen               Generate skycoin addresses using the firmware
-     deviceFirmwareUpdate           Update device's firmware.
-     deviceSignMessage              Ask the device to sign a message using the secret key at given index.
-     deviceCheckMessageSignature    Check a message signature matches the given address.
-     deviceSetPinCode               Configure a PIN code on a device.
-     deviceWipe                     Ask the device to wipe clean all the configuration it contains.
-     deviceBackup                   Ask the device to perform the seed backup procedure.
-     deviceGetVersion               Ask firmware version.
-     deviceRecovery                 Ask the device to perform the seed recovery procedure.
-     deviceCancel                   Ask the device to cancel the ongoing procedure.
-     emulatorSetMnemonic            Configure an emulated device with a mnemonic.
-     emulatorFeatures               Ask the emulator Features.
-     emulatorGenerateMnemonic       Ask the device to generate a mnemonic and configure itself with it.
-     emulatorAddressGen             Generate skycoin addresses using an emulated device.
-     emulatorSignMessage            Ask the emulated device to sign a message using the secret key at given index.
-     emulatorCheckMessageSignature  Check a message signature matches the given address.
-     emulatorSetPinCode             Configure a PIN code on an emulated device.
-     emulatorWipe                   Ask the emulator to wipe clean all the configuration it contains.
-     emulatorBackup                 Ask the emulator to perform the seed backup procedure.
-     emulatorGetVersion             Ask firmware version.
-     emulatorRecovery               Ask the emulator to perform the seed recovery procedure.
-     emulatorCancel                 Ask the emulator to cancel the ongoing procedure.
-     emulatorTransactionSign        Ask the device to sign a transaction using the provided information.
-     sandbox                        Sandbox.
-     help, h                        Shows a list of commands or help for one command
+     applySettings            Apply settings.
+     setMnemonic              Configure the device with a mnemonic.
+     features                 Ask the device Features.
+     generateMnemonic         Ask the device to generate a mnemonic and configure itself with it.
+     addressGen               Generate skycoin addresses using the firmware
+     firmwareUpdate           Update device's firmware.
+     signMessage              Ask the device to sign a message using the secret key at given index.
+     checkMessageSignature    Check a message signature matches the given address.
+     setPinCode               Configure a PIN code on a device.
+     wipe                     Ask the device to wipe clean all the configuration it contains.
+     backup                   Ask the device to perform the seed backup procedure.
+     recovery                 Ask the device to perform the seed recovery procedure.
+     cancel                   Ask the device to cancel the ongoing procedure.
+     transactionSign        Ask the device to sign a transaction using the provided information.
+     sandbox                  Sandbox.
+     help, h                  Shows a list of commands or help for one command
 
 
 
@@ -95,7 +80,7 @@ Configure device with settings such as: using passphrase
 
 
 ```bash
-$skycoin-cli emulatorApplySettings --usePassphrase
+$ skycoin-hw-cli applySettings --usePassphrase
 ```
 
 ```
@@ -125,7 +110,7 @@ The use this command:
 
 
 ```bash
-$skycoin-cli deviceFirmwareUpdate --file=[your firmware .bin file]
+$ skycoin-hw-cli firmwareUpdate --file=[your firmware .bin file]
 ```
 
 ```
@@ -138,7 +123,7 @@ OPTIONS:
 Generate skycoin addresses using the firmware
 
 ```bash
-$skycoin-cli deviceAddressGen [number of addresses] [start index]
+$ skycoin-hw-cli addressGen [number of addresses] [start index]
 ```
 
 ```
@@ -152,7 +137,7 @@ OPTIONS:
 ##### Text output
 
 ```bash
-$skycoin-cli deviceAddressGen --addressN=2 --startIndex=0
+$ skycoin-hw-cli addressGen --addressN=2 --startIndex=0
 ```
 <details>
  <summary>View Output</summary>
@@ -169,7 +154,7 @@ MessageSkycoinAddress 117! Answer is: zC8GAQGQBfwk7vtTxVoRG7iMperHNuyYPs
 Configure the device with a mnemonic.
 
 ```bash
-$skycoin-cli deviceSetMnemonic [mnemonic]
+$ skycoin-hw-cli setMnemonic [mnemonic]
 ```
 
 ```
@@ -181,7 +166,7 @@ OPTIONS:
 ##### Text output
 
 ```bash
-$skycoin-cli deviceSetMnemonic --mnemonic="cloud flower upset remain green metal below cup stem infant art thank"
+$ skycoin-hw-cli setMnemonic --mnemonic="cloud flower upset remain green metal below cup stem infant art thank"
 ```
 <details>
  <summary>View Output</summary>
@@ -193,42 +178,19 @@ Ecloud flower upset remain green metal below cup stem infant art thank
 </details>
 
 
-### Get version
-
-Ask firmware version.
-
-```bash
-$skycoin-cli deviceGetVersion
-```
-
-#### Examples
-##### Text output
-
-```bash
-$skycoin-cli deviceGetVersion
-```
-<details>
- <summary>View Output</summary>
-
-```
-Firmware version is Firmware Version 1.6.1
-```
-</details>
-
-
 ### Generate mnemonic
 
 Ask the device to generate a mnemonic and configure itself with it.
 
 ```bash
-$skycoin-cli deviceGenerateMnemonic
+$ skycoin-hw-cli generateMnemonic
 ```
 
 #### Examples
 ##### Text output
 
 ```bash
-$skycoin-cli deviceGenerateMnemonic
+$ skycoin-hw-cli generateMnemonic
 ```
 <details>
  <summary>View Output</summary>
@@ -244,14 +206,14 @@ $skycoin-cli deviceGenerateMnemonic
 Configure the device with a pin code.
 
 ```bash
-$skycoin-cli deviceSetPinCode
+$ skycoin-hw-cli setPinCode
 ```
 
 #### Examples
 ##### Text output
 
 ```bash
-$skycoin-cli deviceSetPinCode
+$ skycoin-hw-cli setPinCode
 ```
 <details>
  <summary>View Output</summary>
@@ -284,7 +246,7 @@ PIN changed
 Ask the device to sign a message using the secret key at given index.
 
 ```bash
-$skycoin-cli deviceSignMessage [address index] [message to sign]
+$ skycoin-hw-cli signMessage [address index] [message to sign]
 ```
 
 ```
@@ -297,7 +259,7 @@ OPTIONS:
 ##### Text output
 
 ```bash
-$skycoin-cli deviceSignMessage  --addressN=2 --message="Hello World!"
+$ skycoin-hw-cli signMessage  --addressN=2 --message="Hello World!"
 ```
 <details>
  <summary>View Output</summary>
@@ -312,7 +274,7 @@ Success 2! address that issued the signature is: DEK8o3Dnnp8UfTZrZCcCPCA6oRLqDeu
 Check a message signature matches the given address.
 
 ```bash
-$skycoin-cli deviceCheckMessageSignature [address] [signed message] [signature]
+$ skycoin-hw-cli checkMessageSignature [address] [signed message] [signature]
 ```
 
 ```
@@ -326,7 +288,7 @@ OPTIONS:
 ##### Text output
 
 ```bash
-$skycoin-cli deviceCheckMessageSignature  --address=2EU3JbveHdkxW6z5tdhbbB2kRAWvXC2pLzw --message="Hello World!" --signature=GvKS4S3CA2YTpEPFA47yFdC5CP3y3qB18jwiX1URXqWQTvMjokd3A4upPz4wyeAyKJEtRdRDGUvUgoGASpsTTUeMn
+$ skycoin-hw-cli checkMessageSignature  --address=2EU3JbveHdkxW6z5tdhbbB2kRAWvXC2pLzw --message="Hello World!" --signature=GvKS4S3CA2YTpEPFA47yFdC5CP3y3qB18jwiX1URXqWQTvMjokd3A4upPz4wyeAyKJEtRdRDGUvUgoGASpsTTUeMn
 ```
 <details>
  <summary>View Output</summary>
@@ -357,7 +319,7 @@ coinbase address.
 The right script should look like this:
 
 ```bash
-$ skycoin-cli send -c $CHANGE_ADDRESS $RECIPIENT_ADDRESS $AMOUNT
+$ skycoin-hw-cli send -c $CHANGE_ADDRESS $RECIPIENT_ADDRESS $AMOUNT
 ```
 
 ### Wipe device
@@ -365,14 +327,14 @@ $ skycoin-cli send -c $CHANGE_ADDRESS $RECIPIENT_ADDRESS $AMOUNT
 Ask the device to generate a mnemonic and configure itself with it.
 
 ```bash
-$skycoin-cli deviceWipe
+$ skycoin-hw-cli wipe
 ```
 
 #### Examples
 ##### Text output
 
 ```bash
-$skycoin-cli deviceWipe
+$ skycoin-hw-cli wipe
 ```
 <details>
  <summary>View Output</summary>
@@ -391,14 +353,14 @@ Device wiped
 Ask the device to perform the seed backup procedure.
 
 ```bash
-$skycoin-cli deviceBackup
+$ skycoin-hw-cli backup
 ```
 
 #### Examples
 ##### Text output
 
 ```bash
-$skycoin-cli deviceBackup
+$ skycoin-hw-cli backup
 ```
 <details>
  <summary>View Output</summary>
@@ -415,14 +377,14 @@ $skycoin-cli deviceBackup
 Ask the device to perform the seed recovery procedure.
 
 ```bash
-$skycoin-cli deviceRecovery
+$ skycoin-hw-cli recovery
 ```
 
 #### Examples
 ##### Text output
 
 ```bash
-$skycoin-cli deviceRecovery
+$ skycoin-hw-cli recovery
 ```
 <details>
  <summary>View Output</summary>
@@ -462,7 +424,7 @@ Failed with code:  The seed is valid but does not match the one in the device
 Ask the device Features.
 
 ```bash
-$skycoin-cli deviceFeatures
+$ skycoin-hw-cli features
 ```
 
 <details>
@@ -500,7 +462,7 @@ UnfinishedBackup: false
 Ask the device to cancel the ongoing procedure.
 
 ```bash
-$skycoin-cli deviceCancel
+$ skycoin-hw-cli cancel
 ```
 
 <details>
@@ -526,7 +488,7 @@ OPTIONS:
 ```
 
 ```bash
-$skycoin emulatorTransactionSign --inputHash a885343cc57aedaab56ad88d860f2bd436289b0248d1adc55bcfa0d9b9b807c3 --inputIndex=0 --outputAddress=zC8GAQGQBfwk7vtTxVoRG7iMperHNuyYPs --coin=1000000 --hour=1
+$ skycoin-hw-cli transactionSign --inputHash a885343cc57aedaab56ad88d860f2bd436289b0248d1adc55bcfa0d9b9b807c3 --inputIndex=0 --outputAddress=zC8GAQGQBfwk7vtTxVoRG7iMperHNuyYPs --coin=1000000 --hour=1
 ```
 
 <details>

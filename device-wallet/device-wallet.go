@@ -10,7 +10,8 @@ import (
 	"net"
 	"time"
 
-	proto "github.com/golang/protobuf/proto"
+	proto "github.com/gogo/protobuf/proto"
+
 	messages "github.com/skycoin/hardware-wallet-go/device-wallet/messages"
 	"github.com/skycoin/hardware-wallet-go/device-wallet/usb"
 	"github.com/skycoin/hardware-wallet-go/device-wallet/wire"
@@ -347,29 +348,6 @@ func DeviceSetMnemonic(deviceType DeviceType, mnemonic string) {
 	log.Println(DecodeSuccessOrFailMsg(msg.Kind, msg.Data))
 }
 
-// DeviceGetVersion Ask the firmware version
-func DeviceGetVersion(deviceType DeviceType) string {
-
-	dev, err := getDevice(deviceType)
-	if err != nil {
-		log.Panicf(err.Error())
-		return ""
-	}
-	defer dev.Close()
-
-	skycoinGetVersion := &messages.GetVersion{}
-
-	data, _ := proto.Marshal(skycoinGetVersion)
-	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_GetVersion)
-
-	msg, err := sendToDevice(dev, chunks)
-	if err != nil {
-		log.Panicf(err.Error())
-		return ""
-	}
-	return DecodeSuccessOrFailMsg(msg.Kind, msg.Data)
-}
-
 // DeviceGenerateMnemonic Ask the device to generate a mnemonic and configure itself with it.
 func DeviceGenerateMnemonic(deviceType DeviceType, wordCount uint32, usePassphrase bool) {
 
@@ -613,7 +591,7 @@ func initialize(dev io.ReadWriteCloser) {
 }
 
 // DeviceApplySettings send ApplySettings request to the device
-func DeviceApplySettings(deviceType DeviceType, usePassphrase bool) wire.Message {
+func DeviceApplySettings(deviceType DeviceType, usePassphrase bool, label string) wire.Message {
 	dev, err := getDevice(deviceType)
 	if err != nil {
 		log.Panicf(err.Error())
@@ -621,8 +599,8 @@ func DeviceApplySettings(deviceType DeviceType, usePassphrase bool) wire.Message
 	defer dev.Close()
 
 	applySettings := &messages.ApplySettings{
+		Label:         proto.String(label),
 		Language:      proto.String(""),
-		Label:         proto.String(""),
 		UsePassphrase: proto.Bool(usePassphrase),
 	}
 	log.Println(applySettings)
