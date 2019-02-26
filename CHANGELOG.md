@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 
+- Add an `entropy` field in `GenerateMnemonic`
 - Mnemonic and recovery functions support `--wordCount` argument for the seed size (default `12`) .
 - Add `-deviceType` flag and `DEVICE_TYPE` env var to set devicetype, options are `USB` or `EMULATOR`.
 
@@ -18,6 +19,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 
 ### Removed
+- Remove `GetEntropy` and `Entropy` msg.
 
 ### Fixed
 
