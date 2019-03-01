@@ -686,3 +686,27 @@ func TestSet24WordsMnemonicOk(t *testing.T) {
 	err = proto.Unmarshal(msg.Data, success)
 	require.NoError(t, err)
 }
+
+func TestShouldHaveARequireBackupAfterGenerateMnemonic(t *testing.T) {
+	// NOTE(denisacostaq@gmail.com): Giving
+	device := testHelperGetDeviceWithBestEffort("TestShouldHaveARequireBackupAfterGenerateMnemonic", t)
+	require.NotNil(t, device)
+	err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
+	require.NoError(t, err)
+	_, err = device.Wipe()
+	require.NoError(t, err)
+
+	// NOTE(denisacostaq@gmail.com): When
+	msg, err := device.GenerateMnemonic(24, false)
+	require.NoError(t, err)
+	success := &messages.Success{}
+	err = proto.Unmarshal(msg.Data, success)
+	require.NoError(t, err)
+
+	// NOTE(denisacostaq@gmail.com): Assert
+	msg, err = device.GetFeatures()
+	require.NoError(t, err)
+	features := &messages.Features{}
+	err = proto.Unmarshal(msg.Data, features)
+	require.True(t, *features.NeedsBackup)
+}
