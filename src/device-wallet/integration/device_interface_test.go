@@ -626,3 +626,22 @@ func TestNotInitializedAtBirth(t *testing.T) {
 	require.NotNil(t, features.Initialized)
 	require.False(t, *features.Initialized)
 }
+
+func TestGenerateMnemonicOk(t *testing.T) {
+	// NOTE(denisacostaq@gmail.com): Giving
+	device := testHelperGetDeviceWithBestEffort("TestGenerateMnemonicOk", t)
+	require.NotNil(t, device)
+	err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
+	require.NoError(t, err)
+	_, err = device.Wipe()
+	require.NoError(t, err)
+
+	// NOTE(denisacostaq@gmail.com): When
+	msg, err := device.GenerateMnemonic(24, false)
+
+	// NOTE(denisacostaq@gmail.com): Assert
+	require.NoError(t, err)
+	success := &messages.Success{}
+	err = proto.Unmarshal(msg.Data, success)
+	require.NoError(t, err)
+}
