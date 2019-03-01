@@ -645,3 +645,23 @@ func TestGenerateMnemonicOk(t *testing.T) {
 	err = proto.Unmarshal(msg.Data, success)
 	require.NoError(t, err)
 }
+
+func TestSet12WordsMnemonicOk(t *testing.T) {
+	// NOTE(denisacostaq@gmail.com): Giving
+	device := testHelperGetDeviceWithBestEffort("TestSet12WordsMnemonicOk", t)
+	require.NotNil(t, device)
+	err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
+	require.NoError(t, err)
+	_, err = device.Wipe()
+	require.NoError(t, err)
+
+	// NOTE(denisacostaq@gmail.com): When
+	seed :="below pear clinic physical stage trust team wrist crystal insect valley pride"
+	msg, err := device.SetMnemonic(seed)
+
+	// NOTE(denisacostaq@gmail.com): Assert
+	require.NoError(t, err)
+	success := &messages.Success{}
+	err = proto.Unmarshal(msg.Data, success)
+	require.NoError(t, err)
+}
