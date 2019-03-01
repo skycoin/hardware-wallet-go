@@ -665,3 +665,24 @@ func TestSet12WordsMnemonicOk(t *testing.T) {
 	err = proto.Unmarshal(msg.Data, success)
 	require.NoError(t, err)
 }
+
+func TestSet24WordsMnemonicOk(t *testing.T) {
+	// NOTE(denisacostaq@gmail.com): Giving
+	device := testHelperGetDeviceWithBestEffort("TestSet24WordsMnemonicOk", t)
+	require.NotNil(t, device)
+	err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
+	require.NoError(t, err)
+	_, err = device.Wipe()
+	require.NoError(t, err)
+
+	// NOTE(denisacostaq@gmail.com): When
+	seed :="flash priority hotel stuff hole picnic vessel genre clean eager diesel " +
+		"shaft casual ugly ostrich awkward mechanic split siege round hold crew canal decade"
+	msg, err := device.SetMnemonic(seed)
+
+	// NOTE(denisacostaq@gmail.com): Assert
+	require.NoError(t, err)
+	success := &messages.Success{}
+	err = proto.Unmarshal(msg.Data, success)
+	require.NoError(t, err)
+}
