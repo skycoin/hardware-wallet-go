@@ -3,6 +3,8 @@ package cli
 import (
 	"fmt"
 
+	"github.com/skycoin/hardware-wallet-go/device-wallet/wire"
+
 	gcli "github.com/urfave/cli"
 
 	deviceWallet "github.com/skycoin/hardware-wallet-go/device-wallet"
@@ -28,42 +30,85 @@ func sandbox() gcli.Command {
 				return
 			}
 
-			deviceWallet.WipeDevice(deviceType)
+			_, err := deviceWallet.WipeDevice(deviceType)
+			if err != nil {
+				log.Error(err)
+				return
+			}
 
-			deviceWallet.DeviceSetMnemonic(deviceType, "cloud flower upset remain green metal below cup stem infant art thank")
+			_, err = deviceWallet.DeviceSetMnemonic(deviceType, "cloud flower upset remain green metal below cup stem infant art thank")
+			if err != nil {
+				log.Error(err)
+				return
+			}
 
 			var pinEnc string
-			kind, _ := deviceWallet.DeviceChangePin(deviceType)
-			for kind == uint16(messages.MessageType_MessageType_PinMatrixRequest) {
+			var msg wire.Message
+			msg, err = deviceWallet.DeviceChangePin(deviceType)
+			if err != nil {
+				log.Error(err)
+				return
+			}
+
+			for msg.Kind == uint16(messages.MessageType_MessageType_PinMatrixRequest) {
 				log.Printf("PinMatrixRequest response: ")
 				fmt.Scanln(&pinEnc)
-				kind, _ = deviceWallet.DevicePinMatrixAck(deviceType, pinEnc)
+				msg, err = deviceWallet.DevicePinMatrixAck(deviceType, pinEnc)
+				if err != nil {
+					log.Error(err)
+					return
+				}
 			}
 
 			// come on one-more time
 			// testing what happen when we try to change an existing pin code
-			kind, _ = deviceWallet.DeviceChangePin(deviceType)
-			for kind == uint16(messages.MessageType_MessageType_PinMatrixRequest) {
-				log.Printf("PinMatrixRequest response: ")
-				fmt.Scanln(&pinEnc)
-				kind, _ = deviceWallet.DevicePinMatrixAck(deviceType, pinEnc)
+			msg, err = deviceWallet.DeviceChangePin(deviceType)
+			if err != nil {
+				log.Error(err)
+				return
 			}
 
-			var data []byte
-			kind, data = deviceWallet.DeviceAddressGen(deviceType, 9, 15, false)
-			if kind == uint16(messages.MessageType_MessageType_PinMatrixRequest) {
+			for msg.Kind == uint16(messages.MessageType_MessageType_PinMatrixRequest) {
 				log.Printf("PinMatrixRequest response: ")
 				fmt.Scanln(&pinEnc)
-				kind, data = deviceWallet.DevicePinMatrixAck(deviceType, pinEnc)
+				msg, err = deviceWallet.DevicePinMatrixAck(deviceType, pinEnc)
+				if err != nil {
+					log.Error(err)
+					return
+				}
+			}
 
-				if kind == uint16(messages.MessageType_MessageType_ResponseSkycoinAddress) {
-					_, addresses := deviceWallet.DecodeResponseSkycoinAddress(kind, data)
+			msg, err = deviceWallet.DeviceAddressGen(deviceType, 9, 15, false)
+			if err != nil {
+				log.Error(err)
+				return
+			}
+
+			if msg.Kind == uint16(messages.MessageType_MessageType_PinMatrixRequest) {
+				log.Printf("PinMatrixRequest response: ")
+				fmt.Scanln(&pinEnc)
+				msg, err = deviceWallet.DevicePinMatrixAck(deviceType, pinEnc)
+				if err != nil {
+					log.Error(err)
+					return
+				}
+
+				if msg.Kind == uint16(messages.MessageType_MessageType_ResponseSkycoinAddress) {
+					addresses, err := deviceWallet.DecodeResponseSkycoinAddress(msg)
+					if err != nil {
+						log.Error(err)
+						return
+					}
 					log.Print("Successfully got address")
 					log.Print(addresses)
 				}
 			} else {
 				log.Println("Got addresses without pin code")
-				_, addresses := deviceWallet.DecodeResponseSkycoinAddress(kind, data)
+				addresses, err := deviceWallet.DecodeResponseSkycoinAddress(msg)
+				if err != nil {
+					log.Error(err)
+					return
+				}
 				log.Print(addresses)
 			}
 		},

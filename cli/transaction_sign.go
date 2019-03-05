@@ -3,6 +3,8 @@ package cli
 import (
 	"fmt"
 
+	"github.com/skycoin/hardware-wallet-go/device-wallet/wire"
+
 	"github.com/gogo/protobuf/proto"
 	gcli "github.com/urfave/cli"
 
@@ -95,34 +97,62 @@ func transactionSignCmd() gcli.Command {
 				}
 				transactionOutputs = append(transactionOutputs, &transactionOutput)
 			}
-			kind, data := deviceWallet.DeviceTransactionSign(deviceType, transactionInputs, transactionOutputs)
+
+			var msg wire.Message
+			msg, err := deviceWallet.DeviceTransactionSign(deviceType, transactionInputs, transactionOutputs)
+			if err != nil {
+				log.Error(err)
+				return
+			}
+
 			for {
-				switch kind {
+				switch msg.Kind {
 				case uint16(messages.MessageType_MessageType_ResponseTransactionSign):
-					_, signatures := deviceWallet.DecodeResponseTransactionSign(kind, data)
+					signatures, err := deviceWallet.DecodeResponseTransactionSign(msg)
+					if err != nil {
+						log.Error(err)
+						return
+					}
 					fmt.Println(signatures)
 					return
 				case uint16(messages.MessageType_MessageType_Success):
 					fmt.Println("Should end with ResponseTransactionSign request")
 					return
 				case uint16(messages.MessageType_MessageType_ButtonRequest):
-					msg := deviceWallet.DeviceButtonAck(deviceType)
-					kind, data = msg.Kind, msg.Data
+					msg, err = deviceWallet.DeviceButtonAck(deviceType)
+					if err != nil {
+						log.Error(err)
+						return
+					}
 				case uint16(messages.MessageType_MessageType_PassphraseRequest):
 					var passphrase string
 					fmt.Printf("Input passphrase: ")
 					fmt.Scanln(&passphrase)
-					kind, data = deviceWallet.DevicePassphraseAck(deviceType, passphrase)
+					msg, err = deviceWallet.DevicePassphraseAck(deviceType, passphrase)
+					if err != nil {
+						log.Error(err)
+						return
+					}
 				case uint16(messages.MessageType_MessageType_PinMatrixRequest):
 					var pinEnc string
 					fmt.Printf("PinMatrixRequest response: ")
 					fmt.Scanln(&pinEnc)
-					kind, data = deviceWallet.DevicePinMatrixAck(deviceType, pinEnc)
+					msg, err = deviceWallet.DevicePinMatrixAck(deviceType, pinEnc)
+					if err != nil {
+						log.Error(err)
+						return
+					}
 				case uint16(messages.MessageType_MessageType_Failure):
-					fmt.Printf("Failed with message: %s\n", deviceWallet.DecodeFailMsg(kind, data))
+					failMsg, err := deviceWallet.DecodeFailMsg(msg)
+					if err != nil {
+						log.Error(err)
+						return
+					}
+
+					fmt.Printf("Failed with message: %s\n", failMsg)
 					return
 				default:
-					fmt.Printf("Failed with message: %s\n", deviceWallet.DecodeFailMsg(kind, data))
+					log.Errorf("received unexpected message type: %s", messages.MessageType(msg.Kind))
 					return
 				}
 			}

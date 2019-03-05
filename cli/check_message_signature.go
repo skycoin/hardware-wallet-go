@@ -1,6 +1,8 @@
 package cli
 
 import (
+	"fmt"
+
 	gcli "github.com/urfave/cli"
 
 	deviceWallet "github.com/skycoin/hardware-wallet-go/device-wallet"
@@ -48,7 +50,19 @@ func checkMessageSignatureCmd() gcli.Command {
 				return
 			}
 
-			deviceWallet.DeviceCheckMessageSignature(deviceType, message, signature, address)
+			msg, err := deviceWallet.DeviceCheckMessageSignature(deviceType, message, signature, address)
+			if err != nil {
+				log.Error(err)
+				return
+			}
+
+			responseMsg, err := deviceWallet.DecodeSuccessOrFailMsg(msg)
+			if err != nil {
+				log.Error(err)
+				return
+			}
+
+			fmt.Println(responseMsg)
 		},
 	}
 }

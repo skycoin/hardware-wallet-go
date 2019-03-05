@@ -36,11 +36,21 @@ func setPinCode() gcli.Command {
 			}
 
 			var pinEnc string
-			kind, _ := deviceWallet.DeviceChangePin(deviceType)
-			for kind == uint16(messages.MessageType_MessageType_PinMatrixRequest) {
+			msg, err := deviceWallet.DeviceChangePin(deviceType)
+			if err != nil {
+				log.Error(err)
+				return
+			}
+
+			// TODO: can PinMatrixAck return MessageType_MessageType_PinMatrixRequest? figure out
+			for msg.Kind == uint16(messages.MessageType_MessageType_PinMatrixRequest) {
 				fmt.Printf("PinMatrixRequest response: ")
 				fmt.Scanln(&pinEnc)
-				kind, _ = deviceWallet.DevicePinMatrixAck(deviceType, pinEnc)
+				msg, err = deviceWallet.DevicePinMatrixAck(deviceType, pinEnc)
+				if err != nil {
+					log.Error(err)
+					return
+				}
 			}
 		},
 	}

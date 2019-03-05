@@ -31,7 +31,11 @@ func firmwareUpdate() gcli.Command {
 				panic(err)
 			}
 			fmt.Printf("Hash: %x\n", sha256.Sum256(firmware[0x100:]))
-			deviceWallet.DeviceFirmwareUpload(firmware, sha256.Sum256(firmware[0x100:]))
+			err = deviceWallet.DeviceFirmwareUpload(firmware, sha256.Sum256(firmware[0x100:]))
+			if err != nil {
+				log.Error(err)
+				return
+			}
 		},
 	}
 }

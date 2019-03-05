@@ -1,6 +1,8 @@
 package cli
 
 import (
+	"fmt"
+
 	gcli "github.com/urfave/cli"
 
 	deviceWallet "github.com/skycoin/hardware-wallet-go/device-wallet"
@@ -32,7 +34,19 @@ func cancelCmd() gcli.Command {
 				return
 			}
 
-			deviceWallet.DeviceCancel(deviceType)
+			msg, err := deviceWallet.DeviceCancel(deviceType)
+			if err != nil {
+				log.Error(err)
+				return
+			}
+
+			responseMsg, err := deviceWallet.DecodeSuccessOrFailMsg(msg)
+			if err != nil {
+				log.Error(err)
+				return
+			}
+
+			fmt.Println(responseMsg)
 		},
 	}
 }
