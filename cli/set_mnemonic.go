@@ -1,6 +1,8 @@
 package cli
 
 import (
+	"fmt"
+
 	gcli "github.com/urfave/cli"
 
 	deviceWallet "github.com/skycoin/hardware-wallet-go/device-wallet"
@@ -37,7 +39,19 @@ func setMnemonicCmd() gcli.Command {
 			}
 
 			mnemonic := c.String("mnemonic")
-			deviceWallet.DeviceSetMnemonic(deviceType, mnemonic)
+			msg, err := deviceWallet.DeviceSetMnemonic(deviceType, mnemonic)
+			if err != nil {
+				log.Error(err)
+				return
+			}
+
+			responseMsg, err := deviceWallet.DecodeSuccessOrFailMsg(msg)
+			if err != nil {
+				log.Error(err)
+				return
+			}
+
+			fmt.Println(responseMsg)
 		},
 	}
 }

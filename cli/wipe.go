@@ -1,6 +1,8 @@
 package cli
 
 import (
+	"fmt"
+
 	gcli "github.com/urfave/cli"
 
 	deviceWallet "github.com/skycoin/hardware-wallet-go/device-wallet"
@@ -32,7 +34,19 @@ func wipeCmd() gcli.Command {
 				return
 			}
 
-			deviceWallet.WipeDevice(deviceType)
+			msg, err := deviceWallet.WipeDevice(deviceType)
+			if err != nil {
+				log.Error(err)
+				return
+			}
+
+			responseMsg, err := deviceWallet.DecodeSuccessOrFailMsg(msg)
+			if err != nil {
+				log.Error(err)
+				return
+			}
+
+			fmt.Println(responseMsg)
 		},
 	}
 }
