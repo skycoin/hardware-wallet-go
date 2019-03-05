@@ -7,7 +7,7 @@ import (
 	gcli "github.com/urfave/cli"
 
 	deviceWallet "github.com/skycoin/hardware-wallet-go/device-wallet"
-	"github.com/skycoin/hardware-wallet-go/device-wallet/messages"
+	messages "github.com/skycoin/hardware-wallet-go/device-wallet/messages/go"
 )
 
 func transactionSignCmd() gcli.Command {
