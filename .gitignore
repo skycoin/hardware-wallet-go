@@ -17,3 +17,4 @@
 *.orig
 DS_Store
 
+vendor/google/protobuf/descriptor.pb.go
