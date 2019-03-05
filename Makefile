@@ -12,10 +12,10 @@ test:
 	go test github.com/skycoin/hardware-wallet-go/device-wallet/
 
 proto:
-	make -C device-wallet/messages build-go GO_VENDOR_DIR="$$PWD/vendor"
+	make -C device-wallet/messages build-go GO_VENDOR_DIR=$$PWD/vendor
 
 clean:
-	make -C device-wallet/messages clean-go GO_VENDOR_DIR="$$PWD/vendor"
+	make -C device-wallet/messages clean-go GO_VENDOR_DIR=$$PWD/vendor
 
 lint:
 	golangci-lint run --no-config  --deadline=3m --concurrency=2 --skip-dirs=device-wallet/usb -E goimports -E golint -E varcheck -E unparam -E deadcode -E structcheck ./...
