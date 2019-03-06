@@ -3,12 +3,12 @@ package cli
 import (
 	"fmt"
 
-	"github.com/skycoin/hardware-wallet-go/device-wallet/wire"
+	"github.com/skycoin/hardware-wallet-go/src/device-wallet/wire"
 
 	gcli "github.com/urfave/cli"
 
-	deviceWallet "github.com/skycoin/hardware-wallet-go/device-wallet"
-	"github.com/skycoin/hardware-wallet-go/device-wallet/messages"
+	deviceWallet "github.com/skycoin/hardware-wallet-go/src/device-wallet"
+	"github.com/skycoin/hardware-wallet-go/src/device-wallet/messages"
 )
 
 func sandbox() gcli.Command {
@@ -19,24 +19,25 @@ func sandbox() gcli.Command {
 		Description:  "",
 		Flags:        []gcli.Flag{},
 		OnUsageError: onCommandUsageError(name),
-		Action: func(_ *gcli.Context) {
-			var deviceType deviceWallet.DeviceType
-			if deviceWallet.DeviceConnected(deviceWallet.DeviceTypeEmulator) {
-				deviceType = deviceWallet.DeviceTypeEmulator
-			} else if deviceWallet.DeviceConnected(deviceType) {
-				deviceType = deviceWallet.DeviceTypeUsb
-			} else {
-				log.Println("no device detected")
+		Action: func(c *gcli.Context) {
+			var device *deviceWallet.Device
+			switch c.String("deviceType") {
+			case "USB":
+				device = deviceWallet.NewUSBDevice()
+			case "EMULATOR":
+				device = deviceWallet.NewEmulatorDevice()
+			default:
+				log.Error("device type not set")
 				return
 			}
 
-			_, err := deviceWallet.WipeDevice(deviceType)
+			_, err := device.Wipe()
 			if err != nil {
 				log.Error(err)
 				return
 			}
 
-			_, err = deviceWallet.DeviceSetMnemonic(deviceType, "cloud flower upset remain green metal below cup stem infant art thank")
+			_, err = device.SetMnemonic("cloud flower upset remain green metal below cup stem infant art thank")
 			if err != nil {
 				log.Error(err)
 				return
@@ -44,7 +45,7 @@ func sandbox() gcli.Command {
 
 			var pinEnc string
 			var msg wire.Message
-			msg, err = deviceWallet.DeviceChangePin(deviceType)
+			msg, err = device.ChangePin()
 			if err != nil {
 				log.Error(err)
 				return
@@ -53,7 +54,7 @@ func sandbox() gcli.Command {
 			for msg.Kind == uint16(messages.MessageType_MessageType_PinMatrixRequest) {
 				log.Printf("PinMatrixRequest response: ")
 				fmt.Scanln(&pinEnc)
-				msg, err = deviceWallet.DevicePinMatrixAck(deviceType, pinEnc)
+				msg, err = device.PinMatrixAck(pinEnc)
 				if err != nil {
 					log.Error(err)
 					return
@@ -62,7 +63,7 @@ func sandbox() gcli.Command {
 
 			// come on one-more time
 			// testing what happen when we try to change an existing pin code
-			msg, err = deviceWallet.DeviceChangePin(deviceType)
+			msg, err = device.ChangePin()
 			if err != nil {
 				log.Error(err)
 				return
@@ -71,14 +72,14 @@ func sandbox() gcli.Command {
 			for msg.Kind == uint16(messages.MessageType_MessageType_PinMatrixRequest) {
 				log.Printf("PinMatrixRequest response: ")
 				fmt.Scanln(&pinEnc)
-				msg, err = deviceWallet.DevicePinMatrixAck(deviceType, pinEnc)
+				msg, err = device.PinMatrixAck(pinEnc)
 				if err != nil {
 					log.Error(err)
 					return
 				}
 			}
 
-			msg, err = deviceWallet.DeviceAddressGen(deviceType, 9, 15, false)
+			msg, err = device.AddressGen(9, 15, false)
 			if err != nil {
 				log.Error(err)
 				return
@@ -87,7 +88,7 @@ func sandbox() gcli.Command {
 			if msg.Kind == uint16(messages.MessageType_MessageType_PinMatrixRequest) {
 				log.Printf("PinMatrixRequest response: ")
 				fmt.Scanln(&pinEnc)
-				msg, err = deviceWallet.DevicePinMatrixAck(deviceType, pinEnc)
+				msg, err = device.PinMatrixAck(pinEnc)
 				if err != nil {
 					log.Error(err)
 					return

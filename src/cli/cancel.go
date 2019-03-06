@@ -5,41 +5,36 @@ import (
 
 	gcli "github.com/urfave/cli"
 
-	deviceWallet "github.com/skycoin/hardware-wallet-go/device-wallet"
+	deviceWallet "github.com/skycoin/hardware-wallet-go/src/device-wallet"
 )
 
-func setMnemonicCmd() gcli.Command {
-	name := "setMnemonic"
+func cancelCmd() gcli.Command {
+	name := "cancel"
 	return gcli.Command{
-		Name:        name,
-		Usage:       "Configure the device with a mnemonic.",
-		Description: "",
+		Name:         name,
+		Usage:        "Ask the device to cancel the ongoing procedure.",
+		Description:  "",
+		OnUsageError: onCommandUsageError(name),
 		Flags: []gcli.Flag{
-			gcli.StringFlag{
-				Name:  "mnemonic",
-				Usage: "Mnemonic that will be stored in the device to generate addresses.",
-			},
 			gcli.StringFlag{
 				Name:   "deviceType",
 				Usage:  "Device type to send instructions to, hardware wallet (USB) or emulator.",
 				EnvVar: "DEVICE_TYPE",
 			},
 		},
-		OnUsageError: onCommandUsageError(name),
 		Action: func(c *gcli.Context) {
-			var deviceType deviceWallet.DeviceType
+			var device *deviceWallet.Device
 			switch c.String("deviceType") {
 			case "USB":
-				deviceType = deviceWallet.DeviceTypeUsb
+				device = deviceWallet.NewUSBDevice()
 			case "EMULATOR":
-				deviceType = deviceWallet.DeviceTypeEmulator
+				device = deviceWallet.NewEmulatorDevice()
 			default:
 				log.Error("device type not set")
 				return
 			}
 
-			mnemonic := c.String("mnemonic")
-			msg, err := deviceWallet.DeviceSetMnemonic(deviceType, mnemonic)
+			msg, err := device.Cancel()
 			if err != nil {
 				log.Error(err)
 				return

@@ -6,9 +6,8 @@ import (
 	"github.com/gogo/protobuf/proto"
 	gcli "github.com/urfave/cli"
 
-	"github.com/skycoin/hardware-wallet-go/device-wallet/messages"
-
-	deviceWallet "github.com/skycoin/hardware-wallet-go/device-wallet"
+	deviceWallet "github.com/skycoin/hardware-wallet-go/src/device-wallet"
+	"github.com/skycoin/hardware-wallet-go/src/device-wallet/messages"
 )
 
 func featuresCmd() gcli.Command {
@@ -26,18 +25,18 @@ func featuresCmd() gcli.Command {
 			},
 		},
 		Action: func(c *gcli.Context) {
-			var deviceType deviceWallet.DeviceType
+			var device *deviceWallet.Device
 			switch c.String("deviceType") {
 			case "USB":
-				deviceType = deviceWallet.DeviceTypeUsb
+				device = deviceWallet.NewUSBDevice()
 			case "EMULATOR":
-				deviceType = deviceWallet.DeviceTypeEmulator
+				device = deviceWallet.NewEmulatorDevice()
 			default:
 				log.Error("device type not set")
 				return
 			}
 
-			msg, err := deviceWallet.DeviceGetFeatures(deviceType)
+			msg, err := device.GetFeatures()
 			if err != nil {
 				log.Error(err)
 				return

@@ -3,13 +3,14 @@ package cli
 import (
 	"fmt"
 
-	"github.com/skycoin/hardware-wallet-go/device-wallet/wire"
-
 	"github.com/gogo/protobuf/proto"
+
+	"github.com/skycoin/hardware-wallet-go/src/device-wallet/wire"
+
 	gcli "github.com/urfave/cli"
 
-	deviceWallet "github.com/skycoin/hardware-wallet-go/device-wallet"
-	"github.com/skycoin/hardware-wallet-go/device-wallet/messages"
+	deviceWallet "github.com/skycoin/hardware-wallet-go/src/device-wallet"
+	"github.com/skycoin/hardware-wallet-go/src/device-wallet/messages"
 )
 
 func transactionSignCmd() gcli.Command {
@@ -58,12 +59,12 @@ func transactionSignCmd() gcli.Command {
 			hours := c.Int64Slice("hour")
 			addressIndex := c.IntSlice("addressIndex")
 
-			var deviceType deviceWallet.DeviceType
+			var device *deviceWallet.Device
 			switch c.String("deviceType") {
 			case "USB":
-				deviceType = deviceWallet.DeviceTypeUsb
+				device = deviceWallet.NewUSBDevice()
 			case "EMULATOR":
-				deviceType = deviceWallet.DeviceTypeEmulator
+				device = deviceWallet.NewEmulatorDevice()
 			default:
 				log.Error("device type not set")
 				return
@@ -99,7 +100,7 @@ func transactionSignCmd() gcli.Command {
 			}
 
 			var msg wire.Message
-			msg, err := deviceWallet.DeviceTransactionSign(deviceType, transactionInputs, transactionOutputs)
+			msg, err := device.TransactionSign(transactionInputs, transactionOutputs)
 			if err != nil {
 				log.Error(err)
 				return
@@ -119,7 +120,7 @@ func transactionSignCmd() gcli.Command {
 					fmt.Println("Should end with ResponseTransactionSign request")
 					return
 				case uint16(messages.MessageType_MessageType_ButtonRequest):
-					msg, err = deviceWallet.DeviceButtonAck(deviceType)
+					msg, err = device.ButtonAck()
 					if err != nil {
 						log.Error(err)
 						return
@@ -128,7 +129,7 @@ func transactionSignCmd() gcli.Command {
 					var passphrase string
 					fmt.Printf("Input passphrase: ")
 					fmt.Scanln(&passphrase)
-					msg, err = deviceWallet.DevicePassphraseAck(deviceType, passphrase)
+					msg, err = device.PassphraseAck(passphrase)
 					if err != nil {
 						log.Error(err)
 						return
@@ -137,7 +138,7 @@ func transactionSignCmd() gcli.Command {
 					var pinEnc string
 					fmt.Printf("PinMatrixRequest response: ")
 					fmt.Scanln(&pinEnc)
-					msg, err = deviceWallet.DevicePinMatrixAck(deviceType, pinEnc)
+					msg, err = device.PinMatrixAck(pinEnc)
 					if err != nil {
 						log.Error(err)
 						return
