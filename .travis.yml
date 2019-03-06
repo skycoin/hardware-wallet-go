@@ -16,6 +16,7 @@ before_install:
   - git clone --branch v1.2.0 --depth 1 https://github.com/gogo/protobuf $GOPATH/src/github.com/gogo/protobuf
   - ( cd $GOPATH/src/github.com/gogo/protobuf/protoc-gen-gogofast && go install )
 install:
+  - git submodule update --remote --recursive
   - make proto
   - grep -R 'google/protobuf' .
   - go get github.com/skycoin/hardware-wallet-go
