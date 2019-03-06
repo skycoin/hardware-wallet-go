@@ -5,11 +5,10 @@ matrix:
   include:
     - os: linux
     - os: osx
-env:
-  - PROTOC_VERSION=3.6.1 PROTOC_ZIP="protoc-$PROTOC_VERSION-$TRAVIS_OS_NAME-x86_64.zip" PROTOC_URL="https://github.com/google/protobuf/releases/download/v$PROTOC_VERSION/$PROTOC_ZIP"
 before_install:
   - source ./ci-scripts/install-$TRAVIS_OS_NAME.sh
   - git submodule update --remote --recursive
+  - sh "./device-wallet/messages/ci-scripts/install-$TRAVIS_OS_NAME.sh"
   - sh "./device-wallet/messages/ci-scripts/common.sh"
 install:
   - make vendor_proto
