@@ -9,7 +9,6 @@ before_install:
   - source ./ci-scripts/install-$TRAVIS_OS_NAME.sh
   - git submodule update --remote --recursive
   - sh "./device-wallet/messages/ci-scripts/install-$TRAVIS_OS_NAME.sh"
-  - sh "./device-wallet/messages/ci-scripts/common.sh"
 install:
   - make vendor_proto
   - go get github.com/skycoin/hardware-wallet-go
