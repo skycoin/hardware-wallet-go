@@ -3,6 +3,8 @@ package cli
 import (
 	"fmt"
 
+	"github.com/skycoin/hardware-wallet-go/device-wallet/wire"
+
 	gcli "github.com/urfave/cli"
 
 	deviceWallet "github.com/skycoin/hardware-wallet-go/device-wallet"
@@ -53,37 +55,64 @@ func addressGenCmd() gcli.Command {
 				return
 			}
 
-			var data []byte
 			var pinEnc string
-			kind, data := deviceWallet.DeviceAddressGen(deviceType, addressN, startIndex, confirmAddress)
-			for kind != uint16(messages.MessageType_MessageType_ResponseSkycoinAddress) && kind != uint16(messages.MessageType_MessageType_Failure) {
-
-				if kind == uint16(messages.MessageType_MessageType_PinMatrixRequest) {
+			var msg wire.Message
+			msg, err := deviceWallet.DeviceAddressGen(deviceType, addressN, startIndex, confirmAddress)
+			if err != nil {
+				log.Error(err)
+				return
+			}
+			for msg.Kind != uint16(messages.MessageType_MessageType_ResponseSkycoinAddress) && msg.Kind != uint16(messages.MessageType_MessageType_Failure) {
+				if msg.Kind == uint16(messages.MessageType_MessageType_PinMatrixRequest) {
 					fmt.Printf("PinMatrixRequest response: ")
 					fmt.Scanln(&pinEnc)
-					kind, data = deviceWallet.DevicePinMatrixAck(deviceType, pinEnc)
+					pinAckResponse, err := deviceWallet.DevicePinMatrixAck(deviceType, pinEnc)
+					if err != nil {
+						log.Error(err)
+						return
+					}
+					log.Infof("PinMatrixAck response: %s", pinAckResponse)
 					continue
 				}
-				if kind == uint16(messages.MessageType_MessageType_PassphraseRequest) {
+
+				if msg.Kind == uint16(messages.MessageType_MessageType_PassphraseRequest) {
 					var passphrase string
 					fmt.Printf("Input passphrase: ")
 					fmt.Scanln(&passphrase)
-					kind, data = deviceWallet.DevicePassphraseAck(deviceType, passphrase)
+					passphraseAckResponse, err := deviceWallet.DevicePassphraseAck(deviceType, passphrase)
+					if err != nil {
+						log.Error(err)
+						return
+					}
+					log.Infof("PinMatrixAck response: %s", passphraseAckResponse)
 					continue
 				}
 
-				if kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-					msg := deviceWallet.DeviceButtonAck(deviceType)
-					kind, data = msg.Kind, msg.Data
+				if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
+					msg, err = deviceWallet.DeviceButtonAck(deviceType)
+					if err != nil {
+						log.Error(err)
+						return
+					}
 					continue
 				}
 			}
 
-			if kind == uint16(messages.MessageType_MessageType_ResponseSkycoinAddress) {
-				_, addresses := deviceWallet.DecodeResponseSkycoinAddress(kind, data)
+			if msg.Kind == uint16(messages.MessageType_MessageType_ResponseSkycoinAddress) {
+				addresses, err := deviceWallet.DecodeResponseSkycoinAddress(msg)
+				if err != nil {
+					log.Error(err)
+					return
+				}
 				fmt.Println(addresses)
 			} else {
-				fmt.Println(deviceWallet.DecodeFailMsg(kind, data))
+				failMsg, err := deviceWallet.DecodeFailMsg(msg)
+				if err != nil {
+					log.Error(err)
+					return
+				}
+				fmt.Println("Failed with code: ", failMsg)
+				return
 			}
 		},
 	}

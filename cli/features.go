@@ -1,7 +1,12 @@
 package cli
 
 import (
+	"fmt"
+
+	"github.com/gogo/protobuf/proto"
 	gcli "github.com/urfave/cli"
+
+	"github.com/skycoin/hardware-wallet-go/device-wallet/messages"
 
 	deviceWallet "github.com/skycoin/hardware-wallet-go/device-wallet"
 )
@@ -32,7 +37,34 @@ func featuresCmd() gcli.Command {
 				return
 			}
 
-			deviceWallet.DeviceGetFeatures(deviceType)
+			msg, err := deviceWallet.DeviceGetFeatures(deviceType)
+			if err != nil {
+				log.Error(err)
+				return
+			}
+
+			switch msg.Kind {
+			case uint16(messages.MessageType_MessageType_Features):
+				features := &messages.Features{}
+				err = proto.Unmarshal(msg.Data, features)
+				if err != nil {
+					log.Error(err)
+					return
+				}
+
+				fmt.Println(features)
+			// TODO: figure out if this method can even return success or failure msg.
+			case uint16(messages.MessageType_MessageType_Failure), uint16(messages.MessageType_MessageType_Success):
+				msgData, err := deviceWallet.DecodeSuccessOrFailMsg(msg)
+				if err != nil {
+					log.Error(err)
+					return
+				}
+
+				fmt.Println(msgData)
+			default:
+				log.Errorf("received unexpected message type: %s", messages.MessageType(msg.Kind))
+			}
 		},
 	}
 }

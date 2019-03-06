@@ -3,6 +3,8 @@ package cli
 import (
 	"fmt"
 
+	"github.com/skycoin/hardware-wallet-go/device-wallet/wire"
+
 	gcli "github.com/urfave/cli"
 
 	deviceWallet "github.com/skycoin/hardware-wallet-go/device-wallet"
@@ -47,30 +49,54 @@ func signMessageCmd() gcli.Command {
 			addressN := c.Int("addressN")
 			message := c.String("message")
 			var signature string
-			kind, data := deviceWallet.DeviceSignMessage(deviceType, addressN, message)
-			for kind != uint16(messages.MessageType_MessageType_ResponseSkycoinSignMessage) && kind != uint16(messages.MessageType_MessageType_Failure) {
-				if kind == uint16(messages.MessageType_MessageType_PinMatrixRequest) {
+
+			var msg wire.Message
+			msg, err := deviceWallet.DeviceSignMessage(deviceType, addressN, message)
+			if err != nil {
+				log.Error(err)
+				return
+			}
+			for msg.Kind != uint16(messages.MessageType_MessageType_ResponseSkycoinSignMessage) && msg.Kind != uint16(messages.MessageType_MessageType_Failure) {
+				if msg.Kind == uint16(messages.MessageType_MessageType_PinMatrixRequest) {
 					var pinEnc string
 					fmt.Printf("PinMatrixRequest response: ")
 					fmt.Scanln(&pinEnc)
-					kind, data = deviceWallet.DevicePinMatrixAck(deviceType, pinEnc)
+					msg, err = deviceWallet.DevicePinMatrixAck(deviceType, pinEnc)
+					if err != nil {
+						log.Error(err)
+						return
+					}
 					continue
 				}
 
-				if kind == uint16(messages.MessageType_MessageType_PassphraseRequest) {
+				if msg.Kind == uint16(messages.MessageType_MessageType_PassphraseRequest) {
 					var passphrase string
 					fmt.Printf("Input passphrase: ")
 					fmt.Scanln(&passphrase)
-					kind, data = deviceWallet.DevicePassphraseAck(deviceType, passphrase)
+					msg, err = deviceWallet.DevicePassphraseAck(deviceType, passphrase)
+					if err != nil {
+						log.Error(err)
+						return
+					}
 					continue
 				}
 			}
 
-			if kind == uint16(messages.MessageType_MessageType_ResponseSkycoinSignMessage) {
-				kind, signature = deviceWallet.DecodeResponseSkycoinSignMessage(kind, data)
-				fmt.Printf("Success %d! the signature is: %s\n", kind, signature)
+			if msg.Kind == uint16(messages.MessageType_MessageType_ResponseSkycoinSignMessage) {
+				signature, err = deviceWallet.DecodeResponseSkycoinSignMessage(msg)
+				if err != nil {
+					log.Error(err)
+					return
+				}
+				fmt.Printf("Success %d! the signature is: %s\n", msg.Kind, signature)
 			} else {
-				fmt.Printf("Failed with message: %s\n", deviceWallet.DecodeFailMsg(kind, data))
+				failMsg, err := deviceWallet.DecodeFailMsg(msg)
+				if err != nil {
+					log.Error(err)
+					return
+				}
+
+				fmt.Printf("Failed with message: %s\n", failMsg)
 				return
 			}
 		},

@@ -36,18 +36,38 @@ func backupCmd() gcli.Command {
 				return
 			}
 
-			msg := deviceWallet.BackupDevice(deviceType)
+			msg, err := deviceWallet.BackupDevice(deviceType)
+			if err != nil {
+				log.Error(err)
+				return
+			}
 			if msg.Kind == uint16(messages.MessageType_MessageType_PinMatrixRequest) {
 				var pinEnc string
 				fmt.Printf("PinMatrixRequest response: ")
 				fmt.Scanln(&pinEnc)
-				kind, _ := deviceWallet.DevicePinMatrixAck(deviceType, pinEnc)
-				for kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-					msg = deviceWallet.DeviceButtonAck(deviceType)
+				msg, err := deviceWallet.DevicePinMatrixAck(deviceType, pinEnc)
+				if err != nil {
+					log.Error(err)
+					return
 				}
 
+				// TODO: can DeviceButtonAck return MessageType_MessageType_ButtonRequest? figure out
+				for msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
+					msg, err = deviceWallet.DeviceButtonAck(deviceType)
+					if err != nil {
+						log.Error(err)
+						return
+					}
+				}
 			}
-			fmt.Println(deviceWallet.DecodeSuccessOrFailMsg(msg.Kind, msg.Data))
+
+			responseMsg, err := deviceWallet.DecodeSuccessOrFailMsg(msg)
+			if err != nil {
+				log.Error(err)
+				return
+			}
+
+			fmt.Println(responseMsg)
 		},
 	}
 }

@@ -4,20 +4,26 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
+	"fmt"
 	"io"
-	"log"
 	"net"
 	"time"
 
-	proto "github.com/gogo/protobuf/proto"
+	"github.com/skycoin/skycoin/src/util/logging"
 
 	messages "github.com/skycoin/hardware-wallet-go/device-wallet/messages/go"
+
+	"github.com/skycoin/hardware-wallet-go/device-wallet/messages"
 	"github.com/skycoin/hardware-wallet-go/device-wallet/usb"
 	"github.com/skycoin/hardware-wallet-go/device-wallet/wire"
 )
 
 // DeviceType type of device: emulated or usb
 type DeviceType int32
+
+var (
+	log = logging.MustGetLogger("device-wallet")
+)
 
 const (
 	// DeviceTypeEmulator use emulator
@@ -130,12 +136,10 @@ func getDevice(deviceType DeviceType) (io.ReadWriteCloser, error) {
 }
 
 // DeviceCheckMessageSignature Check a message signature matches the given address.
-func DeviceCheckMessageSignature(deviceType DeviceType, message string, signature string, address string) (uint16, []byte) {
-
+func DeviceCheckMessageSignature(deviceType DeviceType, message string, signature string, address string) (wire.Message, error) {
 	dev, err := getDevice(deviceType)
 	if err != nil {
-		log.Panicf(err.Error())
-		return 0, make([]byte, 0)
+		return wire.Message{}, err
 	}
 	defer dev.Close()
 
@@ -147,128 +151,141 @@ func DeviceCheckMessageSignature(deviceType DeviceType, message string, signatur
 		Signature: proto.String(signature),
 	}
 
-	data, _ := proto.Marshal(skycoinCheckMessageSignature)
+	data, err := proto.Marshal(skycoinCheckMessageSignature)
+	if err != nil {
+		return wire.Message{}, err
+	}
 	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_SkycoinCheckMessageSignature)
 	msg, err := sendToDevice(dev, chunks)
 	if err != nil {
-		log.Print(err.Error())
-		return msg.Kind, msg.Data
+		return msg, err
 	}
-	log.Printf("Success %d! address that issued the signature is: %s\n", msg.Kind, msg.Data)
-	return msg.Kind, msg.Data
+	log.Printf("Success %s! address that issued the signature is: %s\n", messages.MessageType(msg.Kind), msg.Data)
+	return msg, nil
 }
 
 // MessageCancel prepare Cancel request
-func MessageCancel() [][64]byte {
+func MessageCancel() ([][64]byte, error) {
 	msg := &messages.Cancel{}
-	data, _ := proto.Marshal(msg)
+	data, err := proto.Marshal(msg)
+	if err != nil {
+		return [][64]byte{}, err
+	}
 	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_Cancel)
-	return chunks
+	return chunks, nil
 }
 
 // MessageButtonAck send this message (before user action) when the device expects the user to push a button
-func MessageButtonAck() [][64]byte {
+func MessageButtonAck() ([][64]byte, error) {
 	buttonAck := &messages.ButtonAck{}
-	data, _ := proto.Marshal(buttonAck)
+	data, err := proto.Marshal(buttonAck)
+	if err != nil {
+		return [][64]byte{}, err
+	}
 	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_ButtonAck)
-	return chunks
+	return chunks, nil
 }
 
 // MessagePassphraseAck send this message when the device expects receiving a Passphrase
-func MessagePassphraseAck(passphrase string) [][64]byte {
+func MessagePassphraseAck(passphrase string) ([][64]byte, error) {
 	msg := &messages.PassphraseAck{
 		Passphrase: proto.String(passphrase),
 	}
-	data, _ := proto.Marshal(msg)
+	data, err := proto.Marshal(msg)
+	if err != nil {
+		return [][64]byte{}, err
+	}
 	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_PassphraseAck)
-	return chunks
+	return chunks, nil
 }
 
 // MessageWordAck send this message between each word of the seed (before user action) during device backup
-func MessageWordAck(word string) [][64]byte {
+func MessageWordAck(word string) ([][64]byte, error) {
 	wordAck := &messages.WordAck{
 		Word: proto.String(word),
 	}
-	data, _ := proto.Marshal(wordAck)
+	data, err := proto.Marshal(wordAck)
+	if err != nil {
+		return [][64]byte{}, err
+	}
 	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_WordAck)
-	return chunks
+	return chunks, nil
 }
 
 // DeviceButtonAck when the device is waiting for the user to press a button
 // the PC need to acknowledge, showing it knows we are waiting for a user action
-func DeviceButtonAck(deviceType DeviceType) wire.Message {
+func DeviceButtonAck(deviceType DeviceType) (wire.Message, error) {
 	dev, err := getDevice(deviceType)
 	if err != nil {
-		log.Panicf(err.Error())
+		return wire.Message{}, err
 	}
 	defer dev.Close()
 	return deviceButtonAck(dev)
 }
 
-func deviceButtonAck(dev io.ReadWriteCloser) wire.Message {
+func deviceButtonAck(dev io.ReadWriteCloser) (wire.Message, error) {
 	var msg wire.Message
 	// Send ButtonAck
-	chunks := MessageButtonAck()
-	err := sendToDeviceNoAnswer(dev, chunks)
+	chunks, err := MessageButtonAck()
 	if err != nil {
-		log.Panicf(err.Error())
+		return msg, err
+	}
+	err = sendToDeviceNoAnswer(dev, chunks)
+	if err != nil {
+		return msg, err
 	}
 
 	_, err = msg.ReadFrom(dev)
 	time.Sleep(1 * time.Second)
 	if err != nil {
-		log.Panicf(err.Error())
+		return msg, err
 	}
-	return msg
+	return msg, nil
 }
 
 // DevicePassphraseAck send this message when the device is waiting for the user to input a passphrase
-func DevicePassphraseAck(deviceType DeviceType, passphrase string) (uint16, []byte) {
+func DevicePassphraseAck(deviceType DeviceType, passphrase string) (wire.Message, error) {
 	dev, err := getDevice(deviceType)
 	if err != nil {
-		log.Panicf(err.Error())
+		return wire.Message{}, err
 	}
 	defer dev.Close()
-	msg := devicePassphraseAck(dev, passphrase)
-	return msg.Kind, msg.Data
-}
 
-func devicePassphraseAck(dev io.ReadWriteCloser, passphrase string) wire.Message {
-	var msg wire.Message
-	chunks := MessagePassphraseAck(passphrase)
-	msg, err := sendToDevice(dev, chunks)
+	chunks, err := MessagePassphraseAck(passphrase)
 	if err != nil {
-		log.Panicf(err.Error())
+		return wire.Message{}, err
 	}
-	return msg
+	return sendToDevice(dev, chunks)
 }
 
 // DeviceCancel send Cancel request
-func DeviceCancel(deviceType DeviceType) {
+func DeviceCancel(deviceType DeviceType) (wire.Message, error) {
 	dev, err := getDevice(deviceType)
 	if err != nil {
-		log.Panicf(err.Error())
+		return wire.Message{}, err
 	}
 	defer dev.Close()
 
-	chunks := MessageCancel()
-	msg, err := sendToDevice(dev, chunks)
+	chunks, err := MessageCancel()
 	if err != nil {
-		log.Panicf(err.Error())
+		return wire.Message{}, err
 	}
-	log.Println(DecodeSuccessOrFailMsg(msg.Kind, msg.Data))
+
+	return sendToDevice(dev, chunks)
 }
 
 // DeviceFirmwareUpload Updates device's firmware
-func DeviceFirmwareUpload(payload []byte, hash [32]byte) {
+func DeviceFirmwareUpload(payload []byte, hash [32]byte) error {
 	dev, err := getDevice(DeviceTypeUsb)
 	if err != nil {
-		log.Panicf(err.Error())
-		return
+		return err
 	}
 	defer dev.Close()
 
-	initialize(dev)
+	err = initialize(dev)
+	if err != nil {
+		return err
+	}
 
 	log.Printf("Length of firmware %d", uint32(len(payload)))
 	deviceFirmwareErase := &messages.FirmwareErase{
@@ -277,13 +294,14 @@ func DeviceFirmwareUpload(payload []byte, hash [32]byte) {
 
 	erasedata, err := proto.Marshal(deviceFirmwareErase)
 	if err != nil {
-		log.Panicf(err.Error())
-		return
+		return err
 	}
-	// log.Printf("Data: %s\n", data)
-	chunks := makeTrezorMessage(erasedata, messages.MessageType_MessageType_FirmwareErase)
 
-	erasemsg, _ := sendToDevice(dev, chunks)
+	chunks := makeTrezorMessage(erasedata, messages.MessageType_MessageType_FirmwareErase)
+	erasemsg, err := sendToDevice(dev, chunks)
+	if err != nil {
+		return err
+	}
 	log.Printf("Success %d! FirmwareErase %s\n", erasemsg.Kind, erasemsg.Data)
 
 	log.Printf("Hash: %x\n", hash)
@@ -294,34 +312,29 @@ func DeviceFirmwareUpload(payload []byte, hash [32]byte) {
 
 	uploaddata, err := proto.Marshal(deviceFirmwareUpload)
 	if err != nil {
-		log.Panicf(err.Error())
-		return
+		return err
 	}
 	chunks = makeTrezorMessage(uploaddata, messages.MessageType_MessageType_FirmwareUpload)
 
 	uploadmsg, err := sendToDevice(dev, chunks)
 	if err != nil {
-		log.Panicf(err.Error())
-		return
+		return err
 	}
 	log.Printf("Success %d! FirmwareUpload %s\n", uploadmsg.Kind, uploadmsg.Data)
 
 	// Send ButtonAck
-	chunks = MessageButtonAck()
-	err = sendToDeviceNoAnswer(dev, chunks)
+	chunks, err = MessageButtonAck()
 	if err != nil {
-		log.Panicf(err.Error())
-		return
+		return err
 	}
+	return sendToDeviceNoAnswer(dev, chunks)
 }
 
 // DeviceSetMnemonic Configure the device with a mnemonic.
-func DeviceSetMnemonic(deviceType DeviceType, mnemonic string) {
-
+func DeviceSetMnemonic(deviceType DeviceType, mnemonic string) (wire.Message, error) {
 	dev, err := getDevice(deviceType)
 	if err != nil {
-		log.Panicf(err.Error())
-		return
+		return wire.Message{}, err
 	}
 	defer dev.Close()
 
@@ -331,29 +344,33 @@ func DeviceSetMnemonic(deviceType DeviceType, mnemonic string) {
 		Mnemonic: proto.String(mnemonic),
 	}
 
-	data, _ := proto.Marshal(skycoinSetMnemonic)
+	data, err := proto.Marshal(skycoinSetMnemonic)
+	if err != nil {
+		return wire.Message{}, err
+	}
+
 	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_SetMnemonic)
 
 	msg, err := sendToDevice(dev, chunks)
 	if err != nil {
-		log.Panicf(err.Error())
-		return
+		return wire.Message{}, err
 	}
 
-	log.Printf("Success %d! Mnemonic %s\n", msg.Kind, msg.Data)
 	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		msg = deviceButtonAck(dev)
+		msg, err = deviceButtonAck(dev)
+		if err != nil {
+			return wire.Message{}, err
+		}
 	}
-	log.Println(DecodeSuccessOrFailMsg(msg.Kind, msg.Data))
+
+	return msg, err
 }
 
 // DeviceGenerateMnemonic Ask the device to generate a mnemonic and configure itself with it.
-func DeviceGenerateMnemonic(deviceType DeviceType, wordCount uint32, usePassphrase bool) {
-
+func DeviceGenerateMnemonic(deviceType DeviceType, wordCount uint32, usePassphrase bool) (wire.Message, error) {
 	dev, err := getDevice(deviceType)
 	if err != nil {
-		log.Panicf(err.Error())
-		return
+		return wire.Message{}, err
 	}
 	defer dev.Close()
 
@@ -362,115 +379,114 @@ func DeviceGenerateMnemonic(deviceType DeviceType, wordCount uint32, usePassphra
 		WordCount:            proto.Uint32(wordCount),
 	}
 
-	data, _ := proto.Marshal(skycoinGenerateMnemonic)
+	data, err := proto.Marshal(skycoinGenerateMnemonic)
+	if err != nil {
+		return wire.Message{}, err
+	}
+
 	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_GenerateMnemonic)
 
 	msg, err := sendToDevice(dev, chunks)
 	if err != nil {
-		log.Panicf(err.Error())
-		return
+		return wire.Message{}, err
 	}
 
 	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		msg = deviceButtonAck(dev)
+		msg, err = deviceButtonAck(dev)
+		if err != nil {
+			return wire.Message{}, err
+		}
 	}
-	log.Println(DecodeSuccessOrFailMsg(msg.Kind, msg.Data))
+
+	return msg, err
 }
 
-func DecodeSuccessOrFailMsg(kind uint16, data []byte) string {
+func DecodeSuccessOrFailMsg(msg wire.Message) (string, error) {
+	if msg.Kind == uint16(messages.MessageType_MessageType_Success) {
+		return DecodeSuccessMsg(msg)
+	}
+	if msg.Kind == uint16(messages.MessageType_MessageType_Failure) {
+		return DecodeFailMsg(msg)
+	}
 
-	if kind == uint16(messages.MessageType_MessageType_Success) {
-		return DecodeSuccessMsg(kind, data)
-	}
-	if kind == uint16(messages.MessageType_MessageType_Failure) {
-		return DecodeFailMsg(kind, data)
-	}
-	log.Printf("Calling DecodeSuccessOrFailMsg on message kind %d", kind)
-	return ""
+	return "", fmt.Errorf("Calling DecodeSuccessOrFailMsg on message kind %s", messages.MessageType(msg.Kind))
 }
 
 // DecodeSuccessMsg convert byte data into string containing the success message returned by the device
-func DecodeSuccessMsg(kind uint16, data []byte) string {
-	if kind == uint16(messages.MessageType_MessageType_Success) {
+func DecodeSuccessMsg(msg wire.Message) (string, error) {
+	if msg.Kind == uint16(messages.MessageType_MessageType_Success) {
 		success := &messages.Success{}
-		err := proto.Unmarshal(data, success)
+		err := proto.Unmarshal(msg.Data, success)
 		if err != nil {
-			log.Panicf("unmarshaling error: %s\n", err.Error())
-			return ""
+			return "", err
 		}
-		return success.GetMessage()
+		return success.GetMessage(), nil
 	}
-	log.Panicf("Calling DecodeSuccessMsg with message type %d", kind)
-	return ""
+
+	return "", fmt.Errorf("calling DecodeSuccessMsg with wrong message type: %s", messages.MessageType(msg.Kind))
 }
 
 // DecodeFailMsg convert byte data into string containing the failure returned by the device
-func DecodeFailMsg(kind uint16, data []byte) string {
-	if kind == uint16(messages.MessageType_MessageType_Failure) {
+func DecodeFailMsg(msg wire.Message) (string, error) {
+	if msg.Kind == uint16(messages.MessageType_MessageType_Failure) {
 		failure := &messages.Failure{}
-		err := proto.Unmarshal(data, failure)
+		err := proto.Unmarshal(msg.Data, failure)
 		if err != nil {
-			log.Panicf("unmarshaling error: %s\n", err.Error())
-			return ""
+			return "", err
 		}
-		return failure.GetMessage()
+		return failure.GetMessage(), nil
 	}
-	log.Panicf("Calling DecodeFailMsg with message type %d", kind)
-	return ""
+	return "", fmt.Errorf("calling DecodeFailMsg with wrong message type: %s", messages.MessageType(msg.Kind))
 }
 
 // DecodeResponseSkycoinAddress convert byte data into list of addresses, meant to be used after DevicePinMatrixAck
-func DecodeResponseSkycoinAddress(kind uint16, data []byte) (uint16, []string) {
-	log.Printf("%x\n", data)
-	if kind == uint16(messages.MessageType_MessageType_ResponseSkycoinAddress) {
+func DecodeResponseSkycoinAddress(msg wire.Message) ([]string, error) {
+	log.Printf("%x\n", msg.Data)
+
+	if msg.Kind == uint16(messages.MessageType_MessageType_ResponseSkycoinAddress) {
 		responseSkycoinAddress := &messages.ResponseSkycoinAddress{}
-		err := proto.Unmarshal(data, responseSkycoinAddress)
+		err := proto.Unmarshal(msg.Data, responseSkycoinAddress)
 		if err != nil {
-			log.Panicf("unmarshaling error: %s\n", err.Error())
-			return kind, make([]string, 0)
+			return []string{}, err
 		}
-		return kind, responseSkycoinAddress.GetAddresses()
+		return responseSkycoinAddress.GetAddresses(), nil
 	}
-	log.Panic("Calling DecodeResponseSkycoinAddress with wrong message type")
-	return kind, make([]string, 0)
+
+	return []string{}, fmt.Errorf("calling DecodeResponseSkycoinAddress with wrong message type: %s", messages.MessageType(msg.Kind))
 }
 
 // DecodeResponseTransactionSign convert byte data into list of signatures
-func DecodeResponseTransactionSign(kind uint16, data []byte) (uint16, []string) {
-	if kind == uint16(messages.MessageType_MessageType_ResponseTransactionSign) {
+func DecodeResponseTransactionSign(msg wire.Message) ([]string, error) {
+	if msg.Kind == uint16(messages.MessageType_MessageType_ResponseTransactionSign) {
 		responseSkycoinTransactionSign := &messages.ResponseTransactionSign{}
-		err := proto.Unmarshal(data, responseSkycoinTransactionSign)
+		err := proto.Unmarshal(msg.Data, responseSkycoinTransactionSign)
 		if err != nil {
-			log.Panicf("unmarshaling error: %s\n", err.Error())
-			return kind, make([]string, 0)
+			return make([]string, 0), err
 		}
-		return kind, responseSkycoinTransactionSign.GetSignatures()
+		return responseSkycoinTransactionSign.GetSignatures(), nil
 	}
-	log.Panic("Calling DecodeResponseeSkycoinSignMessage with wrong message type")
-	return kind, make([]string, 0)
+
+	return []string{}, fmt.Errorf("calling DecodeResponseeSkycoinSignMessage with wrong message type: %s", messages.MessageType(msg.Kind))
 }
 
 // DecodeResponseSkycoinSignMessage convert byte data into signed message, meant to be used after DevicePinMatrixAck
-func DecodeResponseSkycoinSignMessage(kind uint16, data []byte) (uint16, string) {
-	if kind == uint16(messages.MessageType_MessageType_ResponseSkycoinSignMessage) {
+func DecodeResponseSkycoinSignMessage(msg wire.Message) (string, error) {
+	if msg.Kind == uint16(messages.MessageType_MessageType_ResponseSkycoinSignMessage) {
 		responseSkycoinSignMessage := &messages.ResponseSkycoinSignMessage{}
-		err := proto.Unmarshal(data, responseSkycoinSignMessage)
+		err := proto.Unmarshal(msg.Data, responseSkycoinSignMessage)
 		if err != nil {
-			log.Panicf("unmarshaling error: %s\n", err.Error())
-			return kind, ""
+			return "", err
 		}
-		return kind, responseSkycoinSignMessage.GetSignedMessage()
+		return responseSkycoinSignMessage.GetSignedMessage(), nil
 	}
-	log.Panic("Calling DecodeResponseeSkycoinSignMessage with wrong message type")
-	return kind, ""
+	return "", fmt.Errorf("calling DecodeResponseeSkycoinSignMessage with wrong message type: %s", messages.MessageType(msg.Kind))
 }
 
 // DeviceAddressGen Ask the device to generate an address
-func DeviceAddressGen(deviceType DeviceType, addressN int, startIndex int, confirmAddress bool) (uint16, []byte) {
-
+func DeviceAddressGen(deviceType DeviceType, addressN int, startIndex int, confirmAddress bool) (wire.Message, error) {
 	dev, err := getDevice(deviceType)
 	if err != nil {
-		log.Panicf(err.Error())
+		return wire.Message{}, err
 	}
 	defer dev.Close()
 	skycoinAddress := &messages.SkycoinAddress{
@@ -478,23 +494,21 @@ func DeviceAddressGen(deviceType DeviceType, addressN int, startIndex int, confi
 		ConfirmAddress: proto.Bool(confirmAddress),
 		StartIndex:     proto.Uint32(uint32(startIndex)),
 	}
-	data, _ := proto.Marshal(skycoinAddress)
+	data, err := proto.Marshal(skycoinAddress)
+	if err != nil {
+		return wire.Message{}, err
+	}
 
 	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_SkycoinAddress)
 
-	msg, err := sendToDevice(dev, chunks)
-	if err != nil {
-		log.Panicf("sendToDevice error: %s\n", err.Error())
-	}
-	return msg.Kind, msg.Data
+	return sendToDevice(dev, chunks)
 }
 
 // DeviceTransactionSign Ask the device to sign a transaction using the given information.
-func DeviceTransactionSign(deviceType DeviceType, inputs []*messages.SkycoinTransactionInput, outputs []*messages.SkycoinTransactionOutput) (uint16, []byte) {
-
+func DeviceTransactionSign(deviceType DeviceType, inputs []*messages.SkycoinTransactionInput, outputs []*messages.SkycoinTransactionOutput) (wire.Message, error) {
 	dev, err := getDevice(deviceType)
 	if err != nil {
-		log.Panicf(err.Error())
+		return wire.Message{}, err
 	}
 	defer dev.Close()
 
@@ -506,23 +520,21 @@ func DeviceTransactionSign(deviceType DeviceType, inputs []*messages.SkycoinTran
 	}
 	log.Println(skycoinTransactionSignMessage)
 
-	data, _ := proto.Marshal(skycoinTransactionSignMessage)
+	data, err := proto.Marshal(skycoinTransactionSignMessage)
+	if err != nil {
+		return wire.Message{}, err
+	}
 
 	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_TransactionSign)
 
-	msg, err := sendToDevice(dev, chunks)
-	if err != nil {
-		log.Panicf(err.Error())
-	}
-	return msg.Kind, msg.Data
+	return sendToDevice(dev, chunks)
 }
 
 // DeviceSignMessage Ask the device to sign a message using the secret key at given index.
-func DeviceSignMessage(deviceType DeviceType, addressN int, message string) (uint16, []byte) {
-
+func DeviceSignMessage(deviceType DeviceType, addressN int, message string) (wire.Message, error) {
 	dev, err := getDevice(deviceType)
 	if err != nil {
-		log.Panicf(err.Error())
+		return wire.Message{}, err
 	}
 	defer dev.Close()
 
@@ -531,15 +543,14 @@ func DeviceSignMessage(deviceType DeviceType, addressN int, message string) (uin
 		Message:  proto.String(message),
 	}
 
-	data, _ := proto.Marshal(skycoinSignMessage)
+	data, err := proto.Marshal(skycoinSignMessage)
+	if err != nil {
+		return wire.Message{}, err
+	}
 
 	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_SkycoinSignMessage)
 
-	msg, err := sendToDevice(dev, chunks)
-	if err != nil {
-		log.Panicf(err.Error())
-	}
-	return msg.Kind, msg.Data
+	return sendToDevice(dev, chunks)
 }
 
 // DeviceConnected check if a device is connected
@@ -573,24 +584,26 @@ func DeviceConnected(deviceType DeviceType) bool {
 }
 
 // Initialize send an init request to the device
-func initialize(dev io.ReadWriteCloser) {
+func initialize(dev io.ReadWriteCloser) error {
 	var chunks [][64]byte
 
 	initialize := &messages.Initialize{}
-	data, _ := proto.Marshal(initialize)
-	chunks = makeTrezorMessage(data, messages.MessageType_MessageType_Initialize)
-	_, err := sendToDevice(dev, chunks)
+	data, err := proto.Marshal(initialize)
 	if err != nil {
-		log.Panicf(err.Error())
-		return
+		return err
 	}
+
+	chunks = makeTrezorMessage(data, messages.MessageType_MessageType_Initialize)
+	_, err = sendToDevice(dev, chunks)
+
+	return err
 }
 
 // DeviceApplySettings send ApplySettings request to the device
-func DeviceApplySettings(deviceType DeviceType, usePassphrase bool, label string) wire.Message {
+func DeviceApplySettings(deviceType DeviceType, usePassphrase bool, label string) (wire.Message, error) {
 	dev, err := getDevice(deviceType)
 	if err != nil {
-		log.Panicf(err.Error())
+		return wire.Message{}, err
 	}
 	defer dev.Close()
 
@@ -600,133 +613,94 @@ func DeviceApplySettings(deviceType DeviceType, usePassphrase bool, label string
 		UsePassphrase: proto.Bool(usePassphrase),
 	}
 	log.Println(applySettings)
-	data, _ := proto.Marshal(applySettings)
-	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_ApplySettings)
-	msg, err := sendToDevice(dev, chunks)
+	data, err := proto.Marshal(applySettings)
 	if err != nil {
-		log.Panicf(err.Error())
+		return wire.Message{}, err
 	}
-	return msg
+
+	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_ApplySettings)
+	return sendToDevice(dev, chunks)
 }
 
 // DeviceGetFeatures send Features message to the device
-func DeviceGetFeatures(deviceType DeviceType) {
+func DeviceGetFeatures(deviceType DeviceType) (wire.Message, error) {
 	dev, err := getDevice(deviceType)
 	if err != nil {
-		log.Panicf(err.Error())
-		return
+		return wire.Message{}, err
 	}
 	defer dev.Close()
 
 	featureMsg := &messages.GetFeatures{}
-	data, _ := proto.Marshal(featureMsg)
+	data, err := proto.Marshal(featureMsg)
+	if err != nil {
+		return wire.Message{}, err
+	}
+
 	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_GetFeatures)
-	msg, err := sendToDevice(dev, chunks)
-	if err != nil {
-		log.Panicf(err.Error())
-	}
-	if msg.Kind == uint16(messages.MessageType_MessageType_Failure) || msg.Kind == uint16(messages.MessageType_MessageType_Success) {
-		log.Printf("Received message kind: %d %s\n", msg.Kind, DecodeSuccessOrFailMsg(msg.Kind, msg.Data))
-		return
-	}
-	features := &messages.Features{}
-	err = proto.Unmarshal(msg.Data, features)
-	if err != nil {
-		log.Panicf("unmarshaling error: %s\n", err.Error())
-	}
-	log.Printf(`Vendor: %s
-MajorVersion: %d
-MinorVersion: %d
-PatchVersion: %d
-BootloaderMode: %t
-DeviceId: %x
-PinProtection: %t
-PassphraseProtection: %t
-Language: %s
-Label: %s
-Initialized: %t
-BootloaderHash: %x
-PinCached: %t
-PassphraseCached: %t
-FirmwarePresent: %t
-NeedsBackup: %t
-Model: %s
-FwMajor: %d
-FwMinor: %d
-FwPatch: %d
-FwVendor: %s
-FwVendorKeys: %s
-UnfinishedBackup: %t`,
-		features.GetVendor(),
-		features.GetMajorVersion(),
-		features.GetMinorVersion(),
-		features.GetPatchVersion(),
-		features.GetBootloaderMode(),
-		features.GetDeviceId(),
-		features.GetPinProtection(),
-		features.GetPassphraseProtection(),
-		features.GetLanguage(),
-		features.GetLabel(),
-		features.GetInitialized(),
-		features.GetBootloaderHash(),
-		features.GetPinCached(),
-		features.GetPassphraseCached(),
-		features.GetFirmwarePresent(),
-		features.GetNeedsBackup(),
-		features.GetModel(),
-		features.GetFwMajor(),
-		features.GetFwMinor(),
-		features.GetFwPatch(),
-		features.GetFwVendor(),
-		features.GetFwVendorKeys(),
-		features.GetUnfinishedBackup())
+
+	return sendToDevice(dev, chunks)
 }
 
 // BackupDevice ask the device to perform the seed backup
-func BackupDevice(deviceType DeviceType) wire.Message {
+func BackupDevice(deviceType DeviceType) (wire.Message, error) {
 	dev, err := getDevice(deviceType)
 	if err != nil {
-		log.Panicf(err.Error())
+		return wire.Message{}, err
 	}
 	defer dev.Close()
 	var msg wire.Message
 	var chunks [][64]byte
-	initialize(dev)
+	err = initialize(dev)
+	if err != nil {
+		return wire.Message{}, err
+	}
 
 	backupDevice := &messages.BackupDevice{}
-	data, _ := proto.Marshal(backupDevice)
+	data, err := proto.Marshal(backupDevice)
+	if err != nil {
+		return wire.Message{}, err
+	}
 	chunks = makeTrezorMessage(data, messages.MessageType_MessageType_BackupDevice)
 	msg, err = sendToDevice(dev, chunks)
 	if err != nil {
-		log.Panicf(err.Error())
+		return wire.Message{}, err
 	}
 
 	for msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		msg = deviceButtonAck(dev)
+		msg, err = deviceButtonAck(dev)
+		if err != nil {
+			return wire.Message{}, err
+		}
 	}
-	return msg
+
+	return msg, nil
 }
 
 // DeviceWordAck send a word to the device during device "recovery procedure"
-func DeviceWordAck(deviceType DeviceType, word string) wire.Message {
+func DeviceWordAck(deviceType DeviceType, word string) (wire.Message, error) {
 	dev, err := getDevice(deviceType)
 	if err != nil {
-		log.Panicf(err.Error())
+		return wire.Message{}, err
 	}
+
 	defer dev.Close()
-	chunks := MessageWordAck(word)
+	chunks, err := MessageWordAck(word)
+	if err != nil {
+		return wire.Message{}, err
+	}
 	msg, err := sendToDevice(dev, chunks)
 	if err != nil {
-		log.Panicf(err.Error())
+		return wire.Message{}, err
 	}
-	return msg
+
+	return msg, nil
 }
 
 // RecoveryDevice ask the device to perform the seed backup
-func RecoveryDevice(deviceType DeviceType, wordCount uint32, usePassphrase, dryRun bool) wire.Message {
+func RecoveryDevice(deviceType DeviceType, wordCount uint32, usePassphrase, dryRun bool) (wire.Message, error) {
 	dev, err := getDevice(deviceType)
 	if err != nil {
-		log.Panicf(err.Error())
+		return wire.Message{}, err
 	}
 	defer dev.Close()
 	var msg wire.Message
@@ -739,49 +713,71 @@ func RecoveryDevice(deviceType DeviceType, wordCount uint32, usePassphrase, dryR
 		PassphraseProtection: proto.Bool(usePassphrase),
 		DryRun:               proto.Bool(dryRun),
 	}
-	data, _ := proto.Marshal(recoveryDevice)
+	data, err := proto.Marshal(recoveryDevice)
+	if err != nil {
+		return wire.Message{}, err
+	}
 	chunks = makeTrezorMessage(data, messages.MessageType_MessageType_RecoveryDevice)
 	msg, err = sendToDevice(dev, chunks)
 	if err != nil {
-		log.Panicf(err.Error())
+		return msg, err
 	}
 	log.Printf("Recovery device %d! Answer is: %s\n", msg.Kind, msg.Data)
 
 	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		msg = deviceButtonAck(dev)
+		msg, err = deviceButtonAck(dev)
+		if err != nil {
+			return wire.Message{}, err
+		}
 	}
-	return msg
+
+	return msg, nil
 }
 
 // WipeDevice wipes out device configuration
-func WipeDevice(deviceType DeviceType) {
+func WipeDevice(deviceType DeviceType) (wire.Message, error) {
 	dev, err := getDevice(deviceType)
 	if err != nil {
-		log.Panicf(err.Error())
-		return
+		return wire.Message{}, err
 	}
+
 	defer dev.Close()
-	var msg wire.Message
 	var chunks [][64]byte
 
-	initialize(dev)
+	err = initialize(dev)
+	if err != nil {
+		return wire.Message{}, err
+	}
 
 	wipeDevice := &messages.WipeDevice{}
-	data, _ := proto.Marshal(wipeDevice)
+	data, err := proto.Marshal(wipeDevice)
+	if err != nil {
+		return wire.Message{}, err
+	}
+
+	var msg wire.Message
 	chunks = makeTrezorMessage(data, messages.MessageType_MessageType_WipeDevice)
 	msg, err = sendToDevice(dev, chunks)
 	if err != nil {
-		log.Panicf(err.Error())
-		return
+		return wire.Message{}, err
 	}
 	log.Printf("Wipe device %d! Answer is: %x\n", msg.Kind, msg.Data)
 
 	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		msg = deviceButtonAck(dev)
+		msg, err = deviceButtonAck(dev)
+		if err != nil {
+			return wire.Message{}, err
+		}
 	}
-	log.Println(DecodeSuccessOrFailMsg(msg.Kind, msg.Data))
 
-	initialize(dev)
+	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
+		err = initialize(dev)
+		if err != nil {
+			return wire.Message{}, err
+		}
+	}
+
+	return msg, err
 }
 
 // DeviceChangePin changes device's PIN code
@@ -800,11 +796,10 @@ func WipeDevice(deviceType DeviceType) {
 // To set the PIN "12345", the positions are:
 // top, bottom-right, top-left, right, top-right
 // so you must send "83769".
-func DeviceChangePin(deviceType DeviceType) (uint16, []byte) {
+func DeviceChangePin(deviceType DeviceType) (wire.Message, error) {
 	dev, err := getDevice(deviceType)
 	if err != nil {
-		log.Panicf(err.Error())
-		return 0, make([]byte, 0)
+		return wire.Message{}, err
 	}
 	defer dev.Close()
 
@@ -813,40 +808,37 @@ func DeviceChangePin(deviceType DeviceType) (uint16, []byte) {
 	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_ChangePin)
 	msg, err := sendToDevice(dev, chunks)
 	if err != nil {
-		log.Panicf(err.Error())
-		return msg.Kind, msg.Data
+		return wire.Message{}, err
 	}
+
 	// Acknowledge that a button has been pressed
 	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		msg = deviceButtonAck(dev)
+		msg, err = deviceButtonAck(dev)
+		if err != nil {
+			return msg, err
+		}
 	}
-	return msg.Kind, msg.Data
+	return msg, nil
 }
 
 // DevicePinMatrixAck during PIN code setting use this message to send user input to device
-func DevicePinMatrixAck(deviceType DeviceType, p string) (uint16, []byte) {
+func DevicePinMatrixAck(deviceType DeviceType, p string) (wire.Message, error) {
 	time.Sleep(1 * time.Second)
 	dev, err := getDevice(deviceType)
 	if err != nil {
-		log.Panicf(err.Error())
-		return 0, make([]byte, 0)
+		return wire.Message{}, err
 	}
 	defer dev.Close()
-	var msg wire.Message
+
 	log.Printf("Setting pin: %s\n", p)
 	pinAck := &messages.PinMatrixAck{
 		Pin: proto.String(p),
 	}
-	data, _ := proto.Marshal(pinAck)
+	data, err := proto.Marshal(pinAck)
+	if err != nil {
+		return wire.Message{}, err
+	}
 
 	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_PinMatrixAck)
-	msg, err = sendToDevice(dev, chunks)
-	if err != nil {
-		log.Panicf(err.Error())
-		return msg.Kind, msg.Data
-	}
-	if msg.Kind != uint16(messages.MessageType_MessageType_PinMatrixAck) {
-		log.Printf("MessagePinMatrixAck Answer is: %d / %s\n", msg.Kind, DecodeSuccessOrFailMsg(msg.Kind, msg.Data))
-	}
-	return msg.Kind, msg.Data
+	return sendToDevice(dev, chunks)
 }

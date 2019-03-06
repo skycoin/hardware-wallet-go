@@ -51,30 +51,39 @@ func recoveryCmd() gcli.Command {
 			passphrase := c.Bool("usePassphrase")
 			dryRun := c.Bool("dryRun")
 			wordCount := uint32(c.Uint64("wordCount"))
-			msg := deviceWallet.RecoveryDevice(deviceType, wordCount, passphrase, dryRun)
+			msg, err := deviceWallet.RecoveryDevice(deviceType, wordCount, passphrase, dryRun)
+			if err != nil {
+				log.Error(err)
+				return
+			}
+
 			for msg.Kind == uint16(messages.MessageType_MessageType_WordRequest) {
 				var word string
 				fmt.Printf("Word: ")
 				fmt.Scanln(&word)
-				msg = deviceWallet.DeviceWordAck(deviceType, word)
+				msg, err = deviceWallet.DeviceWordAck(deviceType, word)
+				if err != nil {
+					log.Error(err)
+					return
+				}
 			}
 
 			if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
 				// Send ButtonAck
-				msg = deviceWallet.DeviceButtonAck(deviceType)
+				msg, err = deviceWallet.DeviceButtonAck(deviceType)
+				if err != nil {
+					log.Error(err)
+					return
+				}
 			}
 
-			if msg.Kind == uint16(messages.MessageType_MessageType_Failure) {
-				failMsg := deviceWallet.DecodeFailMsg(msg.Kind, msg.Data)
-				fmt.Println("Failed with code: ", failMsg)
+			responseMsg, err := deviceWallet.DecodeSuccessOrFailMsg(msg)
+			if err != nil {
+				log.Error(err)
 				return
 			}
 
-			if msg.Kind == uint16(messages.MessageType_MessageType_Success) {
-				successMsg := deviceWallet.DecodeSuccessMsg(msg.Kind, msg.Data)
-				fmt.Println("Success with code: ", successMsg)
-				return
-			}
+			fmt.Println(responseMsg)
 		},
 	}
 }

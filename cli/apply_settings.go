@@ -47,11 +47,20 @@ func applySettingsCmd() gcli.Command {
 				return
 			}
 
-			msg := deviceWallet.DeviceApplySettings(deviceType, passphrase, label)
-			for msg.Kind != uint16(messages.MessageType_MessageType_Failure) && msg.Kind != uint16(messages.MessageType_MessageType_Success) {
+			var msg wire.Message
+			msg, err := deviceWallet.DeviceApplySettings(deviceType, passphrase, label)
+			if err != nil {
+				log.Error(err)
+				return
+			}
 
+			for msg.Kind != uint16(messages.MessageType_MessageType_Failure) && msg.Kind != uint16(messages.MessageType_MessageType_Success) {
 				if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-					msg = deviceWallet.DeviceButtonAck(deviceType)
+					msg, err = deviceWallet.DeviceButtonAck(deviceType)
+					if err != nil {
+						log.Error(err)
+						return
+					}
 					continue
 				}
 
@@ -59,22 +68,32 @@ func applySettingsCmd() gcli.Command {
 					var pinEnc string
 					fmt.Printf("PinMatrixRequest response: ")
 					fmt.Scanln(&pinEnc)
-					kind, data := deviceWallet.DevicePinMatrixAck(deviceType, pinEnc)
-					msg = wire.Message{
-						Kind: kind,
-						Data: data,
+					pinAckResponse, err := deviceWallet.DevicePinMatrixAck(deviceType, pinEnc)
+					if err != nil {
+						log.Error(err)
+						return
 					}
+					log.Infof("PinMatrixAck response: %s", pinAckResponse)
 					continue
 				}
 			}
+
 			if msg.Kind == uint16(messages.MessageType_MessageType_Failure) {
-				failMsg := deviceWallet.DecodeFailMsg(msg.Kind, msg.Data)
+				failMsg, err := deviceWallet.DecodeFailMsg(msg)
+				if err != nil {
+					log.Error(err)
+					return
+				}
 				fmt.Println("Failed with code: ", failMsg)
 				return
 			}
 
 			if msg.Kind == uint16(messages.MessageType_MessageType_Success) {
-				successMsg := deviceWallet.DecodeSuccessMsg(msg.Kind, msg.Data)
+				successMsg, err := deviceWallet.DecodeSuccessMsg(msg)
+				if err != nil {
+					log.Error(err)
+					return
+				}
 				fmt.Println("Success with code: ", successMsg)
 				return
 			}
