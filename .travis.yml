@@ -7,7 +7,6 @@ matrix:
     - os: osx
 before_install:
   - source ./ci-scripts/install-$TRAVIS_OS_NAME.sh
-  - git submodule update --remote --recursive
   - sh "./device-wallet/messages/ci-scripts/install-$TRAVIS_OS_NAME.sh"
 install:
   - make vendor_proto
