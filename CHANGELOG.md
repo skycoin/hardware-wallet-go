@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Removed
 
+- Installation instructions for `protobuf` related tools, use this from `hardware-wallet-protob` submodule.
 - Removed `protobuf` files from the project.
 
 ### Fixed
