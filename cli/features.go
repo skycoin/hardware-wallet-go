@@ -6,7 +6,7 @@ import (
 	"github.com/gogo/protobuf/proto"
 	gcli "github.com/urfave/cli"
 
-	"github.com/skycoin/hardware-wallet-go/device-wallet/messages"
+	messages "github.com/skycoin/hardware-wallet-go/device-wallet/messages/go"
 
 	deviceWallet "github.com/skycoin/hardware-wallet-go/device-wallet"
 )

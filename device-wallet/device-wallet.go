@@ -11,9 +11,8 @@ import (
 
 	"github.com/skycoin/skycoin/src/util/logging"
 
+	"github.com/gogo/protobuf/proto"
 	messages "github.com/skycoin/hardware-wallet-go/device-wallet/messages/go"
-
-	"github.com/skycoin/hardware-wallet-go/device-wallet/messages"
 	"github.com/skycoin/hardware-wallet-go/device-wallet/usb"
 	"github.com/skycoin/hardware-wallet-go/device-wallet/wire"
 )

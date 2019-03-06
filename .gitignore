@@ -18,3 +18,4 @@
 DS_Store
 
 vendor/google/protobuf/descriptor.pb.go
+vendor/github.com/google/protobuf/descriptor.pb.go
