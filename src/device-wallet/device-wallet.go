@@ -42,6 +42,10 @@ type Devicer interface {
 	TransactionSign(inputs []*messages.SkycoinTransactionInput, outputs []*messages.SkycoinTransactionOutput) (wire.Message, error)
 	SignMessage(addressN int, message string) (wire.Message, error)
 	Wipe() (wire.Message, error)
+	PinMatrixAck(p string) (wire.Message, error)
+	WordAck(word string) (wire.Message, error)
+	PassphraseAck(passphrase string) (wire.Message, error)
+	ButtonAck() (wire.Message, error)
 }
 
 // Device provides hardware wallet functions
