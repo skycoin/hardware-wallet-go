@@ -38,7 +38,6 @@ $ git submodule update
 
 #### Generate go files
 ```bash
-$ make proto
 $ make vendor_proto
 ```
 
