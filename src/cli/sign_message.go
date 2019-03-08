@@ -3,12 +3,12 @@ package cli
 import (
 	"fmt"
 
-	"github.com/skycoin/hardware-wallet-go/device-wallet/wire"
+	"github.com/skycoin/hardware-wallet-go/src/device-wallet/wire"
 
 	gcli "github.com/urfave/cli"
 
-	deviceWallet "github.com/skycoin/hardware-wallet-go/device-wallet"
-	messages "github.com/skycoin/hardware-wallet-go/device-wallet/messages/go"
+	deviceWallet "github.com/skycoin/hardware-wallet-go/src/device-wallet"
+	messages "github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
 )
 
 func signMessageCmd() gcli.Command {
@@ -35,12 +35,12 @@ func signMessageCmd() gcli.Command {
 		},
 		OnUsageError: onCommandUsageError(name),
 		Action: func(c *gcli.Context) {
-			var deviceType deviceWallet.DeviceType
+			var device *deviceWallet.Device
 			switch c.String("deviceType") {
 			case "USB":
-				deviceType = deviceWallet.DeviceTypeUsb
+				device = deviceWallet.NewUSBDevice()
 			case "EMULATOR":
-				deviceType = deviceWallet.DeviceTypeEmulator
+				device = deviceWallet.NewEmulatorDevice()
 			default:
 				log.Error("device type not set")
 				return
@@ -51,7 +51,7 @@ func signMessageCmd() gcli.Command {
 			var signature string
 
 			var msg wire.Message
-			msg, err := deviceWallet.DeviceSignMessage(deviceType, addressN, message)
+			msg, err := device.SignMessage(addressN, message)
 			if err != nil {
 				log.Error(err)
 				return
@@ -61,7 +61,7 @@ func signMessageCmd() gcli.Command {
 					var pinEnc string
 					fmt.Printf("PinMatrixRequest response: ")
 					fmt.Scanln(&pinEnc)
-					msg, err = deviceWallet.DevicePinMatrixAck(deviceType, pinEnc)
+					msg, err = device.PinMatrixAck(pinEnc)
 					if err != nil {
 						log.Error(err)
 						return
@@ -73,7 +73,7 @@ func signMessageCmd() gcli.Command {
 					var passphrase string
 					fmt.Printf("Input passphrase: ")
 					fmt.Scanln(&passphrase)
-					msg, err = deviceWallet.DevicePassphraseAck(deviceType, passphrase)
+					msg, err = device.PassphraseAck(passphrase)
 					if err != nil {
 						log.Error(err)
 						return

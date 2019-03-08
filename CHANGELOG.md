@@ -18,6 +18,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Changed
 
+- Change project structure to follow standard project layout
+- Add `Devicer` interface for the hw wallet api
+
 ### Removed
 
 - Installation instructions for `protobuf` related tools, use this from `hardware-wallet-protob` submodule.

@@ -5,9 +5,9 @@ import (
 
 	gcli "github.com/urfave/cli"
 
-	deviceWallet "github.com/skycoin/hardware-wallet-go/device-wallet"
-
-	messages "github.com/skycoin/hardware-wallet-go/device-wallet/messages/go"
+	deviceWallet "github.com/skycoin/hardware-wallet-go/src/device-wallet"
+	"github.com/skycoin/hardware-wallet-go/src/device-wallet/messages"
+	messages "github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
 )
 
 func backupCmd() gcli.Command {
@@ -25,18 +25,18 @@ func backupCmd() gcli.Command {
 			},
 		},
 		Action: func(c *gcli.Context) {
-			var deviceType deviceWallet.DeviceType
+			var device *deviceWallet.Device
 			switch c.String("deviceType") {
 			case "USB":
-				deviceType = deviceWallet.DeviceTypeUsb
+				device = deviceWallet.NewUSBDevice()
 			case "EMULATOR":
-				deviceType = deviceWallet.DeviceTypeEmulator
+				device = deviceWallet.NewEmulatorDevice()
 			default:
 				log.Error("device type not set")
 				return
 			}
 
-			msg, err := deviceWallet.BackupDevice(deviceType)
+			msg, err := device.Backup()
 			if err != nil {
 				log.Error(err)
 				return
@@ -45,7 +45,7 @@ func backupCmd() gcli.Command {
 				var pinEnc string
 				fmt.Printf("PinMatrixRequest response: ")
 				fmt.Scanln(&pinEnc)
-				msg, err := deviceWallet.DevicePinMatrixAck(deviceType, pinEnc)
+				msg, err := device.PinMatrixAck(pinEnc)
 				if err != nil {
 					log.Error(err)
 					return
@@ -53,7 +53,7 @@ func backupCmd() gcli.Command {
 
 				// TODO: can DeviceButtonAck return MessageType_MessageType_ButtonRequest? figure out
 				for msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-					msg, err = deviceWallet.DeviceButtonAck(deviceType)
+					msg, err = device.ButtonAck()
 					if err != nil {
 						log.Error(err)
 						return

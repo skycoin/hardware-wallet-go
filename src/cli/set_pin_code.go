@@ -5,8 +5,8 @@ import (
 
 	gcli "github.com/urfave/cli"
 
-	deviceWallet "github.com/skycoin/hardware-wallet-go/device-wallet"
-	messages "github.com/skycoin/hardware-wallet-go/device-wallet/messages/go"
+	deviceWallet "github.com/skycoin/hardware-wallet-go/src/device-wallet"
+	messages "github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
 )
 
 func setPinCode() gcli.Command {
@@ -24,19 +24,19 @@ func setPinCode() gcli.Command {
 		},
 		OnUsageError: onCommandUsageError(name),
 		Action: func(c *gcli.Context) {
-			var deviceType deviceWallet.DeviceType
+			var device *deviceWallet.Device
 			switch c.String("deviceType") {
 			case "USB":
-				deviceType = deviceWallet.DeviceTypeUsb
+				device = deviceWallet.NewUSBDevice()
 			case "EMULATOR":
-				deviceType = deviceWallet.DeviceTypeEmulator
+				device = deviceWallet.NewEmulatorDevice()
 			default:
 				log.Error("device type not set")
 				return
 			}
 
 			var pinEnc string
-			msg, err := deviceWallet.DeviceChangePin(deviceType)
+			msg, err := device.ChangePin()
 			if err != nil {
 				log.Error(err)
 				return
@@ -46,7 +46,7 @@ func setPinCode() gcli.Command {
 			for msg.Kind == uint16(messages.MessageType_MessageType_PinMatrixRequest) {
 				fmt.Printf("PinMatrixRequest response: ")
 				fmt.Scanln(&pinEnc)
-				msg, err = deviceWallet.DevicePinMatrixAck(deviceType, pinEnc)
+				msg, err = device.PinMatrixAck(pinEnc)
 				if err != nil {
 					log.Error(err)
 					return

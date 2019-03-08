@@ -1,7 +1,7 @@
 all: build
 
 build:
-	go build ./...
+	cd cmd/cli && ./install.sh
 
 dep: vendor_proto
 	dep ensure
@@ -14,19 +14,19 @@ vendor_proto: proto
 
 
 test:
-	go test github.com/skycoin/hardware-wallet-go/device-wallet/
+	go test github.com/skycoin/hardware-wallet-go/src/device-wallet
 
 proto:
-	make -C device-wallet/messages build-go
+	make -C src/device-wallet/messages build-go
 
 clean:
 	make -C device-wallet/messages clean-go
 
 lint:
-	golangci-lint run --no-config  --deadline=3m --concurrency=2 --skip-dirs=device-wallet/usb -E goimports -E golint -E varcheck -E unparam -E deadcode -E structcheck ./...
+	golangci-lint run --no-config  --deadline=3m --concurrency=2 --skip-dirs=src/device-wallet/usb -E goimports -E golint -E varcheck -E unparam -E deadcode -E structcheck ./...
 
 check: lint
 
 format:
-	goimports -w -local github.com/skycoin/hardware-wallet-go ./cli
-	goimports -w -local github.com/skycoin/hardware-wallet-go ./device-wallet
+	goimports -w -local github.com/skycoin/hardware-wallet-go ./cmd
+	goimports -w -local github.com/skycoin/hardware-wallet-go ./src

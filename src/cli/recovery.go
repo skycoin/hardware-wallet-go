@@ -5,8 +5,8 @@ import (
 
 	gcli "github.com/urfave/cli"
 
-	deviceWallet "github.com/skycoin/hardware-wallet-go/device-wallet"
-	messages "github.com/skycoin/hardware-wallet-go/device-wallet/messages/go"
+	deviceWallet "github.com/skycoin/hardware-wallet-go/src/device-wallet"
+	messages "github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
 )
 
 func recoveryCmd() gcli.Command {
@@ -37,12 +37,12 @@ func recoveryCmd() gcli.Command {
 		},
 		OnUsageError: onCommandUsageError(name),
 		Action: func(c *gcli.Context) {
-			var deviceType deviceWallet.DeviceType
+			var device *deviceWallet.Device
 			switch c.String("deviceType") {
 			case "USB":
-				deviceType = deviceWallet.DeviceTypeUsb
+				device = deviceWallet.NewUSBDevice()
 			case "EMULATOR":
-				deviceType = deviceWallet.DeviceTypeEmulator
+				device = deviceWallet.NewEmulatorDevice()
 			default:
 				log.Error("device type not set")
 				return
@@ -51,7 +51,7 @@ func recoveryCmd() gcli.Command {
 			passphrase := c.Bool("usePassphrase")
 			dryRun := c.Bool("dryRun")
 			wordCount := uint32(c.Uint64("wordCount"))
-			msg, err := deviceWallet.RecoveryDevice(deviceType, wordCount, passphrase, dryRun)
+			msg, err := device.Recovery(wordCount, passphrase, dryRun)
 			if err != nil {
 				log.Error(err)
 				return
@@ -61,7 +61,7 @@ func recoveryCmd() gcli.Command {
 				var word string
 				fmt.Printf("Word: ")
 				fmt.Scanln(&word)
-				msg, err = deviceWallet.DeviceWordAck(deviceType, word)
+				msg, err = device.WordAck(word)
 				if err != nil {
 					log.Error(err)
 					return
@@ -70,7 +70,7 @@ func recoveryCmd() gcli.Command {
 
 			if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
 				// Send ButtonAck
-				msg, err = deviceWallet.DeviceButtonAck(deviceType)
+				msg, err = device.ButtonAck()
 				if err != nil {
 					log.Error(err)
 					return

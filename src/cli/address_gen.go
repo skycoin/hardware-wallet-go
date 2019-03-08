@@ -3,12 +3,12 @@ package cli
 import (
 	"fmt"
 
-	"github.com/skycoin/hardware-wallet-go/device-wallet/wire"
+	"github.com/skycoin/hardware-wallet-go/src/device-wallet/wire"
 
 	gcli "github.com/urfave/cli"
 
-	deviceWallet "github.com/skycoin/hardware-wallet-go/device-wallet"
-	messages "github.com/skycoin/hardware-wallet-go/device-wallet/messages/go"
+	deviceWallet "github.com/skycoin/hardware-wallet-go/src/device-wallet"
+	messages "github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
 )
 
 func addressGenCmd() gcli.Command {
@@ -44,12 +44,12 @@ func addressGenCmd() gcli.Command {
 			startIndex := c.Int("startIndex")
 			confirmAddress := c.Bool("confirmAddress")
 
-			var deviceType deviceWallet.DeviceType
+			var device *deviceWallet.Device
 			switch c.String("deviceType") {
 			case "USB":
-				deviceType = deviceWallet.DeviceTypeUsb
+				device = deviceWallet.NewUSBDevice()
 			case "EMULATOR":
-				deviceType = deviceWallet.DeviceTypeEmulator
+				device = deviceWallet.NewEmulatorDevice()
 			default:
 				log.Error("device type not set")
 				return
@@ -57,7 +57,7 @@ func addressGenCmd() gcli.Command {
 
 			var pinEnc string
 			var msg wire.Message
-			msg, err := deviceWallet.DeviceAddressGen(deviceType, addressN, startIndex, confirmAddress)
+			msg, err := device.AddressGen(addressN, startIndex, confirmAddress)
 			if err != nil {
 				log.Error(err)
 				return
@@ -66,7 +66,7 @@ func addressGenCmd() gcli.Command {
 				if msg.Kind == uint16(messages.MessageType_MessageType_PinMatrixRequest) {
 					fmt.Printf("PinMatrixRequest response: ")
 					fmt.Scanln(&pinEnc)
-					pinAckResponse, err := deviceWallet.DevicePinMatrixAck(deviceType, pinEnc)
+					pinAckResponse, err := device.PinMatrixAck(pinEnc)
 					if err != nil {
 						log.Error(err)
 						return
@@ -79,7 +79,7 @@ func addressGenCmd() gcli.Command {
 					var passphrase string
 					fmt.Printf("Input passphrase: ")
 					fmt.Scanln(&passphrase)
-					passphraseAckResponse, err := deviceWallet.DevicePassphraseAck(deviceType, passphrase)
+					passphraseAckResponse, err := device.PassphraseAck(passphrase)
 					if err != nil {
 						log.Error(err)
 						return
@@ -89,7 +89,7 @@ func addressGenCmd() gcli.Command {
 				}
 
 				if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-					msg, err = deviceWallet.DeviceButtonAck(deviceType)
+					msg, err = device.ButtonAck()
 					if err != nil {
 						log.Error(err)
 						return

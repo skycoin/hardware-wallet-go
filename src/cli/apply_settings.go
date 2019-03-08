@@ -3,11 +3,12 @@ package cli
 import (
 	"fmt"
 
+	"github.com/skycoin/hardware-wallet-go/src/device-wallet/wire"
+
 	gcli "github.com/urfave/cli"
 
-	deviceWallet "github.com/skycoin/hardware-wallet-go/device-wallet"
-	messages "github.com/skycoin/hardware-wallet-go/device-wallet/messages/go"
-	"github.com/skycoin/hardware-wallet-go/device-wallet/wire"
+	deviceWallet "github.com/skycoin/hardware-wallet-go/src/device-wallet"
+	messages "github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
 )
 
 func applySettingsCmd() gcli.Command {
@@ -36,19 +37,19 @@ func applySettingsCmd() gcli.Command {
 			passphrase := c.Bool("usePassphrase")
 			label := c.String("label")
 
-			var deviceType deviceWallet.DeviceType
+			var device *deviceWallet.Device
 			switch c.String("deviceType") {
 			case "USB":
-				deviceType = deviceWallet.DeviceTypeUsb
+				device = deviceWallet.NewUSBDevice()
 			case "EMULATOR":
-				deviceType = deviceWallet.DeviceTypeEmulator
+				device = deviceWallet.NewEmulatorDevice()
 			default:
 				log.Error("device type not set")
 				return
 			}
 
 			var msg wire.Message
-			msg, err := deviceWallet.DeviceApplySettings(deviceType, passphrase, label)
+			msg, err := device.ApplySettings(passphrase, label)
 			if err != nil {
 				log.Error(err)
 				return
@@ -56,7 +57,7 @@ func applySettingsCmd() gcli.Command {
 
 			for msg.Kind != uint16(messages.MessageType_MessageType_Failure) && msg.Kind != uint16(messages.MessageType_MessageType_Success) {
 				if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-					msg, err = deviceWallet.DeviceButtonAck(deviceType)
+					msg, err = device.ButtonAck()
 					if err != nil {
 						log.Error(err)
 						return
@@ -68,7 +69,7 @@ func applySettingsCmd() gcli.Command {
 					var pinEnc string
 					fmt.Printf("PinMatrixRequest response: ")
 					fmt.Scanln(&pinEnc)
-					pinAckResponse, err := deviceWallet.DevicePinMatrixAck(deviceType, pinEnc)
+					pinAckResponse, err := device.PinMatrixAck(pinEnc)
 					if err != nil {
 						log.Error(err)
 						return
