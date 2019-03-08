@@ -5,7 +5,7 @@ import (
 
 	gcli "github.com/urfave/cli"
 
-	deviceWallet "github.com/skycoin/hardware-wallet-go/device-wallet"
+	deviceWallet "github.com/skycoin/hardware-wallet-go/src/device-wallet"
 )
 
 func checkMessageSignatureCmd() gcli.Command {
@@ -39,18 +39,18 @@ func checkMessageSignatureCmd() gcli.Command {
 			signature := c.String("signature")
 			address := c.String("address")
 
-			var deviceType deviceWallet.DeviceType
+			var device *deviceWallet.Device
 			switch c.String("deviceType") {
 			case "USB":
-				deviceType = deviceWallet.DeviceTypeUsb
+				device = deviceWallet.NewUSBDevice()
 			case "EMULATOR":
-				deviceType = deviceWallet.DeviceTypeEmulator
+				device = deviceWallet.NewEmulatorDevice()
 			default:
 				log.Error("device type not set")
 				return
 			}
 
-			msg, err := deviceWallet.DeviceCheckMessageSignature(deviceType, message, signature, address)
+			msg, err := device.CheckMessageSignature(message, signature, address)
 			if err != nil {
 				log.Error(err)
 				return

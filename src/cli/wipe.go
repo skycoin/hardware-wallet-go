@@ -5,7 +5,7 @@ import (
 
 	gcli "github.com/urfave/cli"
 
-	deviceWallet "github.com/skycoin/hardware-wallet-go/device-wallet"
+	deviceWallet "github.com/skycoin/hardware-wallet-go/src/device-wallet"
 )
 
 func wipeCmd() gcli.Command {
@@ -23,18 +23,18 @@ func wipeCmd() gcli.Command {
 			},
 		},
 		Action: func(c *gcli.Context) {
-			var deviceType deviceWallet.DeviceType
+			var device *deviceWallet.Device
 			switch c.String("deviceType") {
 			case "USB":
-				deviceType = deviceWallet.DeviceTypeUsb
+				device = deviceWallet.NewUSBDevice()
 			case "EMULATOR":
-				deviceType = deviceWallet.DeviceTypeEmulator
+				device = deviceWallet.NewEmulatorDevice()
 			default:
-				log.Error("No device detected")
+				log.Error("device type not set")
 				return
 			}
 
-			msg, err := deviceWallet.WipeDevice(deviceType)
+			msg, err := device.Wipe()
 			if err != nil {
 				log.Error(err)
 				return

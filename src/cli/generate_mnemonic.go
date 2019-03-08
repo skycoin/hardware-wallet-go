@@ -5,7 +5,7 @@ import (
 
 	gcli "github.com/urfave/cli"
 
-	deviceWallet "github.com/skycoin/hardware-wallet-go/device-wallet"
+	deviceWallet "github.com/skycoin/hardware-wallet-go/src/device-wallet"
 )
 
 func generateMnemonicCmd() gcli.Command {
@@ -35,18 +35,18 @@ func generateMnemonicCmd() gcli.Command {
 			usePassphrase := c.Bool("usePassphrase")
 			wordCount := uint32(c.Uint64("wordCount"))
 
-			var deviceType deviceWallet.DeviceType
+			var device *deviceWallet.Device
 			switch c.String("deviceType") {
 			case "USB":
-				deviceType = deviceWallet.DeviceTypeUsb
+				device = deviceWallet.NewUSBDevice()
 			case "EMULATOR":
-				deviceType = deviceWallet.DeviceTypeEmulator
+				device = deviceWallet.NewEmulatorDevice()
 			default:
 				log.Error("device type not set")
 				return
 			}
 
-			msg, err := deviceWallet.DeviceGenerateMnemonic(deviceType, wordCount, usePassphrase)
+			msg, err := device.GenerateMnemonic(wordCount, usePassphrase)
 			if err != nil {
 				log.Error(err)
 				return

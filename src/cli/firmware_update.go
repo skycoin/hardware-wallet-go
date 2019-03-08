@@ -7,7 +7,7 @@ import (
 
 	gcli "github.com/urfave/cli"
 
-	deviceWallet "github.com/skycoin/hardware-wallet-go/device-wallet"
+	deviceWallet "github.com/skycoin/hardware-wallet-go/src/device-wallet"
 )
 
 func firmwareUpdate() gcli.Command {
@@ -24,6 +24,8 @@ func firmwareUpdate() gcli.Command {
 		},
 		OnUsageError: onCommandUsageError(name),
 		Action: func(c *gcli.Context) {
+			device := deviceWallet.NewUSBDevice()
+
 			filePath := c.String("file")
 			fmt.Printf("File : %s\n", filePath)
 			firmware, err := ioutil.ReadFile(filePath)
@@ -31,7 +33,7 @@ func firmwareUpdate() gcli.Command {
 				panic(err)
 			}
 			fmt.Printf("Hash: %x\n", sha256.Sum256(firmware[0x100:]))
-			err = deviceWallet.DeviceFirmwareUpload(firmware, sha256.Sum256(firmware[0x100:]))
+			err = device.FirmwareUpload(firmware, sha256.Sum256(firmware[0x100:]))
 			if err != nil {
 				log.Error(err)
 				return
