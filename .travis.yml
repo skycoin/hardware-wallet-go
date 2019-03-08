@@ -5,18 +5,11 @@ matrix:
   include:
     - os: linux
     - os: osx
-env:
-  - PROTOC_VERSION=3.6.1 PROTOC_ZIP="protoc-$PROTOC_VERSION-$TRAVIS_OS_NAME-x86_64.zip" PROTOC_URL="https://github.com/google/protobuf/releases/download/v$PROTOC_VERSION/$PROTOC_ZIP"
 before_install:
   - source ./ci-scripts/install-$TRAVIS_OS_NAME.sh
-  - echo "Downloading protobuf from $PROTOC_URL"
-  - curl -OL $PROTOC_URL
-  - sudo unzip -o $PROTOC_ZIP -d /usr/local bin/protoc
-  - rm -f $PROTOC_ZIP
-  - git clone --branch v1.2.0 --depth 1 https://github.com/gogo/protobuf $GOPATH/src/github.com/gogo/protobuf
-  - ( cd $GOPATH/src/github.com/gogo/protobuf/protoc-gen-gogofast && go install )
+  - sh "./src/device-wallet/messages/ci-scripts/install-$TRAVIS_OS_NAME.sh"
 install:
-  - make proto
+  - make vendor_proto
   - if [[ ! -d $GOPATH/src/github.com/skycoin/hardware-wallet-go ]]; then mkdir -p $GOPATH/src/github.com/skycoin; ln -s $TRAVIS_BUILD_DIR $GOPATH/src/github.com/skycoin/hardware-wallet-go; fi
   - cd $GOPATH/src/github.com/skycoin/hardware-wallet-go
   - go get -t ./...
