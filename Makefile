@@ -20,7 +20,7 @@ proto:
 	make -C src/device-wallet/messages build-go
 
 clean:
-	make -C device-wallet/messages clean-go
+	make -C src/device-wallet/messages clean-go
 
 lint:
 	golangci-lint run --no-config  --deadline=3m --concurrency=2 --skip-dirs=src/device-wallet/usb -E goimports -E golint -E varcheck -E unparam -E deadcode -E structcheck ./...
