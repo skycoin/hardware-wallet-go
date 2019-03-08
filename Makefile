@@ -21,6 +21,7 @@ proto:
 
 clean:
 	make -C src/device-wallet/messages clean-go
+	rm -r vendor/github.com/google
 
 lint:
 	golangci-lint run --no-config  --deadline=3m --concurrency=2 --skip-dirs=src/device-wallet/usb -E goimports -E golint -E varcheck -E unparam -E deadcode -E structcheck ./...
