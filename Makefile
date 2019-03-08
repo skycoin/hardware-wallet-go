@@ -3,15 +3,14 @@ all: build
 build:
 	cd cmd/cli && ./install.sh
 
-dep: vendor_proto
+dep:
 	dep ensure
 	# Ensure sources for protoc-gen-go and protobuf/proto are in sync
 	dep ensure -add github.com/gogo/protobuf/protoc-gen-gofast
 
-vendor_proto: proto
+vendor_proto:
 	mkdir -p vendor/github.com/google/protobuf
 	cp -r -p src/device-wallet/messages/go/google/protobuf/descriptor.pb.go vendor/github.com/google/protobuf
-
 
 test:
 	go test github.com/skycoin/hardware-wallet-go/src/device-wallet
