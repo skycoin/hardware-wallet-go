@@ -10,7 +10,7 @@ dep: vendor_proto
 
 vendor_proto: proto
 	mkdir -p vendor/github.com/google/protobuf
-	cp -r -p device-wallet/messages/go/google/protobuf/descriptor.pb.go vendor/github.com/google/protobuf
+	cp -r -p src/device-wallet/messages/go/google/protobuf/descriptor.pb.go vendor/github.com/google/protobuf
 
 
 test:
