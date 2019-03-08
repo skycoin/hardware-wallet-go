@@ -1,24 +1,33 @@
 all: build
 
 build:
-	go build ./...
+	cd cmd/cli && ./install.sh
 
-dep:
+dep: vendor_proto
 	dep ensure
 	# Ensure sources for protoc-gen-go and protobuf/proto are in sync
 	dep ensure -add github.com/gogo/protobuf/protoc-gen-gofast
 
-test:
-	go test github.com/skycoin/hardware-wallet-go/device-wallet/
+vendor_proto: proto
+	mkdir -p vendor/github.com/google/protobuf
+	cp -r -p src/device-wallet/messages/go/google/protobuf/descriptor.pb.go vendor/github.com/google/protobuf
 
-proto: test
-	protoc -I device-wallet/messages/  --gogofast_out=device-wallet/messages/ device-wallet/messages/messages.proto device-wallet/messages/types.proto device-wallet/messages/descriptor.proto
+
+test:
+	go test github.com/skycoin/hardware-wallet-go/src/device-wallet
+
+proto:
+	make -C src/device-wallet/messages build-go
+
+clean:
+	make -C src/device-wallet/messages clean-go
+	rm -r vendor/github.com/google
 
 lint:
-	golangci-lint run --no-config  --deadline=3m --concurrency=2 --skip-dirs=device-wallet/usb -E goimports -E golint -E varcheck -E unparam -E deadcode -E structcheck ./...
+	golangci-lint run --no-config  --deadline=3m --concurrency=2 --skip-dirs=src/device-wallet/usb -E goimports -E golint -E varcheck -E unparam -E deadcode -E structcheck ./...
 
 check: lint
 
 format:
-	goimports -w -local github.com/skycoin/hardware-wallet-go ./cli
-	goimports -w -local github.com/skycoin/hardware-wallet-go ./device-wallet
+	goimports -w -local github.com/skycoin/hardware-wallet-go ./cmd
+	goimports -w -local github.com/skycoin/hardware-wallet-go ./src
