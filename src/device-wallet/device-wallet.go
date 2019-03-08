@@ -7,8 +7,7 @@ import (
 
 	"github.com/skycoin/skycoin/src/util/logging"
 
-	"github.com/skycoin/hardware-wallet-go/src/device-wallet/messages"
-	"github.com/skycoin/hardware-wallet-go/src/device-wallet/wire"
+	messages "github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
 )
 
 // DeviceType type of device: emulator or usb

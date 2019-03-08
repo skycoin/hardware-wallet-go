@@ -7,7 +7,6 @@ import (
 	gcli "github.com/urfave/cli"
 
 	messages "github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
-	"github.com/skycoin/hardware-wallet-go/src/device-wallet/messages"
 )
 
 func featuresCmd() gcli.Command {

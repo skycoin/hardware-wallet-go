@@ -8,7 +8,7 @@ import (
 
 	"github.com/gogo/protobuf/proto"
 
-	"github.com/skycoin/hardware-wallet-go/src/device-wallet/messages"
+	messages "github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
 	"github.com/skycoin/hardware-wallet-go/src/device-wallet/usb"
 	"github.com/skycoin/hardware-wallet-go/src/device-wallet/wire"
 
