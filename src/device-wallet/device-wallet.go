@@ -7,7 +7,7 @@ import (
 
 	"github.com/skycoin/skycoin/src/util/logging"
 
-	messages "github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
+	"github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
 	"github.com/skycoin/hardware-wallet-go/src/device-wallet/wire"
 )
 
@@ -297,11 +297,23 @@ func (d *Device) GenerateMnemonic(wordCount uint32, usePassphrase bool) (wire.Me
 		return wire.Message{}, err
 	}
 
-	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
+	switch msg.Kind {
+	case uint16(messages.MessageType_MessageType_ButtonRequest):
 		msg, err = deviceButtonAck(dev)
 		if err != nil {
 			return wire.Message{}, err
 		}
+		break
+	case uint16(messages.MessageType_MessageType_EntropyRequest):
+		chunks, err = MessageEntropyAck(32)
+		if err != nil {
+			return wire.Message{}, err
+		}
+		msg, err = sendToDevice(dev, chunks)
+		if err != nil {
+			return wire.Message{}, err
+		}
+		break
 	}
 
 	return msg, err
