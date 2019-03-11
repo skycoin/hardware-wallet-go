@@ -23,6 +23,7 @@ const (
 	DeviceTypeEmulator DeviceType = 1
 	// DeviceTypeUsb use usb
 	DeviceTypeUSB DeviceType = 2
+	entopyBufferSize int = 32
 )
 
 // Devicer provides api for the hw wallet functions
@@ -305,7 +306,7 @@ func (d *Device) GenerateMnemonic(wordCount uint32, usePassphrase bool) (wire.Me
 		}
 		break
 	case uint16(messages.MessageType_MessageType_EntropyRequest):
-		chunks, err = MessageEntropyAck(32)
+		chunks, err = MessageEntropyAck(entopyBufferSize)
 		if err != nil {
 			return wire.Message{}, err
 		}
