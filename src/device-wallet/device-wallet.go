@@ -5,10 +5,9 @@ import (
 	"io"
 	"time"
 
-	"github.com/skycoin/skycoin/src/util/logging"
-
-	"github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
+	messages "github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
 	"github.com/skycoin/hardware-wallet-go/src/device-wallet/wire"
+	"github.com/skycoin/skycoin/src/util/logging"
 )
 
 // DeviceType type of device: emulator or usb
@@ -22,8 +21,8 @@ const (
 	// DeviceTypeEmulator use emulator
 	DeviceTypeEmulator DeviceType = 1
 	// DeviceTypeUsb use usb
-	DeviceTypeUSB DeviceType = 2
-	entopyBufferSize int = 32
+	DeviceTypeUSB    DeviceType = 2
+	entopyBufferSize int        = 32
 )
 
 // Devicer provides api for the hw wallet functions
@@ -304,7 +303,6 @@ func (d *Device) GenerateMnemonic(wordCount uint32, usePassphrase bool) (wire.Me
 		if err != nil {
 			return wire.Message{}, err
 		}
-		break
 	case uint16(messages.MessageType_MessageType_EntropyRequest):
 		chunks, err = MessageEntropyAck(entopyBufferSize)
 		if err != nil {
@@ -314,7 +312,6 @@ func (d *Device) GenerateMnemonic(wordCount uint32, usePassphrase bool) (wire.Me
 		if err != nil {
 			return wire.Message{}, err
 		}
-		break
 	}
 
 	return msg, err
