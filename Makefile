@@ -12,7 +12,6 @@ vendor_proto: proto
 	mkdir -p vendor/github.com/google/protobuf
 	cp -r -p src/device-wallet/messages/go/google/protobuf/descriptor.pb.go vendor/github.com/google/protobuf
 
-
 test:
 	go test github.com/skycoin/hardware-wallet-go/src/device-wallet
 
