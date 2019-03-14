@@ -25,12 +25,14 @@ type Device struct {
 func deviceTypeFromString(deviceType string) interfaces.DeviceType {
 	var dtRet interfaces.DeviceType
 	switch deviceType {
-	case interfaces.DeviceTypeUSBStr:
+	case interfaces.DeviceType(interfaces.DeviceTypeUSB).String():
 		dtRet = interfaces.DeviceTypeUSB
-	case interfaces.DeviceTypeEmulatorStr:
+	case interfaces.DeviceType(interfaces.DeviceTypeEmulator).String():
 		dtRet = interfaces.DeviceTypeEmulator
 	default:
-		log.Errorf("device type not set, valid options are %s or %s", interfaces.DeviceTypeUSBStr, interfaces.DeviceTypeEmulatorStr)
+		log.Errorf("device type not set, valid options are %s or %s",
+			interfaces.DeviceType(interfaces.DeviceTypeUSB),
+			interfaces.DeviceType(interfaces.DeviceTypeEmulator))
 		dtRet = interfaces.DeviceTypeInvalid
 	}
 	return dtRet

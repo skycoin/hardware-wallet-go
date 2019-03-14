@@ -7,17 +7,24 @@ import "github.com/skycoin/hardware-wallet-go/src/device-wallet/wire"
 // DeviceType type of device: emulator or usb
 type DeviceType int32
 
+func (dt DeviceType) String() string {
+	switch dt {
+	case DeviceTypeEmulator:
+		return "EMULATOR"
+	case DeviceTypeUSB:
+		return "USB"
+	default:
+		return "Invalid"
+	}
+}
+
 const (
 	// DeviceTypeEmulator use emulator
-	DeviceTypeEmulator DeviceType = 1
-	// DeviceTypeEmulatorStr string to represent DeviceTypeEmulator
-	DeviceTypeEmulatorStr string = "EMULATOR"
+	DeviceTypeEmulator = iota + 1
 	// DeviceTypeUsb use usb
-	DeviceTypeUSB DeviceType = 2
-	// DeviceTypeUSBStr string to represent DeviceTypeUSB
-	DeviceTypeUSBStr string = "USB"
-	// DeviceTypeInvalid
-	DeviceTypeInvalid DeviceType = 3
+	DeviceTypeUSB
+	// DeviceTypeInvalid not valid value
+	DeviceTypeInvalid
 )
 
 type DeviceDriver interface {
