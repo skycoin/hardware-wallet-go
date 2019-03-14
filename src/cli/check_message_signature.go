@@ -39,14 +39,8 @@ func checkMessageSignatureCmd() gcli.Command {
 			signature := c.String("signature")
 			address := c.String("address")
 
-			var device *deviceWallet.Device
-			switch c.String("deviceType") {
-			case "USB":
-				device = deviceWallet.NewUSBDevice()
-			case "EMULATOR":
-				device = deviceWallet.NewEmulatorDevice()
-			default:
-				log.Error("device type not set")
+			device := deviceWallet.NewDevice(c.String("deviceType"))
+			if device == nil {
 				return
 			}
 

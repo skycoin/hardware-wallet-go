@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
-	"fmt"
-
 	"github.com/gogo/protobuf/proto"
 
 	messages "github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
@@ -17,34 +15,48 @@ import (
 	"time"
 )
 
-// deviceConnected checks if a device is connected
-func deviceConnected(deviceType DeviceType) bool {
-	dev, err := getDevice(deviceType)
-	if dev == nil {
-		return false
-	}
-	defer dev.Close()
-	if err != nil {
-		return false
-	}
+type DeviceDriver interface {
+	SendToDevice(dev io.ReadWriteCloser, chunks [][64]byte) (wire.Message, error)
+	SendToDeviceNoAnswer(dev io.ReadWriteCloser, chunks [][64]byte) error
+}
 
-	chunks, err := MessageConnected()
-	if err != nil {
-		log.Error(err)
-		return false
-	}
+const (
+	// DeviceTypeEmulator use emulator
+	DeviceTypeEmulator DeviceType = 1
+	// DeviceTypeEmulatorStr string to represent DeviceTypeEmulator
+	DeviceTypeEmulatorStr string = "EMULATOR"
+	// DeviceTypeUsb use usb
+	DeviceTypeUSB DeviceType = 2
+	// DeviceTypeUSBStr string to represent DeviceTypeUSB
+	DeviceTypeUSBStr string = "USB"
+	// DeviceTypeInvalid
+	DeviceTypeInvalid DeviceType = 3
+)
+
+type Driver struct {
+	DeviceType
+}
+
+func (drv *Driver) SendToDeviceNoAnswer(dev io.ReadWriteCloser, chunks [][64]byte) error {
 	for _, element := range chunks {
-		_, err = dev.Write(element[:])
+		_, err := dev.Write(element[:])
 		if err != nil {
-			return false
+			return err
 		}
 	}
+	return nil
+}
+
+func (drv *Driver) SendToDevice(dev io.ReadWriteCloser, chunks [][64]byte) (wire.Message, error) {
 	var msg wire.Message
-	_, err = msg.ReadFrom(dev)
-	if err != nil {
-		return false
+	for _, element := range chunks {
+		_, err := dev.Write(element[:])
+		if err != nil {
+			return msg, err
+		}
 	}
-	return msg.Kind == uint16(messages.MessageType_MessageType_Success)
+	_, err := msg.ReadFrom(dev)
+	return msg, err
 }
 
 func getEmulatorDevice() (net.Conn, error) {
@@ -83,28 +95,6 @@ func getUsbDevice() (usb.Device, error) {
 	return nil, err
 }
 
-func sendToDeviceNoAnswer(dev io.ReadWriteCloser, chunks [][64]byte) error {
-	for _, element := range chunks {
-		_, err := dev.Write(element[:])
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func sendToDevice(dev io.ReadWriteCloser, chunks [][64]byte) (wire.Message, error) {
-	var msg wire.Message
-	for _, element := range chunks {
-		_, err := dev.Write(element[:])
-		if err != nil {
-			return msg, err
-		}
-	}
-	_, err := msg.ReadFrom(dev)
-	return msg, err
-}
-
 func binaryWrite(message io.Writer, data interface{}) {
 	err := binary.Write(message, binary.BigEndian, data)
 	if err != nil {
@@ -136,10 +126,10 @@ func makeTrezorMessage(data []byte, msgID messages.MessageType) [][64]byte {
 	return chunks
 }
 
-func getDevice(deviceType DeviceType) (io.ReadWriteCloser, error) {
+func getDevice(dt DeviceType) (io.ReadWriteCloser, error) {
 	var dev io.ReadWriteCloser
 	var err error
-	switch deviceType {
+	switch dt {
 	case DeviceTypeEmulator:
 		dev, err = getEmulatorDevice()
 	case DeviceTypeUSB:
@@ -152,7 +142,12 @@ func getDevice(deviceType DeviceType) (io.ReadWriteCloser, error) {
 }
 
 // Initialize send an init request to the device
-func initialize(dev io.ReadWriteCloser) error {
+func initialize(d *Device) error {
+	dev, err := getDevice(d.DeviceType)
+	if err != nil {
+		return err
+	}
+	defer dev.Close()
 	var chunks [][64]byte
 
 	initialize := &messages.Initialize{}
@@ -162,88 +157,7 @@ func initialize(dev io.ReadWriteCloser) error {
 	}
 
 	chunks = makeTrezorMessage(data, messages.MessageType_MessageType_Initialize)
-	_, err = sendToDevice(dev, chunks)
+	_, err = d.Driver.SendToDevice(dev, chunks)
 
 	return err
-}
-
-func DecodeSuccessOrFailMsg(msg wire.Message) (string, error) {
-	if msg.Kind == uint16(messages.MessageType_MessageType_Success) {
-		return DecodeSuccessMsg(msg)
-	}
-	if msg.Kind == uint16(messages.MessageType_MessageType_Failure) {
-		return DecodeFailMsg(msg)
-	}
-
-	return "", fmt.Errorf("calling DecodeSuccessOrFailMsg on message kind %s", messages.MessageType(msg.Kind))
-}
-
-// DecodeSuccessMsg convert byte data into string containing the success message returned by the device
-func DecodeSuccessMsg(msg wire.Message) (string, error) {
-	if msg.Kind == uint16(messages.MessageType_MessageType_Success) {
-		success := &messages.Success{}
-		err := proto.Unmarshal(msg.Data, success)
-		if err != nil {
-			return "", err
-		}
-		return success.GetMessage(), nil
-	}
-
-	return "", fmt.Errorf("calling DecodeSuccessMsg with wrong message type: %s", messages.MessageType(msg.Kind))
-}
-
-// DecodeFailMsg convert byte data into string containing the failure returned by the device
-func DecodeFailMsg(msg wire.Message) (string, error) {
-	if msg.Kind == uint16(messages.MessageType_MessageType_Failure) {
-		failure := &messages.Failure{}
-		err := proto.Unmarshal(msg.Data, failure)
-		if err != nil {
-			return "", err
-		}
-		return failure.GetMessage(), nil
-	}
-	return "", fmt.Errorf("calling DecodeFailMsg with wrong message type: %s", messages.MessageType(msg.Kind))
-}
-
-// DecodeResponseSkycoinAddress convert byte data into list of addresses, meant to be used after DevicePinMatrixAck
-func DecodeResponseSkycoinAddress(msg wire.Message) ([]string, error) {
-	log.Printf("%x\n", msg.Data)
-
-	if msg.Kind == uint16(messages.MessageType_MessageType_ResponseSkycoinAddress) {
-		responseSkycoinAddress := &messages.ResponseSkycoinAddress{}
-		err := proto.Unmarshal(msg.Data, responseSkycoinAddress)
-		if err != nil {
-			return []string{}, err
-		}
-		return responseSkycoinAddress.GetAddresses(), nil
-	}
-
-	return []string{}, fmt.Errorf("calling DecodeResponseSkycoinAddress with wrong message type: %s", messages.MessageType(msg.Kind))
-}
-
-// DecodeResponseTransactionSign convert byte data into list of signatures
-func DecodeResponseTransactionSign(msg wire.Message) ([]string, error) {
-	if msg.Kind == uint16(messages.MessageType_MessageType_ResponseTransactionSign) {
-		responseSkycoinTransactionSign := &messages.ResponseTransactionSign{}
-		err := proto.Unmarshal(msg.Data, responseSkycoinTransactionSign)
-		if err != nil {
-			return make([]string, 0), err
-		}
-		return responseSkycoinTransactionSign.GetSignatures(), nil
-	}
-
-	return []string{}, fmt.Errorf("calling DecodeResponseeSkycoinSignMessage with wrong message type: %s", messages.MessageType(msg.Kind))
-}
-
-// DecodeResponseSkycoinSignMessage convert byte data into signed message, meant to be used after DevicePinMatrixAck
-func DecodeResponseSkycoinSignMessage(msg wire.Message) (string, error) {
-	if msg.Kind == uint16(messages.MessageType_MessageType_ResponseSkycoinSignMessage) {
-		responseSkycoinSignMessage := &messages.ResponseSkycoinSignMessage{}
-		err := proto.Unmarshal(msg.Data, responseSkycoinSignMessage)
-		if err != nil {
-			return "", err
-		}
-		return responseSkycoinSignMessage.GetSignedMessage(), nil
-	}
-	return "", fmt.Errorf("calling DecodeResponseeSkycoinSignMessage with wrong message type: %s", messages.MessageType(msg.Kind))
 }

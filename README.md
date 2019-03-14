@@ -11,8 +11,10 @@
 ## Usage
 
 ### Download source code
-    
-    go get github.com/skycoin/hardware-wallet-go
+
+```bash
+$ go get github.com/skycoin/hardware-wallet-go
+```
 
 ### Dependancies management
 
@@ -22,28 +24,30 @@ Don't modify anything under vendor/ directory without using [dep commands](https
 
 Download dependencies using command:
 
-    dep ensure
+```bash
+$ make dep
+```
 
 ### Generate protobuf files
 
-If you need to generate google protobuf files yourself (if you are creating a new message for instance). You need to 
-
-- [Install protoc](http://google.github.io/proto-lens/installing-protoc.html)
-- [Install `protoc-gen-gogofaster`](https://github.com/gogo/protobuf#more-speed-and-more-generated-code)
-
-- Run the following:
-
+#### Init proto submboule
 ```bash
-make proto
+$ git submodule init 
+$ git submodule update
+```
+
+#### Generate go files
+```bash
+$ make vendor_proto
 ```
 
 ### Run
 
 ```bash
-go run cli.go
+$ go run cmd/cli/cli.go
 ```
 
-See also [CLI.md](https://github.com/skycoin/hardware-wallet-go/blob/master/CLI.md) for information about the Command Line Interface.
+See also [CLI README](https://github.com/skycoin/hardware-wallet-go/blob/master/cmd/cli/README.md) for information about the Command Line Interface.
 
 ## Wiki
 

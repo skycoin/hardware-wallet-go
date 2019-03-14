@@ -3,7 +3,7 @@ package devicewallet
 import (
 	"crypto/rand"
 	"fmt"
-
+	"github.com/skycoin/hardware-wallet-go/src/device-wallet/wire"
 	"github.com/gogo/protobuf/proto"
 	messages "github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
 )
@@ -308,4 +308,85 @@ func MessageEntropyAck(bufferSize int) ([][64]byte, error) {
 	}
 	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_EntropyAck)
 	return chunks, nil
+}
+
+func DecodeSuccessOrFailMsg(msg wire.Message) (string, error) {
+	if msg.Kind == uint16(messages.MessageType_MessageType_Success) {
+		return DecodeSuccessMsg(msg)
+	}
+	if msg.Kind == uint16(messages.MessageType_MessageType_Failure) {
+		return DecodeFailMsg(msg)
+	}
+
+	return "", fmt.Errorf("calling DecodeSuccessOrFailMsg on message kind %s", messages.MessageType(msg.Kind))
+}
+
+// DecodeSuccessMsg convert byte data into string containing the success message returned by the device
+func DecodeSuccessMsg(msg wire.Message) (string, error) {
+	if msg.Kind == uint16(messages.MessageType_MessageType_Success) {
+		success := &messages.Success{}
+		err := proto.Unmarshal(msg.Data, success)
+		if err != nil {
+			return "", err
+		}
+		return success.GetMessage(), nil
+	}
+
+	return "", fmt.Errorf("calling DecodeSuccessMsg with wrong message type: %s", messages.MessageType(msg.Kind))
+}
+
+// DecodeFailMsg convert byte data into string containing the failure returned by the device
+func DecodeFailMsg(msg wire.Message) (string, error) {
+	if msg.Kind == uint16(messages.MessageType_MessageType_Failure) {
+		failure := &messages.Failure{}
+		err := proto.Unmarshal(msg.Data, failure)
+		if err != nil {
+			return "", err
+		}
+		return failure.GetMessage(), nil
+	}
+	return "", fmt.Errorf("calling DecodeFailMsg with wrong message type: %s", messages.MessageType(msg.Kind))
+}
+
+// DecodeResponseSkycoinAddress convert byte data into list of addresses, meant to be used after DevicePinMatrixAck
+func DecodeResponseSkycoinAddress(msg wire.Message) ([]string, error) {
+	log.Printf("%x\n", msg.Data)
+
+	if msg.Kind == uint16(messages.MessageType_MessageType_ResponseSkycoinAddress) {
+		responseSkycoinAddress := &messages.ResponseSkycoinAddress{}
+		err := proto.Unmarshal(msg.Data, responseSkycoinAddress)
+		if err != nil {
+			return []string{}, err
+		}
+		return responseSkycoinAddress.GetAddresses(), nil
+	}
+
+	return []string{}, fmt.Errorf("calling DecodeResponseSkycoinAddress with wrong message type: %s", messages.MessageType(msg.Kind))
+}
+
+// DecodeResponseTransactionSign convert byte data into list of signatures
+func DecodeResponseTransactionSign(msg wire.Message) ([]string, error) {
+	if msg.Kind == uint16(messages.MessageType_MessageType_ResponseTransactionSign) {
+		responseSkycoinTransactionSign := &messages.ResponseTransactionSign{}
+		err := proto.Unmarshal(msg.Data, responseSkycoinTransactionSign)
+		if err != nil {
+			return make([]string, 0), err
+		}
+		return responseSkycoinTransactionSign.GetSignatures(), nil
+	}
+
+	return []string{}, fmt.Errorf("calling DecodeResponseeSkycoinSignMessage with wrong message type: %s", messages.MessageType(msg.Kind))
+}
+
+// DecodeResponseSkycoinSignMessage convert byte data into signed message, meant to be used after DevicePinMatrixAck
+func DecodeResponseSkycoinSignMessage(msg wire.Message) (string, error) {
+	if msg.Kind == uint16(messages.MessageType_MessageType_ResponseSkycoinSignMessage) {
+		responseSkycoinSignMessage := &messages.ResponseSkycoinSignMessage{}
+		err := proto.Unmarshal(msg.Data, responseSkycoinSignMessage)
+		if err != nil {
+			return "", err
+		}
+		return responseSkycoinSignMessage.GetSignedMessage(), nil
+	}
+	return "", fmt.Errorf("calling DecodeResponseeSkycoinSignMessage with wrong message type: %s", messages.MessageType(msg.Kind))
 }

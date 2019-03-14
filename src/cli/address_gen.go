@@ -44,14 +44,8 @@ func addressGenCmd() gcli.Command {
 			startIndex := c.Int("startIndex")
 			confirmAddress := c.Bool("confirmAddress")
 
-			var device *deviceWallet.Device
-			switch c.String("deviceType") {
-			case "USB":
-				device = deviceWallet.NewUSBDevice()
-			case "EMULATOR":
-				device = deviceWallet.NewEmulatorDevice()
-			default:
-				log.Error("device type not set")
+			device := deviceWallet.NewDevice(c.String("deviceType"))
+			if device == nil {
 				return
 			}
 
