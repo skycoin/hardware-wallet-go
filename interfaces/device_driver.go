@@ -23,5 +23,6 @@ const (
 type DeviceDriver interface {
 	SendToDevice(dev io.ReadWriteCloser, chunks [][64]byte) (wire.Message, error)
 	SendToDeviceNoAnswer(dev io.ReadWriteCloser, chunks [][64]byte) error
+	GetDevice() (io.ReadWriteCloser, error)
 	DeviceType() DeviceType
 }

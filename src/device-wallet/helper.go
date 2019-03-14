@@ -45,6 +45,21 @@ func (drv *Driver) SendToDevice(dev io.ReadWriteCloser, chunks [][64]byte) (wire
 	return msg, err
 }
 
+func (drv *Driver) GetDevice() (io.ReadWriteCloser, error) {
+	var dev io.ReadWriteCloser
+	var err error
+	switch drv.DeviceType() {
+	case interfaces.DeviceTypeEmulator:
+		dev, err = getEmulatorDevice()
+	case interfaces.DeviceTypeUSB:
+		dev, err = getUsbDevice()
+	}
+	if dev == nil && err == nil {
+		err = errors.New("No device connected")
+	}
+	return dev, err
+}
+
 func getEmulatorDevice() (net.Conn, error) {
 	return net.Dial("udp", "127.0.0.1:21324")
 }
@@ -112,24 +127,9 @@ func makeSkyWalletMessage(data []byte, msgID messages.MessageType) [][64]byte {
 	return chunks
 }
 
-func getDevice(dt interfaces.DeviceType) (io.ReadWriteCloser, error) {
-	var dev io.ReadWriteCloser
-	var err error
-	switch dt {
-	case interfaces.DeviceTypeEmulator:
-		dev, err = getEmulatorDevice()
-	case interfaces.DeviceTypeUSB:
-		dev, err = getUsbDevice()
-	}
-	if dev == nil && err == nil {
-		err = errors.New("No device connected")
-	}
-	return dev, err
-}
-
 // Initialize send an init request to the device
 func initialize(d *Device) error {
-	dev, err := getDevice(d.Driver.DeviceType())
+	dev, err := d.Driver.GetDevice()
 	if err != nil {
 		return err
 	}
