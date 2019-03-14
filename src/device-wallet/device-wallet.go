@@ -12,6 +12,17 @@ import (
 // DeviceType type of device: emulator or usb
 type DeviceType int32
 
+func (dt DeviceType) String() string {
+	switch dt {
+	case DeviceTypeEmulator:
+		return "EMULATOR"
+	case DeviceTypeUSB:
+		return "USB"
+	default:
+		return "Invalid"
+	}
+}
+
 var (
 	log = logging.MustGetLogger("device-wallet")
 )
@@ -47,12 +58,12 @@ type Device struct {
 func deviceTypeFromString(deviceType string) DeviceType {
 	var dtRet DeviceType
 	switch deviceType {
-	case DeviceTypeUSBStr:
+	case DeviceType(DeviceTypeUSB).String():
 		dtRet = DeviceTypeUSB
-	case DeviceTypeEmulatorStr:
+	case DeviceType(DeviceTypeEmulator).String():
 		dtRet = DeviceTypeEmulator
 	default:
-		log.Errorf("device type not set, valid options are %s or %s", DeviceTypeUSBStr, DeviceTypeEmulatorStr)
+		log.Errorf("device type not set, valid options are %s or %s", DeviceType(DeviceTypeUSB), DeviceType(DeviceTypeEmulator))
 		dtRet = DeviceTypeInvalid
 	}
 	return dtRet

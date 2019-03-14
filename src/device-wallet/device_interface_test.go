@@ -13,8 +13,8 @@ import (
 )
 
 func testHelperGetDeviceWithBestEffort(testName string, t *testing.T) *Device {
-	emDevice := NewDevice(DeviceTypeEmulatorStr)
-	phDevice := NewDevice(DeviceTypeUSBStr)
+	emDevice := NewDevice(DeviceType(DeviceTypeEmulator).String())
+	phDevice := NewDevice(DeviceType(DeviceTypeUSB).String())
 	if phDevice.Connected() {
 		return phDevice
 	} else if emDevice.Connected() {
@@ -113,7 +113,7 @@ func TestMain(t *testing.T) {
 }
 
 func TestGetAddressUsb(t *testing.T) {
-	device := NewDevice(DeviceTypeUSBStr)
+	device := NewDevice(DeviceType(DeviceTypeUSB).String())
 	if !device.Connected() {
 		t.Skip("TestGetAddressUsb do not work if Usb device is not connected")
 		return
