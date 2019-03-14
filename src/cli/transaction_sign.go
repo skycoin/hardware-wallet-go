@@ -103,7 +103,7 @@ func transactionSignCmd() gcli.Command {
 			for {
 				switch msg.Kind {
 				case uint16(messages.MessageType_MessageType_ResponseTransactionSign):
-					signatures, err := device.GetProtocol().DecodeResponseTransactionSign(msg)
+					signatures, err := deviceWallet.DecodeResponseTransactionSign(msg)
 					if err != nil {
 						log.Error(err)
 						return
@@ -138,7 +138,7 @@ func transactionSignCmd() gcli.Command {
 						return
 					}
 				case uint16(messages.MessageType_MessageType_Failure):
-					failMsg, err := device.GetProtocol().DecodeFailMsg(msg)
+					failMsg, err := deviceWallet.DecodeFailMsg(msg)
 					if err != nil {
 						log.Error(err)
 						return

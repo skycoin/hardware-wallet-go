@@ -39,7 +39,7 @@ func setMnemonicCmd() gcli.Command {
 				return
 			}
 
-			responseMsg, err := device.GetProtocol().DecodeSuccessOrFailMsg(msg)
+			responseMsg, err := deviceWallet.DecodeSuccessOrFailMsg(msg)
 			if err != nil {
 				log.Error(err)
 				return

@@ -93,14 +93,14 @@ func addressGenCmd() gcli.Command {
 			}
 
 			if msg.Kind == uint16(messages.MessageType_MessageType_ResponseSkycoinAddress) {
-				addresses, err := device.GetProtocol().DecodeResponseSkycoinAddress(msg)
+				addresses, err := deviceWallet.DecodeResponseSkycoinAddress(msg)
 				if err != nil {
 					log.Error(err)
 					return
 				}
 				fmt.Println(addresses)
 			} else {
-				failMsg, err := device.GetProtocol().DecodeFailMsg(msg)
+				failMsg, err := deviceWallet.DecodeFailMsg(msg)
 				if err != nil {
 					log.Error(err)
 					return

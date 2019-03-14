@@ -74,7 +74,7 @@ func applySettingsCmd() gcli.Command {
 			}
 
 			if msg.Kind == uint16(messages.MessageType_MessageType_Failure) {
-				failMsg, err := device.GetProtocol().DecodeFailMsg(msg)
+				failMsg, err := deviceWallet.DecodeFailMsg(msg)
 				if err != nil {
 					log.Error(err)
 					return
@@ -84,7 +84,7 @@ func applySettingsCmd() gcli.Command {
 			}
 
 			if msg.Kind == uint16(messages.MessageType_MessageType_Success) {
-				successMsg, err := device.GetProtocol().DecodeSuccessMsg(msg)
+				successMsg, err := deviceWallet.DecodeSuccessMsg(msg)
 				if err != nil {
 					log.Error(err)
 					return

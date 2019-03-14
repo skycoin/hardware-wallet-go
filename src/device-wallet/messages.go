@@ -7,68 +7,30 @@ import (
 	messages "github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
 )
 
-type Protocol interface {
-	MessageCancel() ([][64]byte, error)
-	MessageButtonAck() ([][64]byte, error)
-	MessagePassphraseAck(passphrase string) ([][64]byte, error)
-	MessageWordAck(word string) ([][64]byte, error)
-	MessageCheckMessageSignature(message, signature, address string) ([][64]byte, error)
-	MessageAddressGen(addressN, startIndex int, confirmAddress bool) ([][64]byte, error)
-	MessageApplySettings(usePassphrase bool, label string) ([][64]byte, error)
-	MessageBackup() ([][64]byte, error)
-	MessageChangePin() ([][64]byte, error)
-	MessageConnected() ([][64]byte, error)
-	MessageFirmwareErase(payload []byte) ([][64]byte, error)
-	MessageFirmwareUpload(payload []byte, hash [32]byte) ([][64]byte, error)
-	MessageGetFeatures() ([][64]byte, error)
-	MessageGenerateMnemonic(wordCount uint32, usePassphrase bool) ([][64]byte, error)
-	MessageRecovery(wordCount uint32, usePassphrase, dryRun bool) ([][64]byte, error)
-	MessageSetMnemonic(mnemonic string) ([][64]byte, error)
-	MessageSignMessage(addressN int, message string) ([][64]byte, error)
-	MessageTransactionSign(inputs []*messages.SkycoinTransactionInput, outputs []*messages.SkycoinTransactionOutput) ([][64]byte, error)
-	MessageWipe() ([][64]byte, error)
-	MessagePinMatrixAck(p string) ([][64]byte, error)
-	DecodeSuccessOrFailMsg(msg wire.Message) (string, error)
-	DecodeSuccessMsg(msg wire.Message) (string, error)
-	DecodeFailMsg(msg wire.Message) (string, error)
-	DecodeResponseSkycoinAddress(msg wire.Message) ([]string, error)
-	DecodeResponseTransactionSign(msg wire.Message) ([]string, error)
-	DecodeResponseSkycoinSignMessage(msg wire.Message) (string, error)
-	GetDriver() DeviceDriver
-}
-
-type Protobuf struct {
-	driver DeviceDriver
-}
-
-func (pb *Protobuf) GetDriver() DeviceDriver {
-	return pb.driver
-}
-
 // MessageCancel prepare Cancel request
-func (pb *Protobuf) MessageCancel() ([][64]byte, error) {
+func MessageCancel() ([][64]byte, error) {
 	msg := &messages.Cancel{}
 	data, err := proto.Marshal(msg)
 	if err != nil {
 		return [][64]byte{}, err
 	}
-	chunks := pb.driver.makeTrezorMessage(data, messages.MessageType_MessageType_Cancel)
+	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_Cancel)
 	return chunks, nil
 }
 
 // MessageButtonAck send this message (before user action) when the device expects the user to push a button
-func (pb *Protobuf) MessageButtonAck() ([][64]byte, error) {
+func MessageButtonAck() ([][64]byte, error) {
 	buttonAck := &messages.ButtonAck{}
 	data, err := proto.Marshal(buttonAck)
 	if err != nil {
 		return [][64]byte{}, err
 	}
-	chunks := pb.driver.makeTrezorMessage(data, messages.MessageType_MessageType_ButtonAck)
+	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_ButtonAck)
 	return chunks, nil
 }
 
 // MessagePassphraseAck send this message when the device expects receiving a Passphrase
-func (pb *Protobuf) MessagePassphraseAck(passphrase string) ([][64]byte, error) {
+func MessagePassphraseAck(passphrase string) ([][64]byte, error) {
 	msg := &messages.PassphraseAck{
 		Passphrase: proto.String(passphrase),
 	}
@@ -76,12 +38,12 @@ func (pb *Protobuf) MessagePassphraseAck(passphrase string) ([][64]byte, error) 
 	if err != nil {
 		return [][64]byte{}, err
 	}
-	chunks := pb.driver.makeTrezorMessage(data, messages.MessageType_MessageType_PassphraseAck)
+	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_PassphraseAck)
 	return chunks, nil
 }
 
 // MessageWordAck send this message between each word of the seed (before user action) during device backup
-func (pb *Protobuf) MessageWordAck(word string) ([][64]byte, error) {
+func MessageWordAck(word string) ([][64]byte, error) {
 	wordAck := &messages.WordAck{
 		Word: proto.String(word),
 	}
@@ -89,12 +51,12 @@ func (pb *Protobuf) MessageWordAck(word string) ([][64]byte, error) {
 	if err != nil {
 		return [][64]byte{}, err
 	}
-	chunks := pb.driver.makeTrezorMessage(data, messages.MessageType_MessageType_WordAck)
+	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_WordAck)
 	return chunks, nil
 }
 
 // MessageCheckMessageSignature prepare CheckMessageSignature request
-func (pb *Protobuf) MessageCheckMessageSignature(message, signature, address string) ([][64]byte, error) {
+func MessageCheckMessageSignature(message, signature, address string) ([][64]byte, error) {
 	msg := &messages.SkycoinCheckMessageSignature{
 		Address:   proto.String(address),
 		Message:   proto.String(message),
@@ -105,12 +67,12 @@ func (pb *Protobuf) MessageCheckMessageSignature(message, signature, address str
 	if err != nil {
 		return [][64]byte{}, err
 	}
-	chunks := pb.driver.makeTrezorMessage(data, messages.MessageType_MessageType_Cancel)
+	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_Cancel)
 	return chunks, nil
 }
 
 // MessageAddressGen prepare MessageAddressGen request
-func (pb *Protobuf) MessageAddressGen(addressN, startIndex int, confirmAddress bool) ([][64]byte, error) {
+func MessageAddressGen(addressN, startIndex int, confirmAddress bool) ([][64]byte, error) {
 	skycoinAddress := &messages.SkycoinAddress{
 		AddressN:       proto.Uint32(uint32(addressN)),
 		ConfirmAddress: proto.Bool(confirmAddress),
@@ -122,12 +84,12 @@ func (pb *Protobuf) MessageAddressGen(addressN, startIndex int, confirmAddress b
 		return [][64]byte{}, err
 	}
 
-	chunks := pb.driver.makeTrezorMessage(data, messages.MessageType_MessageType_SkycoinAddress)
+	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_SkycoinAddress)
 	return chunks, nil
 }
 
 // MessageApplySettings prepare MessageApplySettings request
-func (pb *Protobuf) MessageApplySettings(usePassphrase bool, label string) ([][64]byte, error) {
+func MessageApplySettings(usePassphrase bool, label string) ([][64]byte, error) {
 	applySettings := &messages.ApplySettings{
 		Label:         proto.String(label),
 		Language:      proto.String(""),
@@ -139,45 +101,45 @@ func (pb *Protobuf) MessageApplySettings(usePassphrase bool, label string) ([][6
 		return [][64]byte{}, err
 	}
 
-	chunks := pb.driver.makeTrezorMessage(data, messages.MessageType_MessageType_ApplySettings)
+	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_ApplySettings)
 	return chunks, nil
 }
 
 // MessageBackup prepare MessageBackup request
-func (pb *Protobuf) MessageBackup() ([][64]byte, error) {
+func MessageBackup() ([][64]byte, error) {
 	backupDevice := &messages.BackupDevice{}
 	data, err := proto.Marshal(backupDevice)
 	if err != nil {
 		return [][64]byte{}, err
 	}
-	chunks := pb.driver.makeTrezorMessage(data, messages.MessageType_MessageType_BackupDevice)
+	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_BackupDevice)
 	return chunks, nil
 }
 
 // MessageChangePin prepare MessageChangePin request
-func (pb *Protobuf) MessageChangePin() ([][64]byte, error) {
+func MessageChangePin() ([][64]byte, error) {
 	changePin := &messages.ChangePin{}
 	data, err := proto.Marshal(changePin)
 	if err != nil {
 		return [][64]byte{}, err
 	}
-	chunks := pb.driver.makeTrezorMessage(data, messages.MessageType_MessageType_ChangePin)
+	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_ChangePin)
 	return chunks, nil
 }
 
 // MessageConnected prepare MessageConnected request
-func (pb *Protobuf) MessageConnected() ([][64]byte, error) {
+func MessageConnected() ([][64]byte, error) {
 	msgRaw := &messages.Ping{}
 	data, err := proto.Marshal(msgRaw)
 	if err != nil {
 		return [][64]byte{}, err
 	}
-	chunks := pb.driver.makeTrezorMessage(data, messages.MessageType_MessageType_Ping)
+	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_Ping)
 	return chunks, nil
 }
 
 // MessageFirmwareErase prepare MessageFirmwareErase request
-func (pb *Protobuf) MessageFirmwareErase(payload []byte) ([][64]byte, error) {
+func MessageFirmwareErase(payload []byte) ([][64]byte, error) {
 	deviceFirmwareErase := &messages.FirmwareErase{
 		Length: proto.Uint32(uint32(len(payload))),
 	}
@@ -187,12 +149,12 @@ func (pb *Protobuf) MessageFirmwareErase(payload []byte) ([][64]byte, error) {
 		return [][64]byte{}, err
 	}
 
-	chunks := pb.driver.makeTrezorMessage(erasedata, messages.MessageType_MessageType_FirmwareErase)
+	chunks := makeTrezorMessage(erasedata, messages.MessageType_MessageType_FirmwareErase)
 	return chunks, nil
 }
 
 // MessageFirmwareUpload prepare MessageFirmwareUpload request
-func (pb *Protobuf) MessageFirmwareUpload(payload []byte, hash [32]byte) ([][64]byte, error) {
+func MessageFirmwareUpload(payload []byte, hash [32]byte) ([][64]byte, error) {
 	deviceFirmwareUpload := &messages.FirmwareUpload{
 		Payload: payload,
 		Hash:    hash[:],
@@ -203,24 +165,24 @@ func (pb *Protobuf) MessageFirmwareUpload(payload []byte, hash [32]byte) ([][64]
 		return [][64]byte{}, err
 	}
 
-	chunks := pb.driver.makeTrezorMessage(uploaddata, messages.MessageType_MessageType_FirmwareUpload)
+	chunks := makeTrezorMessage(uploaddata, messages.MessageType_MessageType_FirmwareUpload)
 	return chunks, nil
 }
 
 // MessageGetFeatures prepare MessageGetFeatures request
-func (pb *Protobuf) MessageGetFeatures() ([][64]byte, error) {
+func MessageGetFeatures() ([][64]byte, error) {
 	featureMsg := &messages.GetFeatures{}
 	data, err := proto.Marshal(featureMsg)
 	if err != nil {
 		return [][64]byte{}, err
 	}
 
-	chunks := pb.driver.makeTrezorMessage(data, messages.MessageType_MessageType_GetFeatures)
+	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_GetFeatures)
 	return chunks, nil
 }
 
 // MessageGenerateMnemonic prepare MessageGenerateMnemonic request
-func (pb *Protobuf) MessageGenerateMnemonic(wordCount uint32, usePassphrase bool) ([][64]byte, error) {
+func MessageGenerateMnemonic(wordCount uint32, usePassphrase bool) ([][64]byte, error) {
 	skycoinGenerateMnemonic := &messages.GenerateMnemonic{
 		PassphraseProtection: proto.Bool(usePassphrase),
 		WordCount:            proto.Uint32(wordCount),
@@ -231,12 +193,12 @@ func (pb *Protobuf) MessageGenerateMnemonic(wordCount uint32, usePassphrase bool
 		return [][64]byte{}, err
 	}
 
-	chunks := pb.driver.makeTrezorMessage(data, messages.MessageType_MessageType_GenerateMnemonic)
+	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_GenerateMnemonic)
 	return chunks, nil
 }
 
 // MessageRecovery prepare MessageRecovery request
-func (pb *Protobuf) MessageRecovery(wordCount uint32, usePassphrase, dryRun bool) ([][64]byte, error) {
+func MessageRecovery(wordCount uint32, usePassphrase, dryRun bool) ([][64]byte, error) {
 	recoveryDevice := &messages.RecoveryDevice{
 		WordCount:            proto.Uint32(wordCount),
 		PassphraseProtection: proto.Bool(usePassphrase),
@@ -247,13 +209,13 @@ func (pb *Protobuf) MessageRecovery(wordCount uint32, usePassphrase, dryRun bool
 		return [][64]byte{}, err
 	}
 
-	chunks := pb.driver.makeTrezorMessage(data, messages.MessageType_MessageType_RecoveryDevice)
+	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_RecoveryDevice)
 
 	return chunks, nil
 }
 
 // MessageSetMnemonic prepare MessageSetMnemonic request
-func (pb *Protobuf) MessageSetMnemonic(mnemonic string) ([][64]byte, error) {
+func MessageSetMnemonic(mnemonic string) ([][64]byte, error) {
 	skycoinSetMnemonic := &messages.SetMnemonic{
 		Mnemonic: proto.String(mnemonic),
 	}
@@ -263,12 +225,12 @@ func (pb *Protobuf) MessageSetMnemonic(mnemonic string) ([][64]byte, error) {
 		return [][64]byte{}, err
 	}
 
-	chunks := pb.driver.makeTrezorMessage(data, messages.MessageType_MessageType_SetMnemonic)
+	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_SetMnemonic)
 	return chunks, nil
 }
 
 // MessageSignMessage prepare MessageSignMessage request
-func (pb *Protobuf) MessageSignMessage(addressN int, message string) ([][64]byte, error) {
+func MessageSignMessage(addressN int, message string) ([][64]byte, error) {
 	skycoinSignMessage := &messages.SkycoinSignMessage{
 		AddressN: proto.Uint32(uint32(addressN)),
 		Message:  proto.String(message),
@@ -279,12 +241,12 @@ func (pb *Protobuf) MessageSignMessage(addressN int, message string) ([][64]byte
 		return [][64]byte{}, err
 	}
 
-	chunks := pb.driver.makeTrezorMessage(data, messages.MessageType_MessageType_SkycoinSignMessage)
+	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_SkycoinSignMessage)
 	return chunks, nil
 }
 
 // MessageTransactionSign prepare MessageTransactionSign request
-func (pb *Protobuf) MessageTransactionSign(inputs []*messages.SkycoinTransactionInput, outputs []*messages.SkycoinTransactionOutput) ([][64]byte, error) {
+func MessageTransactionSign(inputs []*messages.SkycoinTransactionInput, outputs []*messages.SkycoinTransactionOutput) ([][64]byte, error) {
 	skycoinTransactionSignMessage := &messages.TransactionSign{
 		NbIn:           proto.Uint32(uint32(len(inputs))),
 		NbOut:          proto.Uint32(uint32(len(outputs))),
@@ -298,24 +260,24 @@ func (pb *Protobuf) MessageTransactionSign(inputs []*messages.SkycoinTransaction
 		return [][64]byte{}, err
 	}
 
-	chunks := pb.driver.makeTrezorMessage(data, messages.MessageType_MessageType_TransactionSign)
+	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_TransactionSign)
 	return chunks, nil
 }
 
 // MessageWipe prepare MessageWipe request
-func (pb *Protobuf) MessageWipe() ([][64]byte, error) {
+func MessageWipe() ([][64]byte, error) {
 	wipeDevice := &messages.WipeDevice{}
 	data, err := proto.Marshal(wipeDevice)
 	if err != nil {
 		return [][64]byte{}, err
 	}
 
-	chunks := pb.driver.makeTrezorMessage(data, messages.MessageType_MessageType_WipeDevice)
+	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_WipeDevice)
 	return chunks, nil
 }
 
 // MessagePinMatrixAck prepare MessagePinMatrixAck request
-func (pb *Protobuf) MessagePinMatrixAck(p string) ([][64]byte, error) {
+func MessagePinMatrixAck(p string) ([][64]byte, error) {
 	pinAck := &messages.PinMatrixAck{
 		Pin: proto.String(p),
 	}
@@ -324,23 +286,23 @@ func (pb *Protobuf) MessagePinMatrixAck(p string) ([][64]byte, error) {
 		return [][64]byte{}, err
 	}
 
-	chunks := pb.driver.makeTrezorMessage(data, messages.MessageType_MessageType_PinMatrixAck)
+	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_PinMatrixAck)
 	return chunks, nil
 }
 
-func (pb *Protobuf) DecodeSuccessOrFailMsg(msg wire.Message) (string, error) {
+func DecodeSuccessOrFailMsg(msg wire.Message) (string, error) {
 	if msg.Kind == uint16(messages.MessageType_MessageType_Success) {
-		return pb.DecodeSuccessMsg(msg)
+		return DecodeSuccessMsg(msg)
 	}
 	if msg.Kind == uint16(messages.MessageType_MessageType_Failure) {
-		return pb.DecodeFailMsg(msg)
+		return DecodeFailMsg(msg)
 	}
 
 	return "", fmt.Errorf("calling DecodeSuccessOrFailMsg on message kind %s", messages.MessageType(msg.Kind))
 }
 
 // DecodeSuccessMsg convert byte data into string containing the success message returned by the device
-func (pb *Protobuf) DecodeSuccessMsg(msg wire.Message) (string, error) {
+func DecodeSuccessMsg(msg wire.Message) (string, error) {
 	if msg.Kind == uint16(messages.MessageType_MessageType_Success) {
 		success := &messages.Success{}
 		err := proto.Unmarshal(msg.Data, success)
@@ -354,7 +316,7 @@ func (pb *Protobuf) DecodeSuccessMsg(msg wire.Message) (string, error) {
 }
 
 // DecodeFailMsg convert byte data into string containing the failure returned by the device
-func (pb *Protobuf) DecodeFailMsg(msg wire.Message) (string, error) {
+func DecodeFailMsg(msg wire.Message) (string, error) {
 	if msg.Kind == uint16(messages.MessageType_MessageType_Failure) {
 		failure := &messages.Failure{}
 		err := proto.Unmarshal(msg.Data, failure)
@@ -367,7 +329,7 @@ func (pb *Protobuf) DecodeFailMsg(msg wire.Message) (string, error) {
 }
 
 // DecodeResponseSkycoinAddress convert byte data into list of addresses, meant to be used after DevicePinMatrixAck
-func (pb *Protobuf) DecodeResponseSkycoinAddress(msg wire.Message) ([]string, error) {
+func DecodeResponseSkycoinAddress(msg wire.Message) ([]string, error) {
 	log.Printf("%x\n", msg.Data)
 
 	if msg.Kind == uint16(messages.MessageType_MessageType_ResponseSkycoinAddress) {
@@ -383,7 +345,7 @@ func (pb *Protobuf) DecodeResponseSkycoinAddress(msg wire.Message) ([]string, er
 }
 
 // DecodeResponseTransactionSign convert byte data into list of signatures
-func (pb *Protobuf) DecodeResponseTransactionSign(msg wire.Message) ([]string, error) {
+func DecodeResponseTransactionSign(msg wire.Message) ([]string, error) {
 	if msg.Kind == uint16(messages.MessageType_MessageType_ResponseTransactionSign) {
 		responseSkycoinTransactionSign := &messages.ResponseTransactionSign{}
 		err := proto.Unmarshal(msg.Data, responseSkycoinTransactionSign)
@@ -397,7 +359,7 @@ func (pb *Protobuf) DecodeResponseTransactionSign(msg wire.Message) ([]string, e
 }
 
 // DecodeResponseSkycoinSignMessage convert byte data into signed message, meant to be used after DevicePinMatrixAck
-func (pb *Protobuf) DecodeResponseSkycoinSignMessage(msg wire.Message) (string, error) {
+func DecodeResponseSkycoinSignMessage(msg wire.Message) (string, error) {
 	if msg.Kind == uint16(messages.MessageType_MessageType_ResponseSkycoinSignMessage) {
 		responseSkycoinSignMessage := &messages.ResponseSkycoinSignMessage{}
 		err := proto.Unmarshal(msg.Data, responseSkycoinSignMessage)

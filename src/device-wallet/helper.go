@@ -16,15 +16,8 @@ import (
 )
 
 type DeviceDriver interface {
-	getEmulatorDevice() (net.Conn, error)
-	getUsbDevice() (usb.Device, error)
-	sendToDeviceNoAnswer(dev io.ReadWriteCloser, chunks [][64]byte) error
-	sendToDevice(dev io.ReadWriteCloser, chunks [][64]byte) (wire.Message, error)
-	binaryWrite(message io.Writer, data interface{})
-	makeTrezorMessage(data []byte, msgID messages.MessageType) [][64]byte
-	getDevice() (io.ReadWriteCloser, error)
-	getDeviceType() DeviceType
-	initialize() error
+	SendToDevice(dev io.ReadWriteCloser, chunks [][64]byte) (wire.Message, error)
+	SendToDeviceNoAnswer(dev io.ReadWriteCloser, chunks [][64]byte) error
 }
 
 const (
@@ -32,21 +25,41 @@ const (
 	DeviceTypeEmulator DeviceType = 1
 	// DeviceTypeUsb use usb
 	DeviceTypeUSB DeviceType = 2
+	// DeviceTypeInvalid
+	DeviceTypeInvalid DeviceType = 3
 )
 
-type DeviceHelper struct {
+type Driver struct {
 	DeviceType
 }
 
-func (dh *DeviceHelper) getDeviceType() DeviceType {
-	return dh.DeviceType
+func (drv *Driver) SendToDeviceNoAnswer(dev io.ReadWriteCloser, chunks [][64]byte) error {
+	for _, element := range chunks {
+		_, err := dev.Write(element[:])
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
-func (dh *DeviceHelper) getEmulatorDevice() (net.Conn, error) {
+func (drv *Driver) SendToDevice(dev io.ReadWriteCloser, chunks [][64]byte) (wire.Message, error) {
+	var msg wire.Message
+	for _, element := range chunks {
+		_, err := dev.Write(element[:])
+		if err != nil {
+			return msg, err
+		}
+	}
+	_, err := msg.ReadFrom(dev)
+	return msg, err
+}
+
+func getEmulatorDevice() (net.Conn, error) {
 	return net.Dial("udp", "127.0.0.1:21324")
 }
 
-func (dh *DeviceHelper) getUsbDevice() (usb.Device, error) {
+func getUsbDevice() (usb.Device, error) {
 	w, err := usb.InitWebUSB()
 	if err != nil {
 		log.Printf("webusb: %s", err)
@@ -78,43 +91,21 @@ func (dh *DeviceHelper) getUsbDevice() (usb.Device, error) {
 	return nil, err
 }
 
-func (dh *DeviceHelper) sendToDeviceNoAnswer(dev io.ReadWriteCloser, chunks [][64]byte) error {
-	for _, element := range chunks {
-		_, err := dev.Write(element[:])
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func (dh *DeviceHelper) sendToDevice(dev io.ReadWriteCloser, chunks [][64]byte) (wire.Message, error) {
-	var msg wire.Message
-	for _, element := range chunks {
-		_, err := dev.Write(element[:])
-		if err != nil {
-			return msg, err
-		}
-	}
-	_, err := msg.ReadFrom(dev)
-	return msg, err
-}
-
-func (dh *DeviceHelper) binaryWrite(message io.Writer, data interface{}) {
+func binaryWrite(message io.Writer, data interface{}) {
 	err := binary.Write(message, binary.BigEndian, data)
 	if err != nil {
 		log.Panic(err)
 	}
 }
 
-func (dh *DeviceHelper) makeTrezorMessage(data []byte, msgID messages.MessageType) [][64]byte {
+func makeTrezorMessage(data []byte, msgID messages.MessageType) [][64]byte {
 	message := new(bytes.Buffer)
-	dh.binaryWrite(message, []byte("##"))
-	dh.binaryWrite(message, uint16(msgID))
-	dh.binaryWrite(message, uint32(len(data)))
-	dh.binaryWrite(message, []byte("\n"))
+	binaryWrite(message, []byte("##"))
+	binaryWrite(message, uint16(msgID))
+	binaryWrite(message, uint32(len(data)))
+	binaryWrite(message, []byte("\n"))
 	if len(data) > 0 {
-		dh.binaryWrite(message, data[1:])
+		binaryWrite(message, data[1:])
 	}
 
 	messageLen := message.Len()
@@ -131,14 +122,14 @@ func (dh *DeviceHelper) makeTrezorMessage(data []byte, msgID messages.MessageTyp
 	return chunks
 }
 
-func (dh *DeviceHelper) getDevice() (io.ReadWriteCloser, error) {
+func getDevice(dt DeviceType) (io.ReadWriteCloser, error) {
 	var dev io.ReadWriteCloser
 	var err error
-	switch dh.DeviceType {
+	switch dt {
 	case DeviceTypeEmulator:
-		dev, err = dh.getEmulatorDevice()
+		dev, err = getEmulatorDevice()
 	case DeviceTypeUSB:
-		dev, err = dh.getUsbDevice()
+		dev, err = getUsbDevice()
 	}
 	if dev == nil && err == nil {
 		err = errors.New("No device connected")
@@ -147,8 +138,8 @@ func (dh *DeviceHelper) getDevice() (io.ReadWriteCloser, error) {
 }
 
 // Initialize send an init request to the device
-func (dh *DeviceHelper) initialize() error {
-	dev, err := dh.getDevice()
+func initialize(d *Device) error {
+	dev, err := getDevice(d.DeviceType)
 	if err != nil {
 		return err
 	}
@@ -161,8 +152,8 @@ func (dh *DeviceHelper) initialize() error {
 		return err
 	}
 
-	chunks = dh.makeTrezorMessage(data, messages.MessageType_MessageType_Initialize)
-	_, err = dh.sendToDevice(dev, chunks)
+	chunks = makeTrezorMessage(data, messages.MessageType_MessageType_Initialize)
+	_, err = d.Driver.SendToDevice(dev, chunks)
 
 	return err
 }

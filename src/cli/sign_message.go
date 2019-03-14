@@ -77,14 +77,14 @@ func signMessageCmd() gcli.Command {
 			}
 
 			if msg.Kind == uint16(messages.MessageType_MessageType_ResponseSkycoinSignMessage) {
-				signature, err = device.GetProtocol().DecodeResponseSkycoinSignMessage(msg)
+				signature, err = deviceWallet.DecodeResponseSkycoinSignMessage(msg)
 				if err != nil {
 					log.Error(err)
 					return
 				}
 				fmt.Printf("Success %d! the signature is: %s\n", msg.Kind, signature)
 			} else {
-				failMsg, err := device.GetProtocol().DecodeFailMsg(msg)
+				failMsg, err := deviceWallet.DecodeFailMsg(msg)
 				if err != nil {
 					log.Error(err)
 					return

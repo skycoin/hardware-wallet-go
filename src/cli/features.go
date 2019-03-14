@@ -48,7 +48,7 @@ func featuresCmd() gcli.Command {
 				fmt.Println(features)
 			// TODO: figure out if this method can even return success or failure msg.
 			case uint16(messages.MessageType_MessageType_Failure), uint16(messages.MessageType_MessageType_Success):
-				msgData, err := device.GetProtocol().DecodeSuccessOrFailMsg(msg)
+				msgData, err := deviceWallet.DecodeSuccessOrFailMsg(msg)
 				if err != nil {
 					log.Error(err)
 					return

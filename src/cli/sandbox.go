@@ -89,7 +89,7 @@ func sandbox() gcli.Command {
 				}
 
 				if msg.Kind == uint16(messages.MessageType_MessageType_ResponseSkycoinAddress) {
-					addresses, err := device.GetProtocol().DecodeResponseSkycoinAddress(msg)
+					addresses, err := deviceWallet.DecodeResponseSkycoinAddress(msg)
 					if err != nil {
 						log.Error(err)
 						return
@@ -99,7 +99,7 @@ func sandbox() gcli.Command {
 				}
 			} else {
 				log.Println("Got addresses without pin code")
-				addresses, err := device.GetProtocol().DecodeResponseSkycoinAddress(msg)
+				addresses, err := deviceWallet.DecodeResponseSkycoinAddress(msg)
 				if err != nil {
 					log.Error(err)
 					return
