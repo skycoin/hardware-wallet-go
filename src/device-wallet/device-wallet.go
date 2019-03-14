@@ -3,10 +3,11 @@ package devicewallet
 import (
 	"errors"
 	"time"
+
+	"github.com/skycoin/hardware-wallet-go/interfaces"
 	messages "github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
 	"github.com/skycoin/hardware-wallet-go/src/device-wallet/wire"
 	"github.com/skycoin/skycoin/src/util/logging"
-	"github.com/skycoin/hardware-wallet-go/interfaces"
 )
 
 var (
@@ -14,7 +15,7 @@ var (
 )
 
 const (
-	entropyBufferSize int        = 32
+	entropyBufferSize int = 32
 )
 
 // Device provides hardware wallet functions

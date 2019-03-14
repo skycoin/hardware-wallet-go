@@ -1,7 +1,9 @@
 package interfaces
 
-import "github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
-import "github.com/skycoin/hardware-wallet-go/src/device-wallet/wire"
+import (
+	messages "github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
+	"github.com/skycoin/hardware-wallet-go/src/device-wallet/wire"
+)
 
 // Devicer provides api for the hw wallet functions
 type Devicer interface {

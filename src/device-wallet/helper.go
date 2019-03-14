@@ -10,10 +10,10 @@ import (
 	"time"
 
 	"github.com/gogo/protobuf/proto"
+	"github.com/skycoin/hardware-wallet-go/interfaces"
 	messages "github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
 	"github.com/skycoin/hardware-wallet-go/src/device-wallet/usb"
 	"github.com/skycoin/hardware-wallet-go/src/device-wallet/wire"
-	"github.com/skycoin/hardware-wallet-go/interfaces"
 )
 
 type Driver struct {
@@ -148,7 +148,6 @@ func initialize(d *Device) error {
 
 	return err
 }
-
 
 func DecodeSuccessOrFailMsg(msg wire.Message) (string, error) {
 	if msg.Kind == uint16(messages.MessageType_MessageType_Success) {

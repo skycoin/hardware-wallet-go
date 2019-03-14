@@ -1,8 +1,10 @@
 package interfaces
 
-import "io"
+import (
+	"io"
 
-import "github.com/skycoin/hardware-wallet-go/src/device-wallet/wire"
+	"github.com/skycoin/hardware-wallet-go/src/device-wallet/wire"
+)
 
 // DeviceType type of device: emulator or usb
 type DeviceType int32

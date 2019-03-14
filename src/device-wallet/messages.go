@@ -3,6 +3,7 @@ package devicewallet
 import (
 	"crypto/rand"
 	"fmt"
+
 	"github.com/gogo/protobuf/proto"
 	"github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
 )

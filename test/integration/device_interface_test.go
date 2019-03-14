@@ -5,14 +5,12 @@ import (
 	"log"
 	"testing"
 
-	deviceWallet "github.com/skycoin/hardware-wallet-go/src/device-wallet"
-	"github.com/skycoin/hardware-wallet-go/src/device-wallet/wire"
-	"github.com/skycoin/hardware-wallet-go/interfaces"
-
 	"github.com/gogo/protobuf/proto"
-	"github.com/stretchr/testify/require"
-
+	"github.com/skycoin/hardware-wallet-go/interfaces"
+	deviceWallet "github.com/skycoin/hardware-wallet-go/src/device-wallet"
 	messages "github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
+	"github.com/skycoin/hardware-wallet-go/src/device-wallet/wire"
+	"github.com/stretchr/testify/require"
 )
 
 func testHelperGetDeviceWithBestEffort(testName string, t *testing.T) *deviceWallet.Device {
