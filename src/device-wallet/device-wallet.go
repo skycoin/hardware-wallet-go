@@ -1,13 +1,12 @@
 package devicewallet
 
 import (
-	"time"
 	"errors"
-
-	"github.com/skycoin/skycoin/src/util/logging"
+	"time"
 
 	messages "github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
 	"github.com/skycoin/hardware-wallet-go/src/device-wallet/wire"
+	"github.com/skycoin/skycoin/src/util/logging"
 )
 
 // DeviceType type of device: emulator or usb
