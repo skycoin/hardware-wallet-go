@@ -12,28 +12,15 @@ import (
 	messages "github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
 	"github.com/skycoin/hardware-wallet-go/src/device-wallet/usb"
 	"github.com/skycoin/hardware-wallet-go/src/device-wallet/wire"
-)
-
-type DeviceDriver interface {
-	SendToDevice(dev io.ReadWriteCloser, chunks [][64]byte) (wire.Message, error)
-	SendToDeviceNoAnswer(dev io.ReadWriteCloser, chunks [][64]byte) error
-}
-
-const (
-	// DeviceTypeEmulator use emulator
-	DeviceTypeEmulator DeviceType = 1
-	// DeviceTypeEmulatorStr string to represent DeviceTypeEmulator
-	DeviceTypeEmulatorStr string = "EMULATOR"
-	// DeviceTypeUsb use usb
-	DeviceTypeUSB DeviceType = 2
-	// DeviceTypeUSBStr string to represent DeviceTypeUSB
-	DeviceTypeUSBStr string = "USB"
-	// DeviceTypeInvalid
-	DeviceTypeInvalid DeviceType = 3
+	"github.com/skycoin/hardware-wallet-go/interfaces"
 )
 
 type Driver struct {
-	DeviceType
+	deviceType interfaces.DeviceType
+}
+
+func (drv *Driver) DeviceType() interfaces.DeviceType {
+	return drv.deviceType
 }
 
 func (drv *Driver) SendToDeviceNoAnswer(dev io.ReadWriteCloser, chunks [][64]byte) error {
@@ -125,13 +112,13 @@ func makeSkyWalletMessage(data []byte, msgID messages.MessageType) [][64]byte {
 	return chunks
 }
 
-func getDevice(dt DeviceType) (io.ReadWriteCloser, error) {
+func getDevice(dt interfaces.DeviceType) (io.ReadWriteCloser, error) {
 	var dev io.ReadWriteCloser
 	var err error
 	switch dt {
-	case DeviceTypeEmulator:
+	case interfaces.DeviceTypeEmulator:
 		dev, err = getEmulatorDevice()
-	case DeviceTypeUSB:
+	case interfaces.DeviceTypeUSB:
 		dev, err = getUsbDevice()
 	}
 	if dev == nil && err == nil {
@@ -142,7 +129,7 @@ func getDevice(dt DeviceType) (io.ReadWriteCloser, error) {
 
 // Initialize send an init request to the device
 func initialize(d *Device) error {
-	dev, err := getDevice(d.DeviceType)
+	dev, err := getDevice(d.Driver.DeviceType())
 	if err != nil {
 		return err
 	}

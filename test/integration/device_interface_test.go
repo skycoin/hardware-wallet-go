@@ -7,6 +7,7 @@ import (
 
 	deviceWallet "github.com/skycoin/hardware-wallet-go/src/device-wallet"
 	"github.com/skycoin/hardware-wallet-go/src/device-wallet/wire"
+	"github.com/skycoin/hardware-wallet-go/interfaces"
 
 	"github.com/gogo/protobuf/proto"
 	"github.com/stretchr/testify/require"
@@ -15,8 +16,8 @@ import (
 )
 
 func testHelperGetDeviceWithBestEffort(testName string, t *testing.T) *deviceWallet.Device {
-	emDevice := deviceWallet.NewDevice(deviceWallet.DeviceTypeEmulatorStr)
-	phDevice := deviceWallet.NewDevice(deviceWallet.DeviceTypeUSBStr)
+	emDevice := deviceWallet.NewDevice(interfaces.DeviceTypeEmulatorStr)
+	phDevice := deviceWallet.NewDevice(interfaces.DeviceTypeUSBStr)
 	if phDevice.Connected() {
 		return phDevice
 	} else if emDevice.Connected() {
@@ -115,7 +116,7 @@ func TestMain(t *testing.T) {
 }
 
 func TestGetAddressUsb(t *testing.T) {
-	device := deviceWallet.NewDevice(deviceWallet.DeviceTypeUSBStr)
+	device := deviceWallet.NewDevice(interfaces.DeviceTypeUSBStr)
 	if !device.Connected() {
 		t.Skip("TestGetAddressUsb do not work if Usb device is not connected")
 		return
@@ -154,9 +155,9 @@ func TestGetAddressEmulator(t *testing.T) {
 	require.Equal(t, addresses[1], "zC8GAQGQBfwk7vtTxVoRG7iMperHNuyYPs")
 }
 
-func TransactionToDevice(deviceType deviceWallet.DeviceType, transactionInputs []*messages.SkycoinTransactionInput, transactionOutputs []*messages.SkycoinTransactionOutput) (wire.Message, error) {
-	var device deviceWallet.Devicer
-	if deviceType == deviceWallet.DeviceTypeUSB {
+func TransactionToDevice(deviceType interfaces.DeviceType, transactionInputs []*messages.SkycoinTransactionInput, transactionOutputs []*messages.SkycoinTransactionOutput) (wire.Message, error) {
+	var device interfaces.Devicer
+	if deviceType == interfaces.DeviceTypeUSB {
 		device = deviceWallet.NewDevice("USB")
 	} else {
 		device = deviceWallet.NewDevice("EMULATOR")
@@ -241,7 +242,7 @@ func TestTransactions(t *testing.T) {
 	transactionOutput.Hour = proto.Uint64(2)
 	transactionOutputs = append(transactionOutputs, &transactionOutput)
 
-	msg, err := TransactionToDevice(device.DeviceType, transactionInputs, transactionOutputs)
+	msg, err := TransactionToDevice(device.Driver.DeviceType(), transactionInputs, transactionOutputs)
 	require.NoError(t, err)
 	require.Equal(t, msg.Kind, uint16(messages.MessageType_MessageType_ResponseTransactionSign))
 
@@ -273,7 +274,7 @@ func TestTransactions(t *testing.T) {
 	transactionOutput.Hour = proto.Uint64(255)
 	transactionOutputs = append(transactionOutputs, &transactionOutput)
 
-	msg, err = TransactionToDevice(device.DeviceType, transactionInputs, transactionOutputs)
+	msg, err = TransactionToDevice(device.Driver.DeviceType(), transactionInputs, transactionOutputs)
 	require.NoError(t, err)
 	require.Equal(t, msg.Kind, uint16(messages.MessageType_MessageType_ResponseTransactionSign))
 
@@ -319,7 +320,7 @@ func TestTransactions(t *testing.T) {
 	transactionOutput1.Hour = proto.Uint64(1)
 	transactionOutputs = append(transactionOutputs, &transactionOutput1)
 
-	msg, err = TransactionToDevice(device.DeviceType, transactionInputs, transactionOutputs)
+	msg, err = TransactionToDevice(device.Driver.DeviceType(), transactionInputs, transactionOutputs)
 	require.NoError(t, err)
 	require.Equal(t, msg.Kind, uint16(messages.MessageType_MessageType_ResponseTransactionSign))
 
@@ -364,7 +365,7 @@ func TestTransactions(t *testing.T) {
 	transactionOutput.Hour = proto.Uint64(0)
 	transactionOutputs = append(transactionOutputs, &transactionOutput)
 
-	msg, err = TransactionToDevice(device.DeviceType, transactionInputs, transactionOutputs)
+	msg, err = TransactionToDevice(device.Driver.DeviceType(), transactionInputs, transactionOutputs)
 	require.NoError(t, err)
 	require.Equal(t, msg.Kind, uint16(messages.MessageType_MessageType_ResponseTransactionSign))
 
@@ -399,7 +400,7 @@ func TestTransactions(t *testing.T) {
 	transactionOutput.Hour = proto.Uint64(0)
 	transactionOutputs = append(transactionOutputs, &transactionOutput)
 
-	msg, err = TransactionToDevice(device.DeviceType, transactionInputs, transactionOutputs)
+	msg, err = TransactionToDevice(device.Driver.DeviceType(), transactionInputs, transactionOutputs)
 	require.NoError(t, err)
 	require.Equal(t, msg.Kind, uint16(messages.MessageType_MessageType_ResponseTransactionSign))
 
@@ -435,7 +436,7 @@ func TestTransactions(t *testing.T) {
 	transactionOutput2.Hour = proto.Uint64(1)
 	transactionOutputs = append(transactionOutputs, &transactionOutput2)
 
-	msg, err = TransactionToDevice(device.DeviceType, transactionInputs, transactionOutputs)
+	msg, err = TransactionToDevice(device.Driver.DeviceType(), transactionInputs, transactionOutputs)
 	require.NoError(t, err)
 	require.Equal(t, msg.Kind, uint16(messages.MessageType_MessageType_ResponseTransactionSign))
 
@@ -470,7 +471,7 @@ func TestTransactions(t *testing.T) {
 	transactionOutput.Hour = proto.Uint64(33)
 	transactionOutputs = append(transactionOutputs, &transactionOutput)
 
-	msg, err = TransactionToDevice(device.DeviceType, transactionInputs, transactionOutputs)
+	msg, err = TransactionToDevice(device.Driver.DeviceType(), transactionInputs, transactionOutputs)
 	require.NoError(t, err)
 	require.Equal(t, msg.Kind, uint16(messages.MessageType_MessageType_ResponseTransactionSign))
 
@@ -513,7 +514,7 @@ func TestTransactions(t *testing.T) {
 	transactionOutput.Hour = proto.Uint64(1000)
 	transactionOutputs = append(transactionOutputs, &transactionOutput)
 
-	msg, err = TransactionToDevice(device.DeviceType, transactionInputs, transactionOutputs)
+	msg, err = TransactionToDevice(device.Driver.DeviceType(), transactionInputs, transactionOutputs)
 	require.NoError(t, err)
 	require.Equal(t, msg.Kind, uint16(messages.MessageType_MessageType_ResponseTransactionSign))
 
@@ -546,7 +547,7 @@ func TestTransactions(t *testing.T) {
 	transactionOutput1.Hour = proto.Uint64(500)
 	transactionOutputs = append(transactionOutputs, &transactionOutput1)
 
-	msg, err = TransactionToDevice(device.DeviceType, transactionInputs, transactionOutputs)
+	msg, err = TransactionToDevice(device.Driver.DeviceType(), transactionInputs, transactionOutputs)
 	require.NoError(t, err)
 	require.Equal(t, msg.Kind, uint16(messages.MessageType_MessageType_ResponseTransactionSign))
 
@@ -575,7 +576,7 @@ func TestTransactions(t *testing.T) {
 	transactionOutput.Hour = proto.Uint64(1000)
 	transactionOutputs = append(transactionOutputs, &transactionOutput)
 
-	msg, err = TransactionToDevice(device.DeviceType, transactionInputs, transactionOutputs)
+	msg, err = TransactionToDevice(device.Driver.DeviceType(), transactionInputs, transactionOutputs)
 	require.NoError(t, err)
 	require.Equal(t, msg.Kind, uint16(messages.MessageType_MessageType_ResponseTransactionSign))
 
