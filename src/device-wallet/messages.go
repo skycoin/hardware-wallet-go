@@ -307,7 +307,7 @@ func MessageEntropyAck(bufferSize int) ([][64]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_EntropyAck)
+	chunks := makeSkyWalletMessage(data, messages.MessageType_MessageType_EntropyAck)
 	return chunks, nil
 }
 

@@ -325,6 +325,10 @@ func (d *Device) GenerateMnemonic(wordCount uint32, usePassphrase bool) (wire.Me
 		if err != nil {
 			return wire.Message{}, err
 		}
+		msg, err = d.Driver.SendToDevice(dev, chunks)
+		if err != nil {
+			return wire.Message{}, err
+		}
 	case uint16(messages.MessageType_MessageType_EntropyRequest):
 		chunks, err = MessageEntropyAck(entropyBufferSize)
 		if err != nil {
