@@ -59,14 +59,8 @@ func transactionSignCmd() gcli.Command {
 			hours := c.Int64Slice("hour")
 			addressIndex := c.IntSlice("addressIndex")
 
-			var device *deviceWallet.Device
-			switch c.String("deviceType") {
-			case "USB":
-				device = deviceWallet.NewUSBDevice()
-			case "EMULATOR":
-				device = deviceWallet.NewEmulatorDevice()
-			default:
-				log.Error("device type not set")
+			device := deviceWallet.NewDevice(c.String("deviceType"))
+			if device == nil {
 				return
 			}
 

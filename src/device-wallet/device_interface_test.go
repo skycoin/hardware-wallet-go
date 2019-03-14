@@ -12,17 +12,23 @@ import (
 	messages "github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
 )
 
+func testHelperGetDeviceWithBestEffort(testName string, t *testing.T) *Device {
+	emDevice := NewDevice(DeviceType(DeviceTypeEmulator).String())
+	phDevice := NewDevice(DeviceType(DeviceTypeUSB).String())
+	if phDevice.Connected() {
+		return phDevice
+	} else if emDevice.Connected() {
+		return emDevice
+	}
+	t.Skip(testName + " does not work if neither Emulator nor USB device is connected")
+	return nil
+}
+
 func TestMain(t *testing.T) {
-	var device *Device
-	if deviceConnected(DeviceTypeEmulator) {
-		device = NewEmulatorDevice()
-	} else if deviceConnected(DeviceTypeUSB) {
-		device = NewUSBDevice()
-	} else {
-		t.Skip("TestMain does not work if neither Emulator nor USB device is connected")
+	device := testHelperGetDeviceWithBestEffort("TestMain", t)
+	if device == nil {
 		return
 	}
-
 	// var msg wire.Message
 	// var chunks [][64]byte
 	// var inputWord string
@@ -107,12 +113,12 @@ func TestMain(t *testing.T) {
 }
 
 func TestGetAddressUsb(t *testing.T) {
-	if !deviceConnected(DeviceTypeUSB) {
+	device := NewDevice(DeviceType(DeviceTypeUSB).String())
+	if !device.Connected() {
 		t.Skip("TestGetAddressUsb do not work if Usb device is not connected")
 		return
 	}
 
-	device := NewUSBDevice()
 	_, err := device.Wipe()
 	require.NoError(t, err)
 	// need to connect the usb device
@@ -128,12 +134,11 @@ func TestGetAddressUsb(t *testing.T) {
 }
 
 func TestGetAddressEmulator(t *testing.T) {
-	if !deviceConnected(DeviceTypeEmulator) {
-		t.Skip("TestGetAddressEmulator do not work if Emulator device is not running")
+	device := testHelperGetDeviceWithBestEffort("TestGetAddressEmulator", t)
+	if device == nil {
 		return
 	}
 
-	device := NewEmulatorDevice()
 	_, err := device.Wipe()
 	require.NoError(t, err)
 	_, err = device.SetMnemonic("cloud flower upset remain green metal below cup stem infant art thank")
@@ -148,11 +153,11 @@ func TestGetAddressEmulator(t *testing.T) {
 }
 
 func TransactionToDevice(deviceType DeviceType, transactionInputs []*messages.SkycoinTransactionInput, transactionOutputs []*messages.SkycoinTransactionOutput) (wire.Message, error) {
-	var device *Device
+	var device Devicer
 	if deviceType == DeviceTypeUSB {
-		device = NewUSBDevice()
+		device = NewDevice("USB")
 	} else {
-		device = NewEmulatorDevice()
+		device = NewDevice("EMULATOR")
 	}
 
 	msg, err := device.TransactionSign(transactionInputs, transactionOutputs)
@@ -204,15 +209,9 @@ func TransactionToDevice(deviceType DeviceType, transactionInputs []*messages.Sk
 }
 
 func TestTransactions(t *testing.T) {
-	var device *Device
-	if deviceConnected(DeviceTypeUSB) {
-		device = NewUSBDevice()
-	} else {
-		if !deviceConnected(DeviceTypeEmulator) {
-			t.Skip("TestTransactions do not work if no device is connected")
-			return
-		}
-		device = NewEmulatorDevice()
+	device := testHelperGetDeviceWithBestEffort("TestTransactions", t)
+	if device == nil {
+		return
 	}
 
 	_, err := device.Wipe()

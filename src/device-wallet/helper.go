@@ -5,46 +5,54 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
-
-	"github.com/gogo/protobuf/proto"
-
-	messages "github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
-	"github.com/skycoin/hardware-wallet-go/src/device-wallet/usb"
-	"github.com/skycoin/hardware-wallet-go/src/device-wallet/wire"
-
 	"io"
 	"net"
 	"time"
+
+	"github.com/gogo/protobuf/proto"
+	messages "github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
+	"github.com/skycoin/hardware-wallet-go/src/device-wallet/usb"
+	"github.com/skycoin/hardware-wallet-go/src/device-wallet/wire"
 )
 
-// deviceConnected checks if a device is connected
-func deviceConnected(deviceType DeviceType) bool {
-	dev, err := getDevice(deviceType)
-	if dev == nil {
-		return false
-	}
-	defer dev.Close()
-	if err != nil {
-		return false
-	}
+type DeviceDriver interface {
+	SendToDevice(dev io.ReadWriteCloser, chunks [][64]byte) (wire.Message, error)
+	SendToDeviceNoAnswer(dev io.ReadWriteCloser, chunks [][64]byte) error
+}
 
-	chunks, err := MessageConnected()
-	if err != nil {
-		log.Error(err)
-		return false
-	}
+const (
+	// DeviceTypeEmulator use emulator
+	DeviceTypeEmulator = iota + 1
+	// DeviceTypeUsb use usb
+	DeviceTypeUSB
+	// DeviceTypeInvalid not valid value
+	DeviceTypeInvalid
+)
+
+type Driver struct {
+	DeviceType
+}
+
+func (drv *Driver) SendToDeviceNoAnswer(dev io.ReadWriteCloser, chunks [][64]byte) error {
 	for _, element := range chunks {
-		_, err = dev.Write(element[:])
+		_, err := dev.Write(element[:])
 		if err != nil {
-			return false
+			return err
 		}
 	}
+	return nil
+}
+
+func (drv *Driver) SendToDevice(dev io.ReadWriteCloser, chunks [][64]byte) (wire.Message, error) {
 	var msg wire.Message
-	_, err = msg.ReadFrom(dev)
-	if err != nil {
-		return false
+	for _, element := range chunks {
+		_, err := dev.Write(element[:])
+		if err != nil {
+			return msg, err
+		}
 	}
-	return msg.Kind == uint16(messages.MessageType_MessageType_Success)
+	_, err := msg.ReadFrom(dev)
+	return msg, err
 }
 
 func getEmulatorDevice() (net.Conn, error) {
@@ -83,28 +91,6 @@ func getUsbDevice() (usb.Device, error) {
 	return nil, err
 }
 
-func sendToDeviceNoAnswer(dev io.ReadWriteCloser, chunks [][64]byte) error {
-	for _, element := range chunks {
-		_, err := dev.Write(element[:])
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func sendToDevice(dev io.ReadWriteCloser, chunks [][64]byte) (wire.Message, error) {
-	var msg wire.Message
-	for _, element := range chunks {
-		_, err := dev.Write(element[:])
-		if err != nil {
-			return msg, err
-		}
-	}
-	_, err := msg.ReadFrom(dev)
-	return msg, err
-}
-
 func binaryWrite(message io.Writer, data interface{}) {
 	err := binary.Write(message, binary.BigEndian, data)
 	if err != nil {
@@ -112,7 +98,7 @@ func binaryWrite(message io.Writer, data interface{}) {
 	}
 }
 
-func makeTrezorMessage(data []byte, msgID messages.MessageType) [][64]byte {
+func makeSkyWalletMessage(data []byte, msgID messages.MessageType) [][64]byte {
 	message := new(bytes.Buffer)
 	binaryWrite(message, []byte("##"))
 	binaryWrite(message, uint16(msgID))
@@ -136,10 +122,10 @@ func makeTrezorMessage(data []byte, msgID messages.MessageType) [][64]byte {
 	return chunks
 }
 
-func getDevice(deviceType DeviceType) (io.ReadWriteCloser, error) {
+func getDevice(dt DeviceType) (io.ReadWriteCloser, error) {
 	var dev io.ReadWriteCloser
 	var err error
-	switch deviceType {
+	switch dt {
 	case DeviceTypeEmulator:
 		dev, err = getEmulatorDevice()
 	case DeviceTypeUSB:
@@ -152,7 +138,12 @@ func getDevice(deviceType DeviceType) (io.ReadWriteCloser, error) {
 }
 
 // Initialize send an init request to the device
-func initialize(dev io.ReadWriteCloser) error {
+func initialize(d *Device) error {
+	dev, err := getDevice(d.DeviceType)
+	if err != nil {
+		return err
+	}
+	defer dev.Close()
 	var chunks [][64]byte
 
 	initialize := &messages.Initialize{}
@@ -161,8 +152,8 @@ func initialize(dev io.ReadWriteCloser) error {
 		return err
 	}
 
-	chunks = makeTrezorMessage(data, messages.MessageType_MessageType_Initialize)
-	_, err = sendToDevice(dev, chunks)
+	chunks = makeSkyWalletMessage(data, messages.MessageType_MessageType_Initialize)
+	_, err = d.Driver.SendToDevice(dev, chunks)
 
 	return err
 }
