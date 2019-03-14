@@ -12,7 +12,7 @@ import (
 	messages "github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
 )
 
-func testHelperGetDeviceWithBestEffort(t *testing.T) *Device {
+func testHelperGetDeviceWithBestEffort(testName string, t *testing.T) *Device {
 	emDevice := NewDevice(DeviceTypeEmulatorStr)
 	phDevice := NewDevice(DeviceTypeUSBStr)
 	if phDevice.Connected() {
@@ -20,12 +20,12 @@ func testHelperGetDeviceWithBestEffort(t *testing.T) *Device {
 	} else if emDevice.Connected() {
 		return emDevice
 	}
-	t.Skip("TestMain does not work if neither Emulator nor USB device is connected")
+	t.Skip(testName + " does not work if neither Emulator nor USB device is connected")
 	return nil
 }
 
 func TestMain(t *testing.T) {
-	device := testHelperGetDeviceWithBestEffort(t)
+	device := testHelperGetDeviceWithBestEffort("TestMain", t)
 	if device == nil {
 		return
 	}
@@ -113,8 +113,9 @@ func TestMain(t *testing.T) {
 }
 
 func TestGetAddressUsb(t *testing.T) {
-	device := testHelperGetDeviceWithBestEffort(t)
-	if device == nil {
+	device := NewDevice(DeviceTypeUSBStr)
+	if !device.Connected() {
+		t.Skip("TestGetAddressUsb do not work if Usb device is not connected")
 		return
 	}
 
@@ -133,7 +134,7 @@ func TestGetAddressUsb(t *testing.T) {
 }
 
 func TestGetAddressEmulator(t *testing.T) {
-	device := testHelperGetDeviceWithBestEffort(t)
+	device := testHelperGetDeviceWithBestEffort("TestGetAddressEmulator", t)
 	if device == nil {
 		return
 	}
@@ -208,7 +209,7 @@ func TransactionToDevice(deviceType DeviceType, transactionInputs []*messages.Sk
 }
 
 func TestTransactions(t *testing.T) {
-	device := testHelperGetDeviceWithBestEffort(t)
+	device := testHelperGetDeviceWithBestEffort("TestTransactions", t)
 	if device == nil {
 		return
 	}
