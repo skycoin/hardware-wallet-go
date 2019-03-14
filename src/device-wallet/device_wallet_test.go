@@ -2,13 +2,13 @@ package devicewallet
 
 import (
 	"bytes"
-	"github.com/davecgh/go-spew/spew"
-	"github.com/skycoin/hardware-wallet-go/src/device-wallet/wire"
-	"github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
-	"github.com/stretchr/testify/mock"
 	"testing"
 
+	"github.com/davecgh/go-spew/spew"
+	messages "github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
+	"github.com/skycoin/hardware-wallet-go/src/device-wallet/wire"
 	"github.com/skycoin/hardware-wallet-go/test/mocks"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -26,6 +26,7 @@ func TestDevicerSuitSuit(t *testing.T) {
 type testHelperCloseableBuffer struct {
 	bytes.Buffer
 }
+
 func (cwr testHelperCloseableBuffer) Read(p []byte) (n int, err error) {
 	return 0, nil
 }
