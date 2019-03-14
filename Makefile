@@ -32,7 +32,7 @@ clean:
 	rm -r vendor/github.com/google
 
 lint:
-	golangci-lint run --no-config  --deadline=3m --concurrency=2 --skip-dirs=src/device-wallet/usb -E goimports -E golint -E varcheck -E unparam -E deadcode -E structcheck ./...
+	golangci-lint run --no-config  --deadline=3m --concurrency=2 --skip-dirs=src/device-wallet/usb test/mocks -E goimports -E golint -E varcheck -E unparam -E deadcode -E structcheck ./...
 
 check: lint
 
