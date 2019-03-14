@@ -300,6 +300,7 @@ func (d *Device) GenerateMnemonic(wordCount uint32, usePassphrase bool) (wire.Me
 
 	switch msg.Kind {
 	case uint16(messages.MessageType_MessageType_ButtonRequest):
+		chunks, err = MessageButtonAck()
 		if err != nil {
 			return wire.Message{}, err
 		}
