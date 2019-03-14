@@ -2,7 +2,7 @@ package devicewallet
 
 import (
 	"github.com/gogo/protobuf/proto"
-	"github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
+	messages "github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
 )
 
 // MessageCancel prepare Cancel request

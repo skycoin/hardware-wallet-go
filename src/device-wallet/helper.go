@@ -158,7 +158,6 @@ func initialize(d *Device) error {
 	return err
 }
 
-
 func DecodeSuccessOrFailMsg(msg wire.Message) (string, error) {
 	if msg.Kind == uint16(messages.MessageType_MessageType_Success) {
 		return DecodeSuccessMsg(msg)
