@@ -12,7 +12,11 @@ vendor_proto: proto
 	mkdir -p vendor/github.com/google/protobuf
 	cp -r -p src/device-wallet/messages/go/google/protobuf/descriptor.pb.go vendor/github.com/google/protobuf
 
-test:
+mocks: ## Create all mock files for unit tests
+	echo "Generating mock files"
+	mockery -all -dir ./src/device-wallet -output ./src/device-wallet/mocks
+
+test: mocks ## Run all tests
 	go test -v github.com/skycoin/hardware-wallet-go/src/device-wallet
 
 proto:
