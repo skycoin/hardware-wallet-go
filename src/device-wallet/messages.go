@@ -3,9 +3,10 @@ package devicewallet
 import (
 	"crypto/rand"
 	"fmt"
-	"github.com/skycoin/hardware-wallet-go/src/device-wallet/wire"
+
 	"github.com/gogo/protobuf/proto"
 	messages "github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
+	"github.com/skycoin/hardware-wallet-go/src/device-wallet/wire"
 )
 
 // MessageCancel prepare Cancel request
@@ -15,7 +16,7 @@ func MessageCancel() ([][64]byte, error) {
 	if err != nil {
 		return [][64]byte{}, err
 	}
-	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_Cancel)
+	chunks := makeSkyWalletMessage(data, messages.MessageType_MessageType_Cancel)
 	return chunks, nil
 }
 
@@ -26,7 +27,7 @@ func MessageButtonAck() ([][64]byte, error) {
 	if err != nil {
 		return [][64]byte{}, err
 	}
-	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_ButtonAck)
+	chunks := makeSkyWalletMessage(data, messages.MessageType_MessageType_ButtonAck)
 	return chunks, nil
 }
 
@@ -39,7 +40,7 @@ func MessagePassphraseAck(passphrase string) ([][64]byte, error) {
 	if err != nil {
 		return [][64]byte{}, err
 	}
-	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_PassphraseAck)
+	chunks := makeSkyWalletMessage(data, messages.MessageType_MessageType_PassphraseAck)
 	return chunks, nil
 }
 
@@ -52,7 +53,7 @@ func MessageWordAck(word string) ([][64]byte, error) {
 	if err != nil {
 		return [][64]byte{}, err
 	}
-	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_WordAck)
+	chunks := makeSkyWalletMessage(data, messages.MessageType_MessageType_WordAck)
 	return chunks, nil
 }
 
@@ -68,7 +69,7 @@ func MessageCheckMessageSignature(message, signature, address string) ([][64]byt
 	if err != nil {
 		return [][64]byte{}, err
 	}
-	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_Cancel)
+	chunks := makeSkyWalletMessage(data, messages.MessageType_MessageType_Cancel)
 	return chunks, nil
 }
 
@@ -85,7 +86,7 @@ func MessageAddressGen(addressN, startIndex int, confirmAddress bool) ([][64]byt
 		return [][64]byte{}, err
 	}
 
-	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_SkycoinAddress)
+	chunks := makeSkyWalletMessage(data, messages.MessageType_MessageType_SkycoinAddress)
 	return chunks, nil
 }
 
@@ -102,7 +103,7 @@ func MessageApplySettings(usePassphrase bool, label string) ([][64]byte, error) 
 		return [][64]byte{}, err
 	}
 
-	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_ApplySettings)
+	chunks := makeSkyWalletMessage(data, messages.MessageType_MessageType_ApplySettings)
 	return chunks, nil
 }
 
@@ -113,7 +114,7 @@ func MessageBackup() ([][64]byte, error) {
 	if err != nil {
 		return [][64]byte{}, err
 	}
-	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_BackupDevice)
+	chunks := makeSkyWalletMessage(data, messages.MessageType_MessageType_BackupDevice)
 	return chunks, nil
 }
 
@@ -124,7 +125,7 @@ func MessageChangePin() ([][64]byte, error) {
 	if err != nil {
 		return [][64]byte{}, err
 	}
-	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_ChangePin)
+	chunks := makeSkyWalletMessage(data, messages.MessageType_MessageType_ChangePin)
 	return chunks, nil
 }
 
@@ -135,7 +136,7 @@ func MessageConnected() ([][64]byte, error) {
 	if err != nil {
 		return [][64]byte{}, err
 	}
-	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_Ping)
+	chunks := makeSkyWalletMessage(data, messages.MessageType_MessageType_Ping)
 	return chunks, nil
 }
 
@@ -150,7 +151,7 @@ func MessageFirmwareErase(payload []byte) ([][64]byte, error) {
 		return [][64]byte{}, err
 	}
 
-	chunks := makeTrezorMessage(erasedata, messages.MessageType_MessageType_FirmwareErase)
+	chunks := makeSkyWalletMessage(erasedata, messages.MessageType_MessageType_FirmwareErase)
 	return chunks, nil
 }
 
@@ -166,7 +167,7 @@ func MessageFirmwareUpload(payload []byte, hash [32]byte) ([][64]byte, error) {
 		return [][64]byte{}, err
 	}
 
-	chunks := makeTrezorMessage(uploaddata, messages.MessageType_MessageType_FirmwareUpload)
+	chunks := makeSkyWalletMessage(uploaddata, messages.MessageType_MessageType_FirmwareUpload)
 	return chunks, nil
 }
 
@@ -178,7 +179,7 @@ func MessageGetFeatures() ([][64]byte, error) {
 		return [][64]byte{}, err
 	}
 
-	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_GetFeatures)
+	chunks := makeSkyWalletMessage(data, messages.MessageType_MessageType_GetFeatures)
 	return chunks, nil
 }
 
@@ -194,7 +195,7 @@ func MessageGenerateMnemonic(wordCount uint32, usePassphrase bool) ([][64]byte, 
 		return [][64]byte{}, err
 	}
 
-	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_GenerateMnemonic)
+	chunks := makeSkyWalletMessage(data, messages.MessageType_MessageType_GenerateMnemonic)
 	return chunks, nil
 }
 
@@ -210,7 +211,7 @@ func MessageRecovery(wordCount uint32, usePassphrase, dryRun bool) ([][64]byte, 
 		return [][64]byte{}, err
 	}
 
-	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_RecoveryDevice)
+	chunks := makeSkyWalletMessage(data, messages.MessageType_MessageType_RecoveryDevice)
 
 	return chunks, nil
 }
@@ -226,7 +227,7 @@ func MessageSetMnemonic(mnemonic string) ([][64]byte, error) {
 		return [][64]byte{}, err
 	}
 
-	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_SetMnemonic)
+	chunks := makeSkyWalletMessage(data, messages.MessageType_MessageType_SetMnemonic)
 	return chunks, nil
 }
 
@@ -242,7 +243,7 @@ func MessageSignMessage(addressN int, message string) ([][64]byte, error) {
 		return [][64]byte{}, err
 	}
 
-	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_SkycoinSignMessage)
+	chunks := makeSkyWalletMessage(data, messages.MessageType_MessageType_SkycoinSignMessage)
 	return chunks, nil
 }
 
@@ -261,7 +262,7 @@ func MessageTransactionSign(inputs []*messages.SkycoinTransactionInput, outputs 
 		return [][64]byte{}, err
 	}
 
-	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_TransactionSign)
+	chunks := makeSkyWalletMessage(data, messages.MessageType_MessageType_TransactionSign)
 	return chunks, nil
 }
 
@@ -273,7 +274,7 @@ func MessageWipe() ([][64]byte, error) {
 		return [][64]byte{}, err
 	}
 
-	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_WipeDevice)
+	chunks := makeSkyWalletMessage(data, messages.MessageType_MessageType_WipeDevice)
 	return chunks, nil
 }
 
@@ -287,7 +288,7 @@ func MessagePinMatrixAck(p string) ([][64]byte, error) {
 		return [][64]byte{}, err
 	}
 
-	chunks := makeTrezorMessage(data, messages.MessageType_MessageType_PinMatrixAck)
+	chunks := makeSkyWalletMessage(data, messages.MessageType_MessageType_PinMatrixAck)
 	return chunks, nil
 }
 
