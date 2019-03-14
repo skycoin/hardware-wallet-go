@@ -25,7 +25,7 @@ func featuresCmd() gcli.Command {
 			},
 		},
 		Action: func(c *gcli.Context) {
-			device := deviceWallet.NewDevicer(c.String("deviceType"))
+			device := deviceWallet.NewDevice(c.String("deviceType"))
 			if device == nil {
 				return
 			}

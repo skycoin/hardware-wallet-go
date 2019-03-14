@@ -44,7 +44,7 @@ func addressGenCmd() gcli.Command {
 			startIndex := c.Int("startIndex")
 			confirmAddress := c.Bool("confirmAddress")
 
-			device := deviceWallet.NewDevicer(c.String("deviceType"))
+			device := deviceWallet.NewDevice(c.String("deviceType"))
 			if device == nil {
 				return
 			}

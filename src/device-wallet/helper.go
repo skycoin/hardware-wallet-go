@@ -23,8 +23,12 @@ type DeviceDriver interface {
 const (
 	// DeviceTypeEmulator use emulator
 	DeviceTypeEmulator DeviceType = 1
+	// DeviceTypeEmulatorStr string to represent DeviceTypeEmulator
+	DeviceTypeEmulatorStr string = "EMULATOR"
 	// DeviceTypeUsb use usb
 	DeviceTypeUSB DeviceType = 2
+	// DeviceTypeUSBStr string to represent DeviceTypeUSB
+	DeviceTypeUSBStr string = "USB"
 	// DeviceTypeInvalid
 	DeviceTypeInvalid DeviceType = 3
 )

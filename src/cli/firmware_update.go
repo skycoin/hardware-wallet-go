@@ -24,7 +24,7 @@ func firmwareUpdate() gcli.Command {
 		},
 		OnUsageError: onCommandUsageError(name),
 		Action: func(c *gcli.Context) {
-			device := deviceWallet.NewDevicer("USB")
+			device := deviceWallet.NewDevice("USB")
 			if device == nil {
 				return
 			}

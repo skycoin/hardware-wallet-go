@@ -13,7 +13,7 @@ vendor_proto: proto
 	cp -r -p src/device-wallet/messages/go/google/protobuf/descriptor.pb.go vendor/github.com/google/protobuf
 
 test:
-	go test github.com/skycoin/hardware-wallet-go/src/device-wallet
+	go test -v github.com/skycoin/hardware-wallet-go/src/device-wallet
 
 proto:
 	make -C src/device-wallet/messages build-go

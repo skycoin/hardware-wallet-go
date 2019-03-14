@@ -37,7 +37,7 @@ func applySettingsCmd() gcli.Command {
 			passphrase := c.Bool("usePassphrase")
 			label := c.String("label")
 
-			device := deviceWallet.NewDevicer(c.String("deviceType"))
+			device := deviceWallet.NewDevice(c.String("deviceType"))
 			if device == nil {
 				return
 			}

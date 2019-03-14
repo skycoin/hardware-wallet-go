@@ -48,18 +48,18 @@ type Device struct {
 func deviceTypeFromString(deviceType string) DeviceType {
 	var dtRet DeviceType
 	switch deviceType {
-	case "USB":
+	case DeviceTypeUSBStr:
 		dtRet = DeviceTypeUSB
-	case "EMULATOR":
+	case DeviceTypeEmulatorStr:
 		dtRet = DeviceTypeEmulator
 	default:
-		log.Error("device type not set, valid options are USB or EMULATOR")
+		log.Errorf("device type not set, valid options are %s or %s", DeviceTypeUSBStr, DeviceTypeEmulatorStr)
 		dtRet = DeviceTypeInvalid
 	}
 	return dtRet
 }
 
-func NewDevicer(deviceType string) (device Devicer) {
+func NewDevice(deviceType string) (device *Device) {
 	dt := deviceTypeFromString(deviceType)
 	switch dt {
 	case DeviceTypeUSB, DeviceTypeEmulator:
