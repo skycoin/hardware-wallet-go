@@ -20,14 +20,8 @@ func sandbox() gcli.Command {
 		Flags:        []gcli.Flag{},
 		OnUsageError: onCommandUsageError(name),
 		Action: func(c *gcli.Context) {
-			var device *deviceWallet.Device
-			switch c.String("deviceType") {
-			case "USB":
-				device = deviceWallet.NewUSBDevice()
-			case "EMULATOR":
-				device = deviceWallet.NewEmulatorDevice()
-			default:
-				log.Error("device type not set")
+			device := deviceWallet.NewDevicer(c.String("deviceType"))
+			if device == nil {
 				return
 			}
 
@@ -95,7 +89,7 @@ func sandbox() gcli.Command {
 				}
 
 				if msg.Kind == uint16(messages.MessageType_MessageType_ResponseSkycoinAddress) {
-					addresses, err := deviceWallet.DecodeResponseSkycoinAddress(msg)
+					addresses, err := device.GetProtocol().DecodeResponseSkycoinAddress(msg)
 					if err != nil {
 						log.Error(err)
 						return
@@ -105,7 +99,7 @@ func sandbox() gcli.Command {
 				}
 			} else {
 				log.Println("Got addresses without pin code")
-				addresses, err := deviceWallet.DecodeResponseSkycoinAddress(msg)
+				addresses, err := device.GetProtocol().DecodeResponseSkycoinAddress(msg)
 				if err != nil {
 					log.Error(err)
 					return

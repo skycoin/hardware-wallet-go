@@ -59,14 +59,8 @@ func transactionSignCmd() gcli.Command {
 			hours := c.Int64Slice("hour")
 			addressIndex := c.IntSlice("addressIndex")
 
-			var device *deviceWallet.Device
-			switch c.String("deviceType") {
-			case "USB":
-				device = deviceWallet.NewUSBDevice()
-			case "EMULATOR":
-				device = deviceWallet.NewEmulatorDevice()
-			default:
-				log.Error("device type not set")
+			device := deviceWallet.NewDevicer(c.String("deviceType"))
+			if device == nil {
 				return
 			}
 
@@ -109,7 +103,7 @@ func transactionSignCmd() gcli.Command {
 			for {
 				switch msg.Kind {
 				case uint16(messages.MessageType_MessageType_ResponseTransactionSign):
-					signatures, err := deviceWallet.DecodeResponseTransactionSign(msg)
+					signatures, err := device.GetProtocol().DecodeResponseTransactionSign(msg)
 					if err != nil {
 						log.Error(err)
 						return
@@ -144,7 +138,7 @@ func transactionSignCmd() gcli.Command {
 						return
 					}
 				case uint16(messages.MessageType_MessageType_Failure):
-					failMsg, err := deviceWallet.DecodeFailMsg(msg)
+					failMsg, err := device.GetProtocol().DecodeFailMsg(msg)
 					if err != nil {
 						log.Error(err)
 						return

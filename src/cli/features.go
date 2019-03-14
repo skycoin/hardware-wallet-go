@@ -25,14 +25,8 @@ func featuresCmd() gcli.Command {
 			},
 		},
 		Action: func(c *gcli.Context) {
-			var device *deviceWallet.Device
-			switch c.String("deviceType") {
-			case "USB":
-				device = deviceWallet.NewUSBDevice()
-			case "EMULATOR":
-				device = deviceWallet.NewEmulatorDevice()
-			default:
-				log.Error("device type not set")
+			device := deviceWallet.NewDevicer(c.String("deviceType"))
+			if device == nil {
 				return
 			}
 
@@ -54,7 +48,7 @@ func featuresCmd() gcli.Command {
 				fmt.Println(features)
 			// TODO: figure out if this method can even return success or failure msg.
 			case uint16(messages.MessageType_MessageType_Failure), uint16(messages.MessageType_MessageType_Success):
-				msgData, err := deviceWallet.DecodeSuccessOrFailMsg(msg)
+				msgData, err := device.GetProtocol().DecodeSuccessOrFailMsg(msg)
 				if err != nil {
 					log.Error(err)
 					return

@@ -37,14 +37,8 @@ func applySettingsCmd() gcli.Command {
 			passphrase := c.Bool("usePassphrase")
 			label := c.String("label")
 
-			var device *deviceWallet.Device
-			switch c.String("deviceType") {
-			case "USB":
-				device = deviceWallet.NewUSBDevice()
-			case "EMULATOR":
-				device = deviceWallet.NewEmulatorDevice()
-			default:
-				log.Error("device type not set")
+			device := deviceWallet.NewDevicer(c.String("deviceType"))
+			if device == nil {
 				return
 			}
 
@@ -80,7 +74,7 @@ func applySettingsCmd() gcli.Command {
 			}
 
 			if msg.Kind == uint16(messages.MessageType_MessageType_Failure) {
-				failMsg, err := deviceWallet.DecodeFailMsg(msg)
+				failMsg, err := device.GetProtocol().DecodeFailMsg(msg)
 				if err != nil {
 					log.Error(err)
 					return
@@ -90,7 +84,7 @@ func applySettingsCmd() gcli.Command {
 			}
 
 			if msg.Kind == uint16(messages.MessageType_MessageType_Success) {
-				successMsg, err := deviceWallet.DecodeSuccessMsg(msg)
+				successMsg, err := device.GetProtocol().DecodeSuccessMsg(msg)
 				if err != nil {
 					log.Error(err)
 					return

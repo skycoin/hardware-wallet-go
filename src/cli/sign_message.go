@@ -35,14 +35,8 @@ func signMessageCmd() gcli.Command {
 		},
 		OnUsageError: onCommandUsageError(name),
 		Action: func(c *gcli.Context) {
-			var device *deviceWallet.Device
-			switch c.String("deviceType") {
-			case "USB":
-				device = deviceWallet.NewUSBDevice()
-			case "EMULATOR":
-				device = deviceWallet.NewEmulatorDevice()
-			default:
-				log.Error("device type not set")
+			device := deviceWallet.NewDevicer(c.String("deviceType"))
+			if device == nil {
 				return
 			}
 
@@ -83,14 +77,14 @@ func signMessageCmd() gcli.Command {
 			}
 
 			if msg.Kind == uint16(messages.MessageType_MessageType_ResponseSkycoinSignMessage) {
-				signature, err = deviceWallet.DecodeResponseSkycoinSignMessage(msg)
+				signature, err = device.GetProtocol().DecodeResponseSkycoinSignMessage(msg)
 				if err != nil {
 					log.Error(err)
 					return
 				}
 				fmt.Printf("Success %d! the signature is: %s\n", msg.Kind, signature)
 			} else {
-				failMsg, err := deviceWallet.DecodeFailMsg(msg)
+				failMsg, err := device.GetProtocol().DecodeFailMsg(msg)
 				if err != nil {
 					log.Error(err)
 					return

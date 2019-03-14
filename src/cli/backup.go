@@ -24,14 +24,8 @@ func backupCmd() gcli.Command {
 			},
 		},
 		Action: func(c *gcli.Context) {
-			var device *deviceWallet.Device
-			switch c.String("deviceType") {
-			case "USB":
-				device = deviceWallet.NewUSBDevice()
-			case "EMULATOR":
-				device = deviceWallet.NewEmulatorDevice()
-			default:
-				log.Error("device type not set")
+			device := deviceWallet.NewDevicer(c.String("deviceType"))
+			if device == nil {
 				return
 			}
 
@@ -60,7 +54,7 @@ func backupCmd() gcli.Command {
 				}
 			}
 
-			responseMsg, err := deviceWallet.DecodeSuccessOrFailMsg(msg)
+			responseMsg, err := device.GetProtocol().DecodeSuccessOrFailMsg(msg)
 			if err != nil {
 				log.Error(err)
 				return

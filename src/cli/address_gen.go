@@ -44,14 +44,8 @@ func addressGenCmd() gcli.Command {
 			startIndex := c.Int("startIndex")
 			confirmAddress := c.Bool("confirmAddress")
 
-			var device *deviceWallet.Device
-			switch c.String("deviceType") {
-			case "USB":
-				device = deviceWallet.NewUSBDevice()
-			case "EMULATOR":
-				device = deviceWallet.NewEmulatorDevice()
-			default:
-				log.Error("device type not set")
+			device := deviceWallet.NewDevicer(c.String("deviceType"))
+			if device == nil {
 				return
 			}
 
@@ -99,14 +93,14 @@ func addressGenCmd() gcli.Command {
 			}
 
 			if msg.Kind == uint16(messages.MessageType_MessageType_ResponseSkycoinAddress) {
-				addresses, err := deviceWallet.DecodeResponseSkycoinAddress(msg)
+				addresses, err := device.GetProtocol().DecodeResponseSkycoinAddress(msg)
 				if err != nil {
 					log.Error(err)
 					return
 				}
 				fmt.Println(addresses)
 			} else {
-				failMsg, err := deviceWallet.DecodeFailMsg(msg)
+				failMsg, err := device.GetProtocol().DecodeFailMsg(msg)
 				if err != nil {
 					log.Error(err)
 					return
