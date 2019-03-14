@@ -102,7 +102,7 @@ func binaryWrite(message io.Writer, data interface{}) {
 	}
 }
 
-func makeTrezorMessage(data []byte, msgID messages.MessageType) [][64]byte {
+func makeSkyWalletMessage(data []byte, msgID messages.MessageType) [][64]byte {
 	message := new(bytes.Buffer)
 	binaryWrite(message, []byte("##"))
 	binaryWrite(message, uint16(msgID))
@@ -156,7 +156,7 @@ func initialize(d *Device) error {
 		return err
 	}
 
-	chunks = makeTrezorMessage(data, messages.MessageType_MessageType_Initialize)
+	chunks = makeSkyWalletMessage(data, messages.MessageType_MessageType_Initialize)
 	_, err = d.Driver.SendToDevice(dev, chunks)
 
 	return err
