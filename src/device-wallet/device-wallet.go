@@ -295,7 +295,7 @@ func (d *Device) GenerateMnemonic(wordCount uint32, usePassphrase bool) (wire.Me
 	}
 	msg, err := d.Driver.SendToDevice(dev, chunks)
 	if err != nil {
-		return wire.Message{}, err
+		return msg, err
 	}
 
 	switch msg.Kind {
