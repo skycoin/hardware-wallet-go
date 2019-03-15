@@ -1,10 +1,10 @@
 package devicewallet
 
 import (
-	"crypto/rand"
 	"fmt"
 
 	"github.com/gogo/protobuf/proto"
+	"github.com/skycoin/skycoin/src/cipher"
 	messages "github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
 )
 
@@ -292,12 +292,9 @@ func MessagePinMatrixAck(p string) ([][64]byte, error) {
 }
 
 func MessageEntropyAck(bufferSize int) ([][64]byte, error) {
-	buffer := make([]byte, bufferSize)
-	if len, err := rand.Read(buffer); err != nil || len != bufferSize {
-		if err != nil {
-			return nil, err
-		}
-		return nil, fmt.Errorf("required %d bytes but got %d", bufferSize, len)
+	buffer := cipher.RandByte(bufferSize)
+	if len(buffer) != bufferSize {
+		return nil, fmt.Errorf("required %d bytes but got %d", bufferSize, len(buffer))
 	}
 	entropyAck := &messages.EntropyAck{
 		Entropy: buffer,
