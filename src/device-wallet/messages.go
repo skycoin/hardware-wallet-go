@@ -1,8 +1,11 @@
 package devicewallet
 
 import (
+	"fmt"
+
 	"github.com/gogo/protobuf/proto"
 	messages "github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
+	"github.com/skycoin/skycoin/src/cipher"
 )
 
 // MessageCancel prepare Cancel request
@@ -285,5 +288,21 @@ func MessagePinMatrixAck(p string) ([][64]byte, error) {
 	}
 
 	chunks := makeSkyWalletMessage(data, messages.MessageType_MessageType_PinMatrixAck)
+	return chunks, nil
+}
+
+func MessageEntropyAck(bufferSize int) ([][64]byte, error) {
+	buffer := cipher.RandByte(bufferSize)
+	if len(buffer) != bufferSize {
+		return nil, fmt.Errorf("required %d bytes but got %d", bufferSize, len(buffer))
+	}
+	entropyAck := &messages.EntropyAck{
+		Entropy: buffer,
+	}
+	data, err := proto.Marshal(entropyAck)
+	if err != nil {
+		return nil, err
+	}
+	chunks := makeSkyWalletMessage(data, messages.MessageType_MessageType_EntropyAck)
 	return chunks, nil
 }

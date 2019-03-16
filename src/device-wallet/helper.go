@@ -10,27 +10,18 @@ import (
 	"time"
 
 	"github.com/gogo/protobuf/proto"
+	"github.com/skycoin/hardware-wallet-go/interfaces"
 	messages "github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
 	"github.com/skycoin/hardware-wallet-go/src/device-wallet/usb"
 	"github.com/skycoin/hardware-wallet-go/src/device-wallet/wire"
 )
 
-type DeviceDriver interface {
-	SendToDevice(dev io.ReadWriteCloser, chunks [][64]byte) (wire.Message, error)
-	SendToDeviceNoAnswer(dev io.ReadWriteCloser, chunks [][64]byte) error
+type Driver struct {
+	deviceType interfaces.DeviceType
 }
 
-const (
-	// DeviceTypeEmulator use emulator
-	DeviceTypeEmulator = iota + 1
-	// DeviceTypeUsb use usb
-	DeviceTypeUSB
-	// DeviceTypeInvalid not valid value
-	DeviceTypeInvalid
-)
-
-type Driver struct {
-	DeviceType
+func (drv *Driver) DeviceType() interfaces.DeviceType {
+	return drv.deviceType
 }
 
 func (drv *Driver) SendToDeviceNoAnswer(dev io.ReadWriteCloser, chunks [][64]byte) error {
@@ -53,6 +44,21 @@ func (drv *Driver) SendToDevice(dev io.ReadWriteCloser, chunks [][64]byte) (wire
 	}
 	_, err := msg.ReadFrom(dev)
 	return msg, err
+}
+
+func (drv *Driver) GetDevice() (io.ReadWriteCloser, error) {
+	var dev io.ReadWriteCloser
+	var err error
+	switch drv.DeviceType() {
+	case interfaces.DeviceTypeEmulator:
+		dev, err = getEmulatorDevice()
+	case interfaces.DeviceTypeUSB:
+		dev, err = getUsbDevice()
+	}
+	if dev == nil && err == nil {
+		err = errors.New("No device connected")
+	}
+	return dev, err
 }
 
 func getEmulatorDevice() (net.Conn, error) {
@@ -122,24 +128,9 @@ func makeSkyWalletMessage(data []byte, msgID messages.MessageType) [][64]byte {
 	return chunks
 }
 
-func getDevice(dt DeviceType) (io.ReadWriteCloser, error) {
-	var dev io.ReadWriteCloser
-	var err error
-	switch dt {
-	case DeviceTypeEmulator:
-		dev, err = getEmulatorDevice()
-	case DeviceTypeUSB:
-		dev, err = getUsbDevice()
-	}
-	if dev == nil && err == nil {
-		err = errors.New("No device connected")
-	}
-	return dev, err
-}
-
 // Initialize send an init request to the device
 func initialize(d *Device) error {
-	dev, err := getDevice(d.DeviceType)
+	dev, err := d.Driver.GetDevice()
 	if err != nil {
 		return err
 	}

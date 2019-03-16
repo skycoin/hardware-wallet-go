@@ -17,10 +17,15 @@ vendor_proto: proto
 
 mocks: ## Create all mock files for unit tests
 	echo "Generating mock files"
-	mockery -all -dir ./src/device-wallet -output ./src/device-wallet/mocks
+	mockery -all -dir ./interfaces -output ./test/mocks
 
-test: mocks ## Run all tests
+test_unit: mocks ## Run unit tests
 	go test -v github.com/skycoin/hardware-wallet-go/src/device-wallet
+
+test_integration: ## Run integration tests
+	go test -v github.com/skycoin/hardware-wallet-go/test/integration
+
+test: test_unit test_integration ## Run all tests
 
 proto: ## Generate protocol buffer classes for communicating with hardware wallet
 	make -C src/device-wallet/messages build-go
@@ -30,7 +35,7 @@ clean: ## Delete temporary build files
 	rm -r vendor/github.com/google
 
 lint: ## Check source code style
-	golangci-lint run --no-config  --deadline=3m --concurrency=2 --skip-dirs=src/device-wallet/usb -E goimports -E golint -E varcheck -E unparam -E deadcode -E structcheck ./...
+	golangci-lint run --no-config  --deadline=3m --concurrency=2 --skip-dirs=src/device-wallet/usb test/mocks -E goimports -E golint -E varcheck -E unparam -E deadcode -E structcheck ./...
 
 check: lint test ## Perform self-tests
 

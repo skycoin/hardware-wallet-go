@@ -1,20 +1,21 @@
-package devicewallet
+package integration
 
 import (
 	"fmt"
+	"log"
 	"testing"
 
-	"github.com/skycoin/hardware-wallet-go/src/device-wallet/wire"
-
 	"github.com/gogo/protobuf/proto"
-	"github.com/stretchr/testify/require"
-
+	"github.com/skycoin/hardware-wallet-go/interfaces"
+	deviceWallet "github.com/skycoin/hardware-wallet-go/src/device-wallet"
 	messages "github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
+	"github.com/skycoin/hardware-wallet-go/src/device-wallet/wire"
+	"github.com/stretchr/testify/require"
 )
 
-func testHelperGetDeviceWithBestEffort(testName string, t *testing.T) *Device {
-	emDevice := NewDevice(DeviceType(DeviceTypeEmulator).String())
-	phDevice := NewDevice(DeviceType(DeviceTypeUSB).String())
+func testHelperGetDeviceWithBestEffort(testName string, t *testing.T) *deviceWallet.Device {
+	emDevice := deviceWallet.NewDevice(interfaces.DeviceType(interfaces.DeviceTypeEmulator).String())
+	phDevice := deviceWallet.NewDevice(interfaces.DeviceType(interfaces.DeviceTypeUSB).String())
 	if phDevice.Connected() {
 		return phDevice
 	} else if emDevice.Connected() {
@@ -63,7 +64,7 @@ func TestMain(t *testing.T) {
 	msg, err := device.AddressGen(9, 15, false)
 	require.NoError(t, err)
 
-	addresses, err := DecodeResponseSkycoinAddress(msg)
+	addresses, err := deviceWallet.DecodeResponseSkycoinAddress(msg)
 	require.NoError(t, err)
 	i := 0
 	require.Equal(t, 9, len(addresses))
@@ -94,7 +95,7 @@ func TestMain(t *testing.T) {
 
 	msg, err = device.AddressGen(1, 1, false)
 	require.NoError(t, err)
-	addresses, err = DecodeResponseSkycoinAddress(msg)
+	addresses, err = deviceWallet.DecodeResponseSkycoinAddress(msg)
 	require.NoError(t, err)
 	require.Equal(t, len(addresses), 1)
 	require.Equal(t, addresses[0], "zC8GAQGQBfwk7vtTxVoRG7iMperHNuyYPs")
@@ -102,7 +103,7 @@ func TestMain(t *testing.T) {
 	message := "Hello World!"
 	msg, err = device.SignMessage(1, message)
 	require.NoError(t, err)
-	signature, err := DecodeResponseSkycoinSignMessage(msg)
+	signature, err := deviceWallet.DecodeResponseSkycoinSignMessage(msg)
 	require.NoError(t, err)
 	log.Print(signature)
 	require.Equal(t, 89, len(signature))
@@ -113,7 +114,7 @@ func TestMain(t *testing.T) {
 }
 
 func TestGetAddressUsb(t *testing.T) {
-	device := NewDevice(DeviceType(DeviceTypeUSB).String())
+	device := deviceWallet.NewDevice(interfaces.DeviceType(interfaces.DeviceTypeUSB).String())
 	if !device.Connected() {
 		t.Skip("TestGetAddressUsb do not work if Usb device is not connected")
 		return
@@ -126,7 +127,7 @@ func TestGetAddressUsb(t *testing.T) {
 	require.NoError(t, err)
 	msg, err := device.AddressGen(2, 0, false)
 	require.NoError(t, err)
-	addresses, err := DecodeResponseSkycoinAddress(msg)
+	addresses, err := deviceWallet.DecodeResponseSkycoinAddress(msg)
 	require.NoError(t, err)
 	log.Print(addresses)
 	require.Equal(t, addresses[0], "2EU3JbveHdkxW6z5tdhbbB2kRAWvXC2pLzw")
@@ -145,19 +146,19 @@ func TestGetAddressEmulator(t *testing.T) {
 	require.NoError(t, err)
 	msg, err := device.AddressGen(2, 0, false)
 	require.NoError(t, err)
-	addresses, err := DecodeResponseSkycoinAddress(msg)
+	addresses, err := deviceWallet.DecodeResponseSkycoinAddress(msg)
 	require.NoError(t, err)
 	log.Print(addresses)
 	require.Equal(t, addresses[0], "2EU3JbveHdkxW6z5tdhbbB2kRAWvXC2pLzw")
 	require.Equal(t, addresses[1], "zC8GAQGQBfwk7vtTxVoRG7iMperHNuyYPs")
 }
 
-func TransactionToDevice(deviceType DeviceType, transactionInputs []*messages.SkycoinTransactionInput, transactionOutputs []*messages.SkycoinTransactionOutput) (wire.Message, error) {
-	var device Devicer
-	if deviceType == DeviceTypeUSB {
-		device = NewDevice("USB")
+func TransactionToDevice(deviceType interfaces.DeviceType, transactionInputs []*messages.SkycoinTransactionInput, transactionOutputs []*messages.SkycoinTransactionOutput) (wire.Message, error) {
+	var device interfaces.Devicer
+	if deviceType == interfaces.DeviceTypeUSB {
+		device = deviceWallet.NewDevice("USB")
 	} else {
-		device = NewDevice("EMULATOR")
+		device = deviceWallet.NewDevice("EMULATOR")
 	}
 
 	msg, err := device.TransactionSign(transactionInputs, transactionOutputs)
@@ -168,7 +169,7 @@ func TransactionToDevice(deviceType DeviceType, transactionInputs []*messages.Sk
 		switch msg.Kind {
 		case uint16(messages.MessageType_MessageType_ResponseTransactionSign):
 			var signatures []string
-			signatures, err = DecodeResponseTransactionSign(msg)
+			signatures, err = deviceWallet.DecodeResponseTransactionSign(msg)
 			if err != nil {
 				return wire.Message{}, err
 			}
@@ -197,7 +198,7 @@ func TransactionToDevice(deviceType DeviceType, transactionInputs []*messages.Sk
 				return wire.Message{}, err
 			}
 		case uint16(messages.MessageType_MessageType_Failure):
-			failMsg, err := DecodeFailMsg(msg)
+			failMsg, err := deviceWallet.DecodeFailMsg(msg)
 			if err != nil {
 				return wire.Message{}, err
 			}
@@ -239,11 +240,11 @@ func TestTransactions(t *testing.T) {
 	transactionOutput.Hour = proto.Uint64(2)
 	transactionOutputs = append(transactionOutputs, &transactionOutput)
 
-	msg, err := TransactionToDevice(device.DeviceType, transactionInputs, transactionOutputs)
+	msg, err := TransactionToDevice(device.Driver.DeviceType(), transactionInputs, transactionOutputs)
 	require.NoError(t, err)
 	require.Equal(t, msg.Kind, uint16(messages.MessageType_MessageType_ResponseTransactionSign))
 
-	signatures, err := DecodeResponseTransactionSign(msg)
+	signatures, err := deviceWallet.DecodeResponseTransactionSign(msg)
 	require.NoError(t, err)
 	require.Equal(t, len(signatures), 1)
 
@@ -271,11 +272,11 @@ func TestTransactions(t *testing.T) {
 	transactionOutput.Hour = proto.Uint64(255)
 	transactionOutputs = append(transactionOutputs, &transactionOutput)
 
-	msg, err = TransactionToDevice(device.DeviceType, transactionInputs, transactionOutputs)
+	msg, err = TransactionToDevice(device.Driver.DeviceType(), transactionInputs, transactionOutputs)
 	require.NoError(t, err)
 	require.Equal(t, msg.Kind, uint16(messages.MessageType_MessageType_ResponseTransactionSign))
 
-	signatures, err = DecodeResponseTransactionSign(msg)
+	signatures, err = deviceWallet.DecodeResponseTransactionSign(msg)
 	require.NoError(t, err)
 	require.Equal(t, len(signatures), len(transactionInputs))
 
@@ -317,11 +318,11 @@ func TestTransactions(t *testing.T) {
 	transactionOutput1.Hour = proto.Uint64(1)
 	transactionOutputs = append(transactionOutputs, &transactionOutput1)
 
-	msg, err = TransactionToDevice(device.DeviceType, transactionInputs, transactionOutputs)
+	msg, err = TransactionToDevice(device.Driver.DeviceType(), transactionInputs, transactionOutputs)
 	require.NoError(t, err)
 	require.Equal(t, msg.Kind, uint16(messages.MessageType_MessageType_ResponseTransactionSign))
 
-	signatures, err = DecodeResponseTransactionSign(msg)
+	signatures, err = deviceWallet.DecodeResponseTransactionSign(msg)
 	require.NoError(t, err)
 	require.Equal(t, len(signatures), len(transactionInputs))
 	msg, err = device.CheckMessageSignature(
@@ -362,11 +363,11 @@ func TestTransactions(t *testing.T) {
 	transactionOutput.Hour = proto.Uint64(0)
 	transactionOutputs = append(transactionOutputs, &transactionOutput)
 
-	msg, err = TransactionToDevice(device.DeviceType, transactionInputs, transactionOutputs)
+	msg, err = TransactionToDevice(device.Driver.DeviceType(), transactionInputs, transactionOutputs)
 	require.NoError(t, err)
 	require.Equal(t, msg.Kind, uint16(messages.MessageType_MessageType_ResponseTransactionSign))
 
-	signatures, err = DecodeResponseTransactionSign(msg)
+	signatures, err = deviceWallet.DecodeResponseTransactionSign(msg)
 	require.NoError(t, err)
 	require.Equal(t, len(signatures), len(transactionInputs))
 	msg, err = device.CheckMessageSignature(
@@ -397,11 +398,11 @@ func TestTransactions(t *testing.T) {
 	transactionOutput.Hour = proto.Uint64(0)
 	transactionOutputs = append(transactionOutputs, &transactionOutput)
 
-	msg, err = TransactionToDevice(device.DeviceType, transactionInputs, transactionOutputs)
+	msg, err = TransactionToDevice(device.Driver.DeviceType(), transactionInputs, transactionOutputs)
 	require.NoError(t, err)
 	require.Equal(t, msg.Kind, uint16(messages.MessageType_MessageType_ResponseTransactionSign))
 
-	signatures, err = DecodeResponseTransactionSign(msg)
+	signatures, err = deviceWallet.DecodeResponseTransactionSign(msg)
 	require.NoError(t, err)
 	require.Equal(t, len(signatures), len(transactionInputs))
 	msg, err = device.CheckMessageSignature(
@@ -433,11 +434,11 @@ func TestTransactions(t *testing.T) {
 	transactionOutput2.Hour = proto.Uint64(1)
 	transactionOutputs = append(transactionOutputs, &transactionOutput2)
 
-	msg, err = TransactionToDevice(device.DeviceType, transactionInputs, transactionOutputs)
+	msg, err = TransactionToDevice(device.Driver.DeviceType(), transactionInputs, transactionOutputs)
 	require.NoError(t, err)
 	require.Equal(t, msg.Kind, uint16(messages.MessageType_MessageType_ResponseTransactionSign))
 
-	signatures, err = DecodeResponseTransactionSign(msg)
+	signatures, err = deviceWallet.DecodeResponseTransactionSign(msg)
 	require.NoError(t, err)
 	require.Equal(t, len(signatures), len(transactionInputs))
 
@@ -468,11 +469,11 @@ func TestTransactions(t *testing.T) {
 	transactionOutput.Hour = proto.Uint64(33)
 	transactionOutputs = append(transactionOutputs, &transactionOutput)
 
-	msg, err = TransactionToDevice(device.DeviceType, transactionInputs, transactionOutputs)
+	msg, err = TransactionToDevice(device.Driver.DeviceType(), transactionInputs, transactionOutputs)
 	require.NoError(t, err)
 	require.Equal(t, msg.Kind, uint16(messages.MessageType_MessageType_ResponseTransactionSign))
 
-	signatures, err = DecodeResponseTransactionSign(msg)
+	signatures, err = deviceWallet.DecodeResponseTransactionSign(msg)
 	require.NoError(t, err)
 	require.Equal(t, len(signatures), len(transactionInputs))
 
@@ -511,11 +512,11 @@ func TestTransactions(t *testing.T) {
 	transactionOutput.Hour = proto.Uint64(1000)
 	transactionOutputs = append(transactionOutputs, &transactionOutput)
 
-	msg, err = TransactionToDevice(device.DeviceType, transactionInputs, transactionOutputs)
+	msg, err = TransactionToDevice(device.Driver.DeviceType(), transactionInputs, transactionOutputs)
 	require.NoError(t, err)
 	require.Equal(t, msg.Kind, uint16(messages.MessageType_MessageType_ResponseTransactionSign))
 
-	signatures, err = DecodeResponseTransactionSign(msg)
+	signatures, err = deviceWallet.DecodeResponseTransactionSign(msg)
 	require.NoError(t, err)
 	require.Equal(t, len(signatures), len(transactionInputs))
 
@@ -544,11 +545,11 @@ func TestTransactions(t *testing.T) {
 	transactionOutput1.Hour = proto.Uint64(500)
 	transactionOutputs = append(transactionOutputs, &transactionOutput1)
 
-	msg, err = TransactionToDevice(device.DeviceType, transactionInputs, transactionOutputs)
+	msg, err = TransactionToDevice(device.Driver.DeviceType(), transactionInputs, transactionOutputs)
 	require.NoError(t, err)
 	require.Equal(t, msg.Kind, uint16(messages.MessageType_MessageType_ResponseTransactionSign))
 
-	signatures, err = DecodeResponseTransactionSign(msg)
+	signatures, err = deviceWallet.DecodeResponseTransactionSign(msg)
 	require.NoError(t, err)
 	require.Equal(t, len(signatures), len(transactionInputs))
 
@@ -573,11 +574,11 @@ func TestTransactions(t *testing.T) {
 	transactionOutput.Hour = proto.Uint64(1000)
 	transactionOutputs = append(transactionOutputs, &transactionOutput)
 
-	msg, err = TransactionToDevice(device.DeviceType, transactionInputs, transactionOutputs)
+	msg, err = TransactionToDevice(device.Driver.DeviceType(), transactionInputs, transactionOutputs)
 	require.NoError(t, err)
 	require.Equal(t, msg.Kind, uint16(messages.MessageType_MessageType_ResponseTransactionSign))
 
-	signatures, err = DecodeResponseTransactionSign(msg)
+	signatures, err = deviceWallet.DecodeResponseTransactionSign(msg)
 	require.NoError(t, err)
 	require.Equal(t, len(signatures), len(transactionInputs))
 
