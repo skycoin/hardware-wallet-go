@@ -1,9 +1,12 @@
+.DEFAULT_GOAL := help
+.PHONY: all build dep vendor_proto mocks test proto clean lint check format
+
 all: build
 
-build:
+build: ## Build project
 	cd cmd/cli && ./install.sh
 
-dep: vendor_proto
+dep: vendor_proto ## Ensure package dependencies are up to date
 	dep ensure
 	# Ensure sources for protoc-gen-go and protobuf/proto are in sync
 	dep ensure -add github.com/gogo/protobuf/protoc-gen-gofast
@@ -19,18 +22,21 @@ mocks: ## Create all mock files for unit tests
 test: mocks ## Run all tests
 	go test -v github.com/skycoin/hardware-wallet-go/src/device-wallet
 
-proto:
+proto: ## Generate protocol buffer classes for communicating with hardware wallet
 	make -C src/device-wallet/messages build-go
 
-clean:
+clean: ## Delete temporary build files
 	make -C src/device-wallet/messages clean-go
 	rm -r vendor/github.com/google
 
-lint:
+lint: ## Check source code style
 	golangci-lint run --no-config  --deadline=3m --concurrency=2 --skip-dirs=src/device-wallet/usb -E goimports -E golint -E varcheck -E unparam -E deadcode -E structcheck ./...
 
-check: lint
+check: lint test ## Perform self-tests
 
-format:
+format: ## Check and fix style
 	goimports -w -local github.com/skycoin/hardware-wallet-go ./cmd
 	goimports -w -local github.com/skycoin/hardware-wallet-go ./src
+
+help:
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
