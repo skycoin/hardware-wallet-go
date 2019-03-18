@@ -63,6 +63,7 @@ script:
     fi
   - make lint
   - ps aux | grep emulator
+  - make test
 after_script:
   - kill -s KILL $(pgrep emulator)
 notifications:
