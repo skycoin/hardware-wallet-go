@@ -4,8 +4,9 @@ import (
 	"fmt"
 
 	"github.com/gogo/protobuf/proto"
-	messages "github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
 	"github.com/skycoin/skycoin/src/cipher"
+
+	messages "github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
 )
 
 // MessageCancel prepare Cancel request
@@ -291,6 +292,7 @@ func MessagePinMatrixAck(p string) ([][64]byte, error) {
 	return chunks, nil
 }
 
+// MessageEntropyAck prepare MessageEntropyAck request
 func MessageEntropyAck(bufferSize int) ([][64]byte, error) {
 	buffer := cipher.RandByte(bufferSize)
 	if len(buffer) != bufferSize {
