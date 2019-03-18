@@ -10,7 +10,8 @@ import (
 	"time"
 
 	"github.com/gogo/protobuf/proto"
-	"github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
+
+	messages "github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
 	"github.com/skycoin/hardware-wallet-go/src/device-wallet/usb"
 	"github.com/skycoin/hardware-wallet-go/src/device-wallet/wire"
 )
@@ -32,11 +33,13 @@ func (dt DeviceType) String() string {
 const (
 	// DeviceTypeEmulator use emulator
 	DeviceTypeEmulator DeviceType = iota + 1
-	// DeviceTypeUsb use usb
+	// DeviceTypeUSB use usb
 	DeviceTypeUSB
 	// DeviceTypeInvalid not valid value
 	DeviceTypeInvalid
 )
+
+//go:generate mockery -name DeviceDriver -case underscore -inpkg -testonly
 
 // DeviceDriver is the api for hardware wallet communication
 type DeviceDriver interface {
@@ -51,11 +54,12 @@ type Driver struct {
 	deviceType DeviceType
 }
 
-// DeviceType 
+// DeviceType return driver device type
 func (drv *Driver) DeviceType() DeviceType {
 	return drv.deviceType
 }
 
+// SendToDeviceNoAnswer sends msg to device and doesnt return response
 func (drv *Driver) SendToDeviceNoAnswer(dev io.ReadWriteCloser, chunks [][64]byte) error {
 	for _, element := range chunks {
 		_, err := dev.Write(element[:])
@@ -66,6 +70,7 @@ func (drv *Driver) SendToDeviceNoAnswer(dev io.ReadWriteCloser, chunks [][64]byt
 	return nil
 }
 
+// SendToDevice sends msg to device and returns response
 func (drv *Driver) SendToDevice(dev io.ReadWriteCloser, chunks [][64]byte) (wire.Message, error) {
 	var msg wire.Message
 	for _, element := range chunks {
@@ -78,6 +83,7 @@ func (drv *Driver) SendToDevice(dev io.ReadWriteCloser, chunks [][64]byte) (wire
 	return msg, err
 }
 
+// GetDevice returns a device instance
 func (drv *Driver) GetDevice() (io.ReadWriteCloser, error) {
 	var dev io.ReadWriteCloser
 	var err error
@@ -93,10 +99,12 @@ func (drv *Driver) GetDevice() (io.ReadWriteCloser, error) {
 	return dev, err
 }
 
+// getEmulatorDevice returns a emulator device connection instance
 func getEmulatorDevice() (net.Conn, error) {
 	return net.Dial("udp", "127.0.0.1:21324")
 }
 
+// getUsbDevice returns a usb device connection instance
 func getUsbDevice() (usb.Device, error) {
 	w, err := usb.InitWebUSB()
 	if err != nil {
@@ -181,6 +189,7 @@ func initialize(d *Device) error {
 	return err
 }
 
+// DecodeSuccessOrFailMsg parses a success or failure msg
 func DecodeSuccessOrFailMsg(msg wire.Message) (string, error) {
 	if msg.Kind == uint16(messages.MessageType_MessageType_Success) {
 		return DecodeSuccessMsg(msg)

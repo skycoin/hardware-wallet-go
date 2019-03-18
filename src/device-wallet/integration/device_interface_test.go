@@ -6,17 +6,18 @@ import (
 	"testing"
 
 	"github.com/gogo/protobuf/proto"
-	deviceWallet "github.com/skycoin/hardware-wallet-go/src/device-wallet"
-	"github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
-	"github.com/skycoin/hardware-wallet-go/src/device-wallet/wire"
 	"github.com/stretchr/testify/require"
+
+	deviceWallet "github.com/skycoin/hardware-wallet-go/src/device-wallet"
+	messages "github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
+	"github.com/skycoin/hardware-wallet-go/src/device-wallet/wire"
 )
 
 func testHelperGetDeviceWithBestEffort(testName string, t *testing.T) *deviceWallet.Device {
 	emDevice := deviceWallet.NewDevice(deviceWallet.DeviceTypeEmulator)
-	phDevice := deviceWallet.NewDevice(deviceWallet.DeviceTypeEmulator)
-	if phDevice.Connected() {
-		return phDevice
+	usbDevice := deviceWallet.NewDevice(deviceWallet.DeviceTypeUSB)
+	if usbDevice.Connected() {
+		return usbDevice
 	} else if emDevice.Connected() {
 		return emDevice
 	}
@@ -153,8 +154,7 @@ func TestGetAddressEmulator(t *testing.T) {
 }
 
 func TransactionToDevice(deviceType deviceWallet.DeviceType, transactionInputs []*messages.SkycoinTransactionInput, transactionOutputs []*messages.SkycoinTransactionOutput) (wire.Message, error) {
-	var device deviceWallet.Devicer
-	device = deviceWallet.NewDevice(deviceType)
+	device := deviceWallet.NewDevice(deviceType)
 	if device == nil {
 		return wire.Message{}, fmt.Errorf("invalid device type: %s", deviceType)
 	}

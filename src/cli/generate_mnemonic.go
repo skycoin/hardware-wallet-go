@@ -35,7 +35,7 @@ func generateMnemonicCmd() gcli.Command {
 			usePassphrase := c.Bool("usePassphrase")
 			wordCount := uint32(c.Uint64("wordCount"))
 
-			device := deviceWallet.NewDevice(c.String("deviceType"))
+			device := deviceWallet.NewDevice(deviceWallet.DeviceTypeFromString(c.String("deviceType")))
 			if device == nil {
 				return
 			}

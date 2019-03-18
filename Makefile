@@ -20,14 +20,14 @@ vendor_proto: proto
 
 mocks: ## Create all mock files for unit tests
 	echo "Generating mock files"
-	mockery -name Devicer -dir ./src/device-wallet -output ./src/device-wallet/mocks
-	mockery -name DeviceDriver -dir ./src/device-wallet -output ./src/device-wallet/mocks
+	mockery -name Devicer -dir ./src/device-wallet -case underscore -inpkg -testonly
+	mockery -name DeviceDriver -dir ./src/device-wallet -case underscore -inpkg -testonly
 
-test_unit: mocks ## Run unit tests
+test_unit: ## Run unit tests
 	go test -v github.com/skycoin/hardware-wallet-go/src/device-wallet
 
 test_integration: ## Run integration tests
-	go test -v github.com/skycoin/hardware-wallet-go/device-wallet/integration
+	go test -v github.com/skycoin/hardware-wallet-go/src/device-wallet/integration
 
 test: test_unit test_integration ## Run all tests
 
@@ -46,9 +46,10 @@ install-linters: ## Install linters
 
 lint: ## Run linters. Use make install-linters first.
 	vendorcheck ./...
-	golangci-lint run --no-config  --deadline=3m --concurrency=2 --skip-dirs=src/device-wallet/usb test/mocks -E goimports -E golint -E varcheck -E unparam -E deadcode -E structcheck ./...
+	golangci-lint run -c .golangci.yml ./...
 
-check: lint ## run checks
+check: lint \
+	test ## run checks
 
 format: ## Formats the code. Must have goimports installed (use make install-linters).
 	goimports -w -local github.com/skycoin/hardware-wallet-go ./cmd

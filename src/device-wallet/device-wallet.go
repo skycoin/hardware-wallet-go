@@ -4,9 +4,10 @@ import (
 	"errors"
 	"time"
 
-	"github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
-	"github.com/skycoin/hardware-wallet-go/src/device-wallet/wire"
 	"github.com/skycoin/skycoin/src/util/logging"
+
+	messages "github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
+	"github.com/skycoin/hardware-wallet-go/src/device-wallet/wire"
 )
 
 var (
@@ -16,6 +17,8 @@ var (
 const (
 	entropyBufferSize int = 32
 )
+
+//go:generate mockery -name Devicer -case underscore -inpkg -testonly
 
 // Devicer provides api for the hw wallet functions
 type Devicer interface {
@@ -45,7 +48,8 @@ type Device struct {
 	Driver DeviceDriver
 }
 
-func deviceTypeFromString(deviceType string) DeviceType {
+// DeviceTypeFromString returns device type from string
+func DeviceTypeFromString(deviceType string) DeviceType {
 	var dtRet DeviceType
 	switch deviceType {
 	case DeviceTypeUSB.String():
@@ -61,10 +65,11 @@ func deviceTypeFromString(deviceType string) DeviceType {
 	return dtRet
 }
 
+// NewDevice returns a new device instance
 func NewDevice(deviceType DeviceType) (device *Device) {
 	switch deviceType {
 	case DeviceTypeUSB, DeviceTypeEmulator:
-		device = &Device{&Driver{ deviceType}}
+		device = &Device{&Driver{deviceType}}
 	default:
 		device = nil
 	}
@@ -101,7 +106,7 @@ func (d *Device) ApplySettings(usePassphrase bool, label string) (wire.Message, 
 	return d.Driver.SendToDevice(dev, chunks)
 }
 
-// BackupDevice ask the device to perform the seed backup
+// Backup ask the device to perform the seed backup
 func (d *Device) Backup() (wire.Message, error) {
 	dev, err := d.Driver.GetDevice()
 	if err != nil {
@@ -136,7 +141,7 @@ func (d *Device) Backup() (wire.Message, error) {
 	return msg, nil
 }
 
-// Cancel send Cancel request
+// Cancel sends a Cancel request
 func (d *Device) Cancel() (wire.Message, error) {
 	dev, err := d.Driver.GetDevice()
 	if err != nil {
@@ -343,7 +348,7 @@ func (d *Device) GenerateMnemonic(wordCount uint32, usePassphrase bool) (wire.Me
 	return msg, err
 }
 
-// RecoveryDevice ask the device to perform the seed backup
+// Recovery ask the device to perform the seed backup
 func (d *Device) Recovery(wordCount uint32, usePassphrase, dryRun bool) (wire.Message, error) {
 	dev, err := d.Driver.GetDevice()
 	if err != nil {
@@ -431,7 +436,7 @@ func (d *Device) TransactionSign(inputs []*messages.SkycoinTransactionInput, out
 	return d.Driver.SendToDevice(dev, chunks)
 }
 
-// WipeDevice wipes out device configuration
+// Wipe wipes out device configuration
 func (d *Device) Wipe() (wire.Message, error) {
 	dev, err := d.Driver.GetDevice()
 	if err != nil {

@@ -39,7 +39,7 @@ func checkMessageSignatureCmd() gcli.Command {
 			signature := c.String("signature")
 			address := c.String("address")
 
-			device := deviceWallet.NewDevice(c.String("deviceType"))
+			device := deviceWallet.NewDevice(deviceWallet.DeviceTypeFromString(c.String("deviceType")))
 			if device == nil {
 				return
 			}
