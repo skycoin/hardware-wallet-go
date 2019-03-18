@@ -2,6 +2,7 @@ package devicewallet
 
 import (
 	"errors"
+	"io"
 	"time"
 
 	"github.com/skycoin/skycoin/src/util/logging"
@@ -116,7 +117,7 @@ func (d *Device) Backup() (wire.Message, error) {
 	var msg wire.Message
 
 	var chunks [][64]byte
-	err = initialize(d)
+	err = initialize(dev)
 	if err != nil {
 		return wire.Message{}, err
 	}
@@ -132,7 +133,7 @@ func (d *Device) Backup() (wire.Message, error) {
 	}
 
 	for msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		msg, err = d.deviceButtonAck()
+		msg, err = deviceButtonAck(dev)
 		if err != nil {
 			return wire.Message{}, err
 		}
@@ -207,7 +208,7 @@ func (d *Device) ChangePin() (wire.Message, error) {
 
 	// Acknowledge that a button has been pressed
 	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		msg, err = d.deviceButtonAck()
+		msg, err = deviceButtonAck(dev)
 		if err != nil {
 			return msg, err
 		}
@@ -256,7 +257,7 @@ func (d *Device) FirmwareUpload(payload []byte, hash [32]byte) error {
 	}
 	defer dev.Close()
 
-	err = initialize(d)
+	err = initialize(dev)
 	if err != nil {
 		return err
 	}
@@ -370,7 +371,7 @@ func (d *Device) Recovery(wordCount uint32, usePassphrase, dryRun bool) (wire.Me
 	log.Printf("Recovery device %d! Answer is: %s\n", msg.Kind, msg.Data)
 
 	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		msg, err = d.deviceButtonAck()
+		msg, err = deviceButtonAck(dev)
 		if err != nil {
 			return wire.Message{}, err
 		}
@@ -398,7 +399,7 @@ func (d *Device) SetMnemonic(mnemonic string) (wire.Message, error) {
 	}
 
 	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		msg, err = d.deviceButtonAck()
+		msg, err = deviceButtonAck(dev)
 		if err != nil {
 			return wire.Message{}, err
 		}
@@ -446,7 +447,7 @@ func (d *Device) Wipe() (wire.Message, error) {
 	defer dev.Close()
 	var chunks [][64]byte
 
-	err = initialize(d)
+	err = initialize(dev)
 	if err != nil {
 		return wire.Message{}, err
 	}
@@ -464,14 +465,14 @@ func (d *Device) Wipe() (wire.Message, error) {
 	log.Printf("Wipe device %d! Answer is: %x\n", msg.Kind, msg.Data)
 
 	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		msg, err = d.deviceButtonAck()
+		msg, err = deviceButtonAck(dev)
 		if err != nil {
 			return wire.Message{}, err
 		}
 	}
 
 	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		err = initialize(d)
+		err = initialize(dev)
 		if err != nil {
 			return wire.Message{}, err
 		}
@@ -483,22 +484,22 @@ func (d *Device) Wipe() (wire.Message, error) {
 // ButtonAck when the device is waiting for the user to press a button
 // the PC need to acknowledge, showing it knows we are waiting for a user action
 func (d *Device) ButtonAck() (wire.Message, error) {
-	return d.deviceButtonAck()
-}
-
-func (d *Device) deviceButtonAck() (wire.Message, error) {
 	dev, err := d.Driver.GetDevice()
 	if err != nil {
 		return wire.Message{}, err
 	}
-	defer dev.Close()
+
+	return deviceButtonAck(dev)
+}
+
+func deviceButtonAck(dev io.ReadWriteCloser) (wire.Message, error) {
 	var msg wire.Message
 	// Send ButtonAck
 	chunks, err := MessageButtonAck()
 	if err != nil {
 		return msg, err
 	}
-	err = d.Driver.SendToDeviceNoAnswer(dev, chunks)
+	err = sendToDeviceNoAnswer(dev, chunks)
 	if err != nil {
 		return msg, err
 	}
