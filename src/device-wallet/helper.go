@@ -61,26 +61,12 @@ func (drv *Driver) DeviceType() DeviceType {
 
 // SendToDeviceNoAnswer sends msg to device and doesnt return response
 func (drv *Driver) SendToDeviceNoAnswer(dev io.ReadWriteCloser, chunks [][64]byte) error {
-	for _, element := range chunks {
-		_, err := dev.Write(element[:])
-		if err != nil {
-			return err
-		}
-	}
-	return nil
+	return sendToDeviceNoAnswer(dev, chunks)
 }
 
 // SendToDevice sends msg to device and returns response
 func (drv *Driver) SendToDevice(dev io.ReadWriteCloser, chunks [][64]byte) (wire.Message, error) {
-	var msg wire.Message
-	for _, element := range chunks {
-		_, err := dev.Write(element[:])
-		if err != nil {
-			return msg, err
-		}
-	}
-	_, err := msg.ReadFrom(dev)
-	return msg, err
+	return sendToDevice(dev, chunks)
 }
 
 // GetDevice returns a device instance
@@ -97,6 +83,28 @@ func (drv *Driver) GetDevice() (io.ReadWriteCloser, error) {
 		err = errors.New("No device connected")
 	}
 	return dev, err
+}
+
+func sendToDeviceNoAnswer(dev io.ReadWriteCloser, chunks [][64]byte) error {
+	for _, element := range chunks {
+		_, err := dev.Write(element[:])
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func sendToDevice(dev io.ReadWriteCloser, chunks [][64]byte) (wire.Message, error) {
+	var msg wire.Message
+	for _, element := range chunks {
+		_, err := dev.Write(element[:])
+		if err != nil {
+			return msg, err
+		}
+	}
+	_, err := msg.ReadFrom(dev)
+	return msg, err
 }
 
 // getEmulatorDevice returns a emulator device connection instance
@@ -169,12 +177,7 @@ func makeSkyWalletMessage(data []byte, msgID messages.MessageType) [][64]byte {
 }
 
 // Initialize send an init request to the device
-func initialize(d *Device) error {
-	dev, err := d.Driver.GetDevice()
-	if err != nil {
-		return err
-	}
-	defer dev.Close()
+func initialize(dev io.ReadWriteCloser) error {
 	var chunks [][64]byte
 
 	initialize := &messages.Initialize{}
@@ -184,7 +187,7 @@ func initialize(d *Device) error {
 	}
 
 	chunks = makeSkyWalletMessage(data, messages.MessageType_MessageType_Initialize)
-	_, err = d.Driver.SendToDevice(dev, chunks)
+	_, err = sendToDevice(dev, chunks)
 
 	return err
 }
