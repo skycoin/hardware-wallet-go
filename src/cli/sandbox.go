@@ -20,7 +20,7 @@ func sandbox() gcli.Command {
 		Flags:        []gcli.Flag{},
 		OnUsageError: onCommandUsageError(name),
 		Action: func(c *gcli.Context) {
-			device := deviceWallet.NewDevice(c.String("deviceType"))
+			device := deviceWallet.NewDevice(deviceWallet.DeviceTypeFromString(c.String("deviceType")))
 			if device == nil {
 				return
 			}

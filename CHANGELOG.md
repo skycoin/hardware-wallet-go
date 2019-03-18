@@ -8,13 +8,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 
-- Introduced a interface based implementation to make it more testeable.
-- Move integration tests to `test/integration`.
-- Move `interface`s to a `interfaces` directory as using `mockery` can introduce cyclic dependency.
 - Use `protobuf` file definitions from a [`git submodule`](http://github.com/skycoin/hardware-wallet-protob.git).
 - Mnemonic and recovery functions support `--wordCount` argument for the seed size (default `12`) .
 - Add `-deviceType` flag and `DEVICE_TYPE` env var to set devicetype, options are `USB` or `EMULATOR`.
 - Add autocomplete for cli
+- Add `Devicer` and `DeviceDriver` interface for the hw wallet api to make it more testeable.
+- Add mocks for `Devicer` and `DeviceDriver` interface.
+- Add skycoin `v0.25.0` dependency.
 
 ### Fixed
 
@@ -23,7 +23,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 
 - Change project structure to follow standard project layout
-- Add `Devicer` interface for the hw wallet api
+
 
 ### Removed
 

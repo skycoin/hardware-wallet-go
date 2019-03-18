@@ -5,11 +5,11 @@ import (
 	"testing"
 
 	"github.com/davecgh/go-spew/spew"
-	messages "github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
-	"github.com/skycoin/hardware-wallet-go/src/device-wallet/wire"
-	"github.com/skycoin/hardware-wallet-go/test/mocks"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
+
+	messages "github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
+	"github.com/skycoin/hardware-wallet-go/src/device-wallet/wire"
 )
 
 type devicerSuit struct {
@@ -39,10 +39,10 @@ func (cwr testHelperCloseableBuffer) Close() error {
 
 func (suite *devicerSuit) TestGenerateMnemonic() {
 	// NOTE(denisacostaq@gmail.com): Giving
-	driverMock := &mocks.DeviceDriver{}
+	driverMock := &MockDeviceDriver{}
 	driverMock.On("GetDevice").Return(&testHelperCloseableBuffer{}, nil)
 	driverMock.On("SendToDevice", mock.Anything, mock.Anything).Return(
-		wire.Message{uint16(messages.MessageType_MessageType_EntropyRequest), nil}, nil)
+		wire.Message{Kind: uint16(messages.MessageType_MessageType_EntropyRequest), Data: nil}, nil)
 	device := Device{driverMock}
 
 	// NOTE(denisacostaq@gmail.com): When
