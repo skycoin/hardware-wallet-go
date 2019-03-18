@@ -5,9 +5,9 @@ import (
 	"testing"
 
 	"github.com/davecgh/go-spew/spew"
-	messages "github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
+	"github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
+	"github.com/skycoin/hardware-wallet-go/src/device-wallet/mocks"
 	"github.com/skycoin/hardware-wallet-go/src/device-wallet/wire"
-	"github.com/skycoin/hardware-wallet-go/test/mocks"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 )

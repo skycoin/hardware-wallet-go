@@ -10,17 +10,49 @@ import (
 	"time"
 
 	"github.com/gogo/protobuf/proto"
-	"github.com/skycoin/hardware-wallet-go/interfaces"
-	messages "github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
+	"github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
 	"github.com/skycoin/hardware-wallet-go/src/device-wallet/usb"
 	"github.com/skycoin/hardware-wallet-go/src/device-wallet/wire"
 )
 
-type Driver struct {
-	deviceType interfaces.DeviceType
+// DeviceType type of device: emulator or usb
+type DeviceType int32
+
+func (dt DeviceType) String() string {
+	switch dt {
+	case DeviceTypeEmulator:
+		return "EMULATOR"
+	case DeviceTypeUSB:
+		return "USB"
+	default:
+		return "Invalid"
+	}
 }
 
-func (drv *Driver) DeviceType() interfaces.DeviceType {
+const (
+	// DeviceTypeEmulator use emulator
+	DeviceTypeEmulator DeviceType = iota + 1
+	// DeviceTypeUsb use usb
+	DeviceTypeUSB
+	// DeviceTypeInvalid not valid value
+	DeviceTypeInvalid
+)
+
+// DeviceDriver is the api for hardware wallet communication
+type DeviceDriver interface {
+	SendToDevice(dev io.ReadWriteCloser, chunks [][64]byte) (wire.Message, error)
+	SendToDeviceNoAnswer(dev io.ReadWriteCloser, chunks [][64]byte) error
+	GetDevice() (io.ReadWriteCloser, error)
+	DeviceType() DeviceType
+}
+
+// Driver represents a particular device (USB / Emulator)
+type Driver struct {
+	deviceType DeviceType
+}
+
+// DeviceType 
+func (drv *Driver) DeviceType() DeviceType {
 	return drv.deviceType
 }
 
@@ -50,9 +82,9 @@ func (drv *Driver) GetDevice() (io.ReadWriteCloser, error) {
 	var dev io.ReadWriteCloser
 	var err error
 	switch drv.DeviceType() {
-	case interfaces.DeviceTypeEmulator:
+	case DeviceTypeEmulator:
 		dev, err = getEmulatorDevice()
-	case interfaces.DeviceTypeUSB:
+	case DeviceTypeUSB:
 		dev, err = getUsbDevice()
 	}
 	if dev == nil && err == nil {
