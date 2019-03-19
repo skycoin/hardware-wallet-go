@@ -18,6 +18,3 @@
 DS_Store
 
 vendor/github.com/google/protobuf/descriptor.pb.go
-
-**/mocks/*
-!**/mocks/.gitkeep
