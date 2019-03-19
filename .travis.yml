@@ -23,6 +23,8 @@ install:
   - make install-linters
   - go get -t ./...
 before_script:
+  # Install go dep
+  - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
   # Start Xvfb on osx
   - if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
     ( sudo Xvfb :99 -ac ${XARGS}; echo "Xvfb ok" )&
@@ -49,7 +51,6 @@ before_script:
   - echo "PIP=$PIP";
 script:
   - make -C tmp/hardware-wallet clean
-  - make -C tmp/hardware-wallet/tiny-firmware/protob install-deps-nanopb
   - make -C tmp/hardware-wallet/tiny-firmware/protob install-protoc
   - make -C tmp/hardware-wallet/tiny-firmware/protob/nanopb/vendor/nanopb/generator/proto
   - make -C tmp/hardware-wallet emulator
@@ -61,9 +62,12 @@ script:
   - if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
     make -C ./tmp/hardware-wallet run-emulator & true ;
     fi
+  # Run self-tests
   - make lint
   - ps aux | grep emulator
   - make test
+  # Test that dependencies can be updated
+  - make clean && make dep
 after_script:
   - kill -s KILL $(pgrep emulator)
 notifications:
