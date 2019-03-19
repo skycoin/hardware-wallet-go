@@ -36,7 +36,7 @@ proto: ## build proto files
 
 clean: ## clean proto files
 	make -C src/device-wallet/messages clean-go
-	rm -r vendor/github.com/google
+	rm -rf vendor/github.com/google
 
 install-linters: ## Install linters
 	go get -u github.com/FiloSottile/vendorcheck
