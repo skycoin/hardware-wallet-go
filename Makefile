@@ -20,7 +20,7 @@ test: mocks ## Run all tests
 	go test -v github.com/skycoin/hardware-wallet-go/src/device-wallet
 
 proto:
-	make -C src/device-wallet/messages build-go
+	make -C src/device-wallet/messages build-go GO_IMPORT=github.com/skycoin/hardware-wallet-go/src/device-wallet/messages
 
 clean:
 	make -C src/device-wallet/messages clean-go
