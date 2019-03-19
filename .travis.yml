@@ -18,6 +18,7 @@ install:
 script:
   - make check
   - make test
+  - make dep
 notifications:
   # https://github.com/kvld/travisci-telegram TravisCI Telegram Bot integration
   webhooks: https://fathomless-fjord-24024.herokuapp.com/notify
