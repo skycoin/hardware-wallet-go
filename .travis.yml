@@ -16,8 +16,11 @@ install:
   - make mocks
   - make install-linters
   - go get -t ./...
+before_script:
+  - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
 script:
   - make check
+  - make dep
 notifications:
   # https://github.com/kvld/travisci-telegram TravisCI Telegram Bot integration
   webhooks: https://fathomless-fjord-24024.herokuapp.com/notify

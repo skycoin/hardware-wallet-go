@@ -32,11 +32,11 @@ test_integration: ## Run integration tests
 test: test_unit test_integration ## Run all tests
 
 proto: ## build proto files
-	make -C src/device-wallet/messages build-go
+	make -C src/device-wallet/messages build-go GO_IMPORT=github.com/skycoin/hardware-wallet-go/src/device-wallet/messages
 
 clean: ## clean proto files
 	make -C src/device-wallet/messages clean-go
-	rm -r vendor/github.com/google
+	rm -rf vendor/github.com/google
 
 install-linters: ## Install linters
 	go get -u github.com/FiloSottile/vendorcheck
