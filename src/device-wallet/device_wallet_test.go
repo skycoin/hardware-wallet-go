@@ -51,7 +51,7 @@ func (suite *devicerSuit) TestGenerateMnemonic() {
 	// NOTE(denisacostaq@gmail.com): Assert
 	suite.Nil(err)
 	driverMock.AssertCalled(suite.T(), "GetDevice")
-	driverMock.AssertNumberOfCalls(suite.T(), "SendToDevice", 2)
+	driverMock.AssertNumberOfCalls(suite.T(), "SendToDevice", 3)
 	mock.AssertExpectationsForObjects(suite.T(), driverMock)
 	spew.Dump(msg)
 }
