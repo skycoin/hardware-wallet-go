@@ -232,9 +232,9 @@ func MessageSetMnemonic(mnemonic string) ([][64]byte, error) {
 }
 
 // MessageSignMessage prepare MessageSignMessage request
-func MessageSignMessage(addressN int, message string) ([][64]byte, error) {
+func MessageSignMessage(addressIndex int, message string) ([][64]byte, error) {
 	skycoinSignMessage := &messages.SkycoinSignMessage{
-		AddressN: proto.Uint32(uint32(addressN)),
+		AddressN: proto.Uint32(uint32(addressIndex)),
 		Message:  proto.String(message),
 	}
 
