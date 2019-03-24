@@ -4,23 +4,42 @@ Skycoin Hardware wallet command line interface
 
 <!-- MarkdownTOC autolink="true" bracket="round" levels="1,2,3" -->
 
-- [Usage](#usage)
+- [CLI Documentation](#cli-documentation)
+  - [Install](#install)
+  - [Usage](#usage)
     - [Apply settings](#apply-settings)
     - [Update firmware](#update-firmware)
     - [Ask device to generate addresses](#ask-device-to-generate-addresses)
+      - [Examples](#examples)
+        - [Text output](#text-output)
     - [Configure device mnemonic](#configure-device-mnemonic)
-    - [Ask device to generate mnemonic](#generate-mnemonic)
+      - [Examples](#examples-1)
+        - [Text output](#text-output-1)
+    - [Generate mnemonic](#generate-mnemonic)
+      - [Examples](#examples-2)
+        - [Text output](#text-output-2)
     - [Configure device PIN code](#configure-device-pin-code)
-    - [Get firmware version](#get-version)
+      - [Examples](#examples-3)
+        - [Text output](#text-output-3)
     - [Ask device to sign message](#ask-device-to-sign-message)
+      - [Examples](#examples-4)
+        - [Text output](#text-output-4)
     - [Ask device to check signature](#ask-device-to-check-signature)
+      - [Examples](#examples-5)
+        - [Text output](#text-output-5)
+  - [Note](#note)
     - [Wipe device](#wipe-device)
-    - [Ask the device to perform the seed backup procedure](#backup-device)
-    - [Ask the device to perform the seed recovery procedure](#recovery-device)
-    - [Ask the device Features](#device-features)
-    - [Ask the device to cancel the ongoing procedure](#device-cancel)
-    - [Ask the device to sign a transaction using the provided information](#transaction-sign)
-- [Note](#note)
+      - [Examples](#examples-6)
+        - [Text output](#text-output-6)
+    - [Backup device](#backup-device)
+      - [Examples](#examples-7)
+        - [Text output](#text-output-7)
+    - [Recovery device](#recovery-device)
+      - [Examples](#examples-8)
+        - [Text output](#text-output-8)
+    - [Device features](#device-features)
+    - [Device cancel](#device-cancel)
+    - [Transaction sign](#transaction-sign)
 
 <!-- /MarkdownTOC -->
 
@@ -101,6 +120,26 @@ Success with code:  Settings applied
 ```
 </details>
 
+Configure device with settings such as: change language
+
+
+```bash
+$ skycoin-hw-cli applySettings --language en
+```
+
+```
+OPTIONS:
+        --language string            Configure a device language
+```
+
+<details>
+ <summary>View Output</summary>
+
+```
+[2019-03-24T17:02:36-04:00] INFO [device-wallet]: language:"en" label:"" use_passphrase:false 
+Success with code:  Settings applied
+```
+</details>
 
 ### Update firmware
 
