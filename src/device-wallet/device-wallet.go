@@ -14,9 +14,6 @@ import (
 
 var (
 	log = logging.MustGetLogger("device-wallet")
-
-	// ErrDeviceInstanceNotInitialized means that the device connection instance is nil
-	ErrDeviceInstanceNotInitialized = errors.New("device instance not initialized")
 )
 
 const (
@@ -597,20 +594,25 @@ func (d *Device) PinMatrixAck(p string) (wire.Message, error) {
 
 // SimulateButtonPress simulates a button press on emulator
 func (d *Device) SimulateButtonPress(buttonType ButtonType) error {
-	if d.dev == nil {
-		return ErrDeviceInstanceNotInitialized
+	if err := d.Connect(); err != nil {
+		return err
 	}
+	defer d.dev.Close()
 
 	if d.Driver.DeviceType() != DeviceTypeEmulator {
 		return fmt.Errorf("wrong device type: %s", d.Driver.DeviceType())
 	}
 
+	return simulateButtonPress(d.dev, buttonType)
+}
+
+func simulateButtonPress(dev io.ReadWriteCloser, buttonType ButtonType) error {
 	msg, err := MessageSimulateButtonPress(buttonType)
 	if err != nil {
 		return err
 	}
 
-	_, err = d.dev.Write(msg.Bytes())
+	_, err = dev.Write(msg.Bytes())
 	if err != nil {
 		return err
 	}
