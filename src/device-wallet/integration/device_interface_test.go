@@ -143,10 +143,9 @@ func TestGetAddressEmulator(t *testing.T) {
 
 	_, err := device.Wipe()
 	require.NoError(t, err)
-	go func() {
-		_, err = device.SetMnemonic("cloud flower upset remain green metal below cup stem infant art thank")
-		require.NoError(t, err)
-	}()
+
+	_, err = device.SetMnemonic("cloud flower upset remain green metal below cup stem infant art thank")
+	require.NoError(t, err)
 
 	time.Sleep(2 * time.Second)
 	err = device.SimulateButtonPress(deviceWallet.ButtonRight)

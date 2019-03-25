@@ -8,7 +8,7 @@ import (
 
 	"github.com/skycoin/skycoin/src/util/logging"
 
-	"github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
+	messages "github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
 	"github.com/skycoin/hardware-wallet-go/src/device-wallet/wire"
 )
 
@@ -27,8 +27,12 @@ const (
 type ButtonType int32
 
 const (
+	// ButtonLeft press left button
 	ButtonLeft ButtonType = iota
+
+	// ButtonRight press right button
 	ButtonRight
+	// ButtonBoth press both buttons
 	ButtonBoth
 )
 
@@ -112,7 +116,6 @@ func (d *Device) Connect() error {
 	}
 
 	d.dev = dev
-
 	return nil
 }
 
@@ -155,7 +158,7 @@ func (d *Device) Backup() (wire.Message, error) {
 	var msg wire.Message
 
 	var chunks [][64]byte
-	err := initialize(d.dev)
+	err := Initialize(d.dev)
 	if err != nil {
 		return wire.Message{}, err
 	}
@@ -292,7 +295,7 @@ func (d *Device) FirmwareUpload(payload []byte, hash [32]byte) error {
 	}
 	defer dev.Close()
 
-	err = initialize(dev)
+	err = Initialize(dev)
 	if err != nil {
 		return err
 	}
@@ -479,7 +482,7 @@ func (d *Device) Wipe() (wire.Message, error) {
 	defer d.dev.Close()
 	var chunks [][64]byte
 
-	err := initialize(d.dev)
+	err := Initialize(d.dev)
 	if err != nil {
 		return wire.Message{}, err
 	}
@@ -504,7 +507,7 @@ func (d *Device) Wipe() (wire.Message, error) {
 	}
 
 	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		err = initialize(d.dev)
+		err = Initialize(d.dev)
 		if err != nil {
 			return wire.Message{}, err
 		}
@@ -599,7 +602,7 @@ func (d *Device) SimulateButtonPress(buttonType ButtonType) error {
 	}
 
 	if d.Driver.DeviceType() != DeviceTypeEmulator {
-		return errors.New(fmt.Sprintf("wrong device type: %s", d.Driver.DeviceType()))
+		return fmt.Errorf("wrong device type: %s", d.Driver.DeviceType())
 	}
 
 	msg, err := MessageSimulateButtonPress(buttonType)
