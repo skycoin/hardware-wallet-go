@@ -1,12 +1,13 @@
 package devicewallet
 
 import (
+	"bytes"
+	"errors"
 	"fmt"
-
 	"github.com/gogo/protobuf/proto"
 	"github.com/skycoin/skycoin/src/cipher"
 
-	messages "github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
+	"github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
 )
 
 // MessageCancel prepare Cancel request
@@ -307,4 +308,18 @@ func MessageEntropyAck(bufferSize int) ([][64]byte, error) {
 	}
 	chunks := makeSkyWalletMessage(data, messages.MessageType_MessageType_EntropyAck)
 	return chunks, nil
+}
+
+// MessageSimulateButtonPress prespares a emulator button press simulation button
+func MessageSimulateButtonPress(buttonType ButtonType) (*bytes.Buffer, error) {
+	switch buttonType {
+	case ButtonLeft, ButtonRight, ButtonBoth:
+		msg := new(bytes.Buffer)
+		msg.Write([]byte{0, 1, 2, 3, 4, byte(buttonType)})
+
+		return msg, nil
+	default:
+		return nil, errors.New(fmt.Sprintf("invalid button type: %d", buttonType))
+	}
+
 }

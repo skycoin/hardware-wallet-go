@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"testing"
+	"time"
 
 	"github.com/gogo/protobuf/proto"
 	"github.com/stretchr/testify/require"
@@ -106,7 +107,7 @@ func TestDevice(t *testing.T) {
 	signature, err := deviceWallet.DecodeResponseSkycoinSignMessage(msg)
 	require.NoError(t, err)
 	log.Print(signature)
-	require.Equal(t, 89, len(signature))
+	require.Equal(t, 130, len(signature))
 
 	msg, err = device.CheckMessageSignature(message, signature, addresses[0])
 	require.NoError(t, err)
@@ -142,8 +143,15 @@ func TestGetAddressEmulator(t *testing.T) {
 
 	_, err := device.Wipe()
 	require.NoError(t, err)
-	_, err = device.SetMnemonic("cloud flower upset remain green metal below cup stem infant art thank")
+	go func() {
+		_, err = device.SetMnemonic("cloud flower upset remain green metal below cup stem infant art thank")
+		require.NoError(t, err)
+	}()
+
+	time.Sleep(2 * time.Second)
+	err = device.SimulateButtonPress(deviceWallet.ButtonRight)
 	require.NoError(t, err)
+
 	msg, err := device.AddressGen(2, 0, false)
 	require.NoError(t, err)
 	addresses, err := deviceWallet.DecodeResponseSkycoinAddress(msg)
