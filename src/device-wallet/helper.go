@@ -79,6 +79,7 @@ func (drv *Driver) GetDevice() (io.ReadWriteCloser, error) {
 	case DeviceTypeUSB:
 		dev, err = getUsbDevice()
 	}
+
 	if dev == nil && err == nil {
 		err = errors.New("No device connected")
 	}
@@ -178,8 +179,6 @@ func makeSkyWalletMessage(data []byte, msgID messages.MessageType) [][64]byte {
 
 // Initialize send an init request to the device
 func Initialize(dev io.ReadWriteCloser) error {
-	defer dev.Close()
-
 	var chunks [][64]byte
 
 	chunks, err := MessageInitialize()

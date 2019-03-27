@@ -43,7 +43,7 @@ func (suite *devicerSuit) TestGenerateMnemonic() {
 	driverMock.On("GetDevice").Return(&testHelperCloseableBuffer{}, nil)
 	driverMock.On("SendToDevice", mock.Anything, mock.Anything).Return(
 		wire.Message{Kind: uint16(messages.MessageType_MessageType_EntropyRequest), Data: nil}, nil)
-	device := Device{driverMock, nil}
+	device := Device{driverMock, nil, false, ButtonType(-1)}
 
 	// NOTE(denisacostaq@gmail.com): When
 	msg, err := device.GenerateMnemonic(12, false)

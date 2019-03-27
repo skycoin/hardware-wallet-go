@@ -8,7 +8,7 @@ import (
 
 	"github.com/skycoin/skycoin/src/util/logging"
 
-	messages "github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
+	"github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
 	"github.com/skycoin/hardware-wallet-go/src/device-wallet/wire"
 )
 
@@ -56,7 +56,7 @@ type Devicer interface {
 	WordAck(word string) (wire.Message, error)
 	PassphraseAck(passphrase string) (wire.Message, error)
 	ButtonAck() (wire.Message, error)
-	SimulateButtonPress(buttonType ButtonType) error
+	SetAutoPressButton(bool, ButtonType)
 }
 
 // Device provides hardware wallet functions
@@ -67,6 +67,9 @@ type Device struct {
 	// during an ongoing operation the device instance cannot be requested before closing the previous instance
 	// keeping the connection instance in the struct helps with closing and opening of the connection
 	dev io.ReadWriteCloser
+
+	simulateButtonPress bool
+	simulateButtonType  ButtonType
 }
 
 // DeviceTypeFromString returns device type from string
@@ -93,6 +96,8 @@ func NewDevice(deviceType DeviceType) (device *Device) {
 		device = &Device{
 			&Driver{deviceType},
 			nil,
+			false,
+			ButtonType(-1),
 		}
 	default:
 		device = nil
@@ -171,7 +176,7 @@ func (d *Device) Backup() (wire.Message, error) {
 	}
 
 	for msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		msg, err = deviceButtonAck(d.dev)
+		msg, err = d.ButtonAck()
 		if err != nil {
 			return wire.Message{}, err
 		}
@@ -243,11 +248,12 @@ func (d *Device) ChangePin() (wire.Message, error) {
 
 	// Acknowledge that a button has been pressed
 	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		msg, err = deviceButtonAck(d.dev)
+		msg, err = d.ButtonAck()
 		if err != nil {
 			return msg, err
 		}
 	}
+
 	return msg, nil
 }
 
@@ -360,14 +366,7 @@ func (d *Device) GenerateMnemonic(wordCount uint32, usePassphrase bool) (wire.Me
 
 	switch msg.Kind {
 	case uint16(messages.MessageType_MessageType_ButtonRequest):
-		chunks, err := MessageButtonAck()
-		if err != nil {
-			return wire.Message{}, err
-		}
-		msg, err = d.Driver.SendToDevice(d.dev, chunks)
-		if err != nil {
-			return wire.Message{}, err
-		}
+		return d.ButtonAck()
 	case uint16(messages.MessageType_MessageType_EntropyRequest):
 		chunks, err := MessageEntropyAck(entropyBufferSize)
 		if err != nil {
@@ -407,7 +406,7 @@ func (d *Device) Recovery(wordCount uint32, usePassphrase, dryRun bool) (wire.Me
 	log.Printf("Recovery device %d! Answer is: %s\n", msg.Kind, msg.Data)
 
 	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		msg, err = deviceButtonAck(d.dev)
+		msg, err = d.ButtonAck()
 		if err != nil {
 			return wire.Message{}, err
 		}
@@ -434,7 +433,7 @@ func (d *Device) SetMnemonic(mnemonic string) (wire.Message, error) {
 	}
 
 	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		msg, err = deviceButtonAck(d.dev)
+		msg, err = d.ButtonAck()
 		if err != nil {
 			return wire.Message{}, err
 		}
@@ -497,14 +496,7 @@ func (d *Device) Wipe() (wire.Message, error) {
 	log.Printf("Wipe device %d! Answer is: %x\n", msg.Kind, msg.Data)
 
 	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		msg, err = deviceButtonAck(d.dev)
-		if err != nil {
-			return wire.Message{}, err
-		}
-	}
-
-	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		err = Initialize(d.dev)
+		msg, err = d.ButtonAck()
 		if err != nil {
 			return wire.Message{}, err
 		}
@@ -521,10 +513,14 @@ func (d *Device) ButtonAck() (wire.Message, error) {
 	}
 	defer d.dev.Close()
 
-	return deviceButtonAck(d.dev)
+	if d.simulateButtonPress {
+		return d.SimulateButtonPress()
+	}
+
+	return DeviceButtonAck(d.dev)
 }
 
-func deviceButtonAck(dev io.ReadWriteCloser) (wire.Message, error) {
+func DeviceButtonAck(dev io.ReadWriteCloser) (wire.Message, error) {
 	var msg wire.Message
 	// Send ButtonAck
 	chunks, err := MessageButtonAck()
@@ -593,29 +589,41 @@ func (d *Device) PinMatrixAck(p string) (wire.Message, error) {
 }
 
 // SimulateButtonPress simulates a button press on emulator
-func (d *Device) SimulateButtonPress(buttonType ButtonType) error {
+func (d *Device) SimulateButtonPress() (wire.Message, error) {
 	if err := d.Connect(); err != nil {
-		return err
+		return wire.Message{}, err
 	}
 	defer d.dev.Close()
 
 	if d.Driver.DeviceType() != DeviceTypeEmulator {
-		return fmt.Errorf("wrong device type: %s", d.Driver.DeviceType())
+		return wire.Message{}, fmt.Errorf("wrong device type: %s", d.Driver.DeviceType())
 	}
 
-	return simulateButtonPress(d.dev, buttonType)
+	simulateMsg, err := MessageSimulateButtonPress(d.simulateButtonType)
+	if err != nil {
+		return wire.Message{}, err
+	}
+
+	_, err = d.dev.Write(simulateMsg.Bytes())
+	if err != nil {
+		return wire.Message{}, err
+	}
+
+	var msg wire.Message
+	_, err = msg.ReadFrom(d.dev)
+	time.Sleep(1 * time.Second)
+	if err != nil {
+		return msg, err
+	}
+	return msg, nil
 }
 
-func simulateButtonPress(dev io.ReadWriteCloser, buttonType ButtonType) error {
-	msg, err := MessageSimulateButtonPress(buttonType)
-	if err != nil {
-		return err
+func (d *Device) SetAutoPressButton(simulateButtonPress bool, simulateButtonType ButtonType) {
+	if d.Driver.DeviceType() == DeviceTypeEmulator {
+		switch simulateButtonType {
+		case ButtonLeft, ButtonRight, ButtonBoth:
+			d.simulateButtonPress = true
+			d.simulateButtonType = simulateButtonType
+		}
 	}
-
-	_, err = dev.Write(msg.Bytes())
-	if err != nil {
-		return err
-	}
-
-	return nil
 }

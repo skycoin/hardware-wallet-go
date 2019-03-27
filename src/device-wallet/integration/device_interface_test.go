@@ -2,15 +2,13 @@ package integration
 
 import (
 	"fmt"
-	"log"
-	"testing"
-	"time"
-
 	"github.com/gogo/protobuf/proto"
 	"github.com/stretchr/testify/require"
+	"log"
+	"testing"
 
 	deviceWallet "github.com/skycoin/hardware-wallet-go/src/device-wallet"
-	messages "github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
+	"github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
 	"github.com/skycoin/hardware-wallet-go/src/device-wallet/wire"
 )
 
@@ -141,14 +139,11 @@ func TestGetAddressEmulator(t *testing.T) {
 		return
 	}
 
+	device.SetAutoPressButton(true, deviceWallet.ButtonRight)
 	_, err := device.Wipe()
 	require.NoError(t, err)
 
 	_, err = device.SetMnemonic("cloud flower upset remain green metal below cup stem infant art thank")
-	require.NoError(t, err)
-
-	time.Sleep(2 * time.Second)
-	err = device.SimulateButtonPress(deviceWallet.ButtonRight)
 	require.NoError(t, err)
 
 	msg, err := device.AddressGen(2, 0, false)
