@@ -48,9 +48,6 @@ lint: ## Run linters. Use make install-linters first.
 	vendorcheck ./...
 	golangci-lint run -c .golangci.yml ./...
 
-check: lint \
-	test ## run checks
-
 format: ## Formats the code. Must have goimports installed (use make install-linters).
 	goimports -w -local github.com/skycoin/hardware-wallet-go ./cmd
 	goimports -w -local github.com/skycoin/hardware-wallet-go ./src

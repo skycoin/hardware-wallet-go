@@ -8,7 +8,7 @@ import (
 
 	"github.com/skycoin/skycoin/src/util/logging"
 
-	"github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
+	messages "github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
 	"github.com/skycoin/hardware-wallet-go/src/device-wallet/wire"
 )
 
@@ -520,6 +520,7 @@ func (d *Device) ButtonAck() (wire.Message, error) {
 	return DeviceButtonAck(d.dev)
 }
 
+// DeviceButtonAck sends button ack msg
 func DeviceButtonAck(dev io.ReadWriteCloser) (wire.Message, error) {
 	var msg wire.Message
 	// Send ButtonAck
@@ -618,6 +619,7 @@ func (d *Device) SimulateButtonPress() (wire.Message, error) {
 	return msg, nil
 }
 
+// SetAutoPressButton enables and sets button press type
 func (d *Device) SetAutoPressButton(simulateButtonPress bool, simulateButtonType ButtonType) {
 	if d.Driver.DeviceType() == DeviceTypeEmulator {
 		switch simulateButtonType {
