@@ -6,8 +6,6 @@ matrix:
     - os: linux
       env:
         - PIP='sudo pip'
-    - os: osx
-      env: PIP=pip
 env:
   global:
     - XARGS="-screen 0 1024x768x24"
