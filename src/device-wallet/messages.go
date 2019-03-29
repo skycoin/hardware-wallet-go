@@ -90,6 +90,21 @@ func MessageAddressGen(addressN, startIndex int, confirmAddress bool) ([][64]byt
 	return chunks, nil
 }
 
+// MessageAddressGen prepare MessageAddressGen request
+func MessageDeviceGetEntropy(entropyBytes uint32) ([][64]byte, error) {
+	skycoinAddress := &messages.GetEntropy{
+		Size_: &entropyBytes,
+	}
+
+	data, err := proto.Marshal(skycoinAddress)
+	if err != nil {
+		return [][64]byte{}, err
+	}
+
+	chunks := makeSkyWalletMessage(data, messages.MessageType_MessageType_GetEntropy)
+	return chunks, nil
+}
+
 // MessageApplySettings prepare MessageApplySettings request
 func MessageApplySettings(usePassphrase bool, label string) ([][64]byte, error) {
 	applySettings := &messages.ApplySettings{
