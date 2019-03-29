@@ -2,12 +2,14 @@ package devicewallet
 
 import (
 	"errors"
+	"fmt"
 	"io"
+	"os"
 	"time"
 
 	"github.com/skycoin/skycoin/src/util/logging"
 
-	messages "github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
+	"github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
 	"github.com/skycoin/hardware-wallet-go/src/device-wallet/wire"
 )
 
@@ -90,6 +92,91 @@ func (d *Device) AddressGen(addressN, startIndex int, confirmAddress bool) (wire
 	}
 
 	return d.Driver.SendToDevice(dev, chunks)
+}
+
+// SaveDeviceEntropyInFile Ask the device to generate entropy and save it in a file
+func (d *Device) SaveDeviceEntropyInFile(dev io.ReadWriteCloser, outFile string, entropyBytes uint32) (error) {
+	if _, err := os.Stat(outFile); err == nil {
+		if err = os.Chmod(outFile, 0777); err != nil {
+			log.Errorf("error with %s %s", outFile, err)
+		}
+	}
+	file, err := os.Create(outFile)
+	if err != nil {
+		log.Errorf("error creating output file %s", err)
+		return err
+	}
+	defer os.Chmod(outFile, 0444)
+	defer file.Close()
+	getEntropy := func(bytes uint32) (wire.Message, error) {
+		if chunks, err := MessageDeviceGetEntropy(bytes); err == nil {
+			return d.Driver.SendToDevice(dev, chunks)
+		} else {
+			return wire.Message{}, err
+		}
+	}
+	writeBufferDown := func(buf []byte) error {
+		log.Info(buf)
+		var wroteBytes = 0
+		for wroteBytes < len(buf) {
+			var res int
+			if res, err = file.Write(buf[wroteBytes:]); err != nil {
+				return err
+			}
+			wroteBytes += res
+		}
+		if wroteBytes != len(buf) {
+			return errors.New("invalid bytes amount wrote")
+		}
+		return nil
+	}
+	msg, err := getEntropy(entropyBytes)
+	if err != nil {
+		log.Errorf("Error getting entropy from device %s", err)
+		return err
+	}
+	entropy, err := DecodeResponseEntropyMessage(msg)
+	if err != nil {
+		log.Errorf("Error decoding device response %s", err)
+		return err
+	}
+	var receivedEntropyBytes = uint32(len(entropy.GetEntropy()))
+	if err := writeBufferDown(entropy.GetEntropy()); err != nil {
+		log.Errorf("error writing file %s.\n %s", outFile, err.Error())
+		return err
+	}
+	for msg.Kind == uint16(messages.MessageType_MessageType_Entropy) && receivedEntropyBytes < entropyBytes {
+		msg, err := getEntropy(entropyBytes - receivedEntropyBytes)
+		if err != nil {
+			log.Printf("Error getting entropy from device %s", err.Error())
+			return err
+		}
+		entropy, err = DecodeResponseEntropyMessage(msg)
+		if err != nil {
+			log.Errorf("error decoding device response %s", err.Error())
+			return err
+		}
+		receivedEntropyBytes += uint32(len(entropy.GetEntropy()))
+		if err := writeBufferDown(entropy.GetEntropy()); err != nil {
+			log.Errorf("error writing file %s.\n %s", outFile, err.Error())
+			return err
+		}
+	}
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	fileInfo, err := os.Stat(outFile)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	if fileInfo.Size() != int64(entropyBytes) {
+		return fmt.Errorf(
+			"no engout bytes saved in the file %s\n current: %d\nrequired: %d",
+			outFile, fileInfo.Size(), entropyBytes)
+	}
+	return nil
 }
 
 // ApplySettings send ApplySettings request to the device
