@@ -9,7 +9,7 @@ import (
 
 	"github.com/skycoin/skycoin/src/util/logging"
 
-	"github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
+	messages "github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
 	"github.com/skycoin/hardware-wallet-go/src/device-wallet/wire"
 )
 
@@ -95,8 +95,9 @@ func (d *Device) AddressGen(addressN, startIndex int, confirmAddress bool) (wire
 }
 
 // SaveDeviceEntropyInFile Ask the device to generate entropy and save it in a file
-func (d *Device) SaveDeviceEntropyInFile(dev io.ReadWriteCloser, outFile string, entropyBytes uint32) (error) {
+func (d *Device) SaveDeviceEntropyInFile(dev io.ReadWriteCloser, outFile string, entropyBytes uint32) error {
 	if _, err := os.Stat(outFile); err == nil {
+		// nolint: gosec
 		if err = os.Chmod(outFile, 0777); err != nil {
 			log.Errorf("error with %s %s", outFile, err)
 		}
@@ -106,14 +107,18 @@ func (d *Device) SaveDeviceEntropyInFile(dev io.ReadWriteCloser, outFile string,
 		log.Errorf("error creating output file %s", err)
 		return err
 	}
-	defer os.Chmod(outFile, 0444)
+	defer func() {
+		if err := os.Chmod(outFile, 0444); err != nil {
+			log.Error(err)
+		}
+	}()
 	defer file.Close()
 	getEntropy := func(bytes uint32) (wire.Message, error) {
-		if chunks, err := MessageDeviceGetEntropy(bytes); err == nil {
+		chunks, err := MessageDeviceGetEntropy(bytes)
+		if err == nil {
 			return d.Driver.SendToDevice(dev, chunks)
-		} else {
-			return wire.Message{}, err
 		}
+		return wire.Message{}, err
 	}
 	writeBufferDown := func(buf []byte) error {
 		log.Info(buf)

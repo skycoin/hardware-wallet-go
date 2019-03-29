@@ -1,8 +1,9 @@
 package cli
 
 import (
-	deviceWallet "github.com/skycoin/hardware-wallet-go/src/device-wallet"
 	gcli "github.com/urfave/cli"
+
+	deviceWallet "github.com/skycoin/hardware-wallet-go/src/device-wallet"
 )
 
 func getEntropyCmd() gcli.Command {

@@ -90,7 +90,7 @@ func MessageAddressGen(addressN, startIndex int, confirmAddress bool) ([][64]byt
 	return chunks, nil
 }
 
-// MessageAddressGen prepare MessageAddressGen request
+// MessageDeviceGetEntropy prepare GetEntropy request
 func MessageDeviceGetEntropy(entropyBytes uint32) ([][64]byte, error) {
 	skycoinAddress := &messages.GetEntropy{
 		Size_: &entropyBytes,
