@@ -27,7 +27,7 @@ func getEntropyCmd() gcli.Command {
 				log.Error("outFile is mandatory")
 				return
 			}
-			device := deviceWallet.NewDevice(deviceWallet.DeviceTypeFromString(c.String("deviceType")))
+			device := deviceWallet.NewDevice(deviceWallet.DeviceTypeUSB)
 			if device == nil {
 				return
 			}
@@ -54,11 +54,6 @@ func getEntropyCmd() gcli.Command {
 			gcli.StringFlag{
 				Name:  "outFile",
 				Usage: "File path to write out the entropy buffers.",
-			},
-			gcli.StringFlag{
-				Name:   "deviceType",
-				Usage:  "Device type to send instructions to, hardware wallet (USB) or emulator.",
-				EnvVar: "DEVICE_TYPE",
 			},
 		},
 		SkipFlagParsing:    false,
