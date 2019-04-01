@@ -605,3 +605,24 @@ func TestTransactions(t *testing.T) {
 	require.Equal(t, uint16(messages.MessageType_MessageType_Success), msg.Kind) // Success message
 	require.Equal(t, "2EU3JbveHdkxW6z5tdhbbB2kRAWvXC2pLzw", string(msg.Data[2:]))
 }
+
+func TestNotInitializedAtBirth(t *testing.T) {
+	// NOTE(denisacostaq@gmail.com): Giving
+	device := testHelperGetDeviceWithBestEffort("TestNotInitializedAtBirth", t)
+	require.NotNil(t, device)
+	err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
+	require.NoError(t, err)
+	_, err = device.Wipe()
+	require.NoError(t, err)
+
+	// NOTE(denisacostaq@gmail.com): When
+	msg, err := device.GetFeatures()
+
+	// NOTE(denisacostaq@gmail.com): Assert
+	require.NoError(t, err)
+	features := &messages.Features{}
+	err = proto.Unmarshal(msg.Data, features)
+	require.NoError(t, err)
+	require.NotNil(t, features.Initialized)
+	require.False(t, *features.Initialized)
+}
