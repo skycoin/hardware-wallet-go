@@ -3,13 +3,15 @@ package devicewallet
 import "fmt"
 
 const (
-	maxbars  int           = 100
+	maxbars int = 100
 )
 
+// Progbar progress bar for cli command in the style:
 type Progbar struct {
 	total int
 }
 
+// PrintProg print the progress var for the portion value
 func (p *Progbar) PrintProg(portion int) {
 	bars := p.calcBars(portion)
 	spaces := maxbars - bars - 1
@@ -25,6 +27,7 @@ func (p *Progbar) PrintProg(portion int) {
 	fmt.Printf(" ] %3.2f%% (%d/%d)", percent, portion, p.total)
 }
 
+// PrintComplete print the progress bar as completed
 func (p *Progbar) PrintComplete() {
 	p.PrintProg(p.total)
 	fmt.Print("\n")
