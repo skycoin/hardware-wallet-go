@@ -443,7 +443,6 @@ func (d *Device) SetMnemonic(mnemonic string) (wire.Message, error) {
 }
 
 // SignMessage Ask the device to sign a message using the secret key at given index.
-<<<<<<< 1bc305abcb2108dedbee3e0c94b0085a4713b2a5
 func (d *Device) SignMessage(addressIndex int, message string) (wire.Message, error) {
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
