@@ -14,10 +14,6 @@ dep: vendor_proto ## Ensure package dependencies are up to date
 	# Ensure sources for protoc-gen-go and protobuf/proto are in sync
 	dep ensure -add github.com/gogo/protobuf/protoc-gen-gofast ## setup dependencies
 
-vendor_proto: proto
-	mkdir -p vendor/github.com/google/protobuf
-	cp -r -p src/device-wallet/messages/go/google/protobuf/descriptor.pb.go vendor/github.com/google/protobuf ## init proto messages package
-
 mocks: ## Create all mock files for unit tests
 	echo "Generating mock files"
 	mockery -name Devicer -dir ./src/device-wallet -case underscore -inpkg -testonly
@@ -27,7 +23,7 @@ test_unit: ## Run unit tests
 	go test -v github.com/skycoin/hardware-wallet-go/src/device-wallet
 
 test_integration: ## Run integration tests
-	go test -v github.com/skycoin/hardware-wallet-go/src/device-wallet/integration
+	go test -count=1 -v github.com/skycoin/hardware-wallet-go/src/device-wallet/integration
 
 test: test_unit test_integration ## Run all tests
 

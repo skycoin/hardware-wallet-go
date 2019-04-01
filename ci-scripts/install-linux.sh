@@ -9,4 +9,3 @@ sudo apt install libudev-dev libusb-1.0-0-dev
 sudo apt install libsdl2-dev libsdl2-image-dev libegl1-mesa-dev libgles2-mesa-dev
 # OpenGL swrast driver for xvfb
 sudo apt install mesa-utils and libgl1-mesa-glx
-
