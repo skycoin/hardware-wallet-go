@@ -35,6 +35,11 @@ func TestDevice(t *testing.T) {
 	// var inputWord string
 	// var err error
 
+	if device.Driver.DeviceType() == deviceWallet.DeviceTypeEmulator {
+		err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
+		require.NoError(t, err)
+	}
+
 	_, err := device.Wipe()
 	require.NoError(t, err)
 
@@ -106,7 +111,7 @@ func TestDevice(t *testing.T) {
 	signature, err := deviceWallet.DecodeResponseSkycoinSignMessage(msg)
 	require.NoError(t, err)
 	log.Print(signature)
-	require.Equal(t, 89, len(signature))
+	require.Equal(t, 130, len(signature))
 
 	msg, err = device.CheckMessageSignature(message, signature, addresses[0])
 	require.NoError(t, err)
@@ -135,15 +140,21 @@ func TestGetAddressUsb(t *testing.T) {
 }
 
 func TestGetAddressEmulator(t *testing.T) {
-	device := testHelperGetDeviceWithBestEffort("TestGetAddressEmulator", t)
-	if device == nil {
+	device := deviceWallet.NewDevice(deviceWallet.DeviceTypeEmulator)
+	if !device.Connected() {
+		t.Skip("TestGetAddressEmulator do not work if emulator is not running")
 		return
 	}
 
-	_, err := device.Wipe()
+	err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
 	require.NoError(t, err)
+
+	_, err = device.Wipe()
+	require.NoError(t, err)
+
 	_, err = device.SetMnemonic("cloud flower upset remain green metal below cup stem infant art thank")
 	require.NoError(t, err)
+
 	msg, err := device.AddressGen(2, 0, false)
 	require.NoError(t, err)
 	addresses, err := deviceWallet.DecodeResponseSkycoinAddress(msg)
@@ -159,6 +170,13 @@ func TransactionToDevice(deviceType deviceWallet.DeviceType, transactionInputs [
 		return wire.Message{}, fmt.Errorf("invalid device type: %s", deviceType)
 	}
 
+	if device.Driver.DeviceType() == deviceWallet.DeviceTypeEmulator {
+		err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
+		if err != nil {
+			return wire.Message{}, err
+		}
+	}
+
 	msg, err := device.TransactionSign(transactionInputs, transactionOutputs)
 	if err != nil {
 		return wire.Message{}, err
@@ -166,12 +184,7 @@ func TransactionToDevice(deviceType deviceWallet.DeviceType, transactionInputs [
 	for {
 		switch msg.Kind {
 		case uint16(messages.MessageType_MessageType_ResponseTransactionSign):
-			var signatures []string
-			signatures, err = deviceWallet.DecodeResponseTransactionSign(msg)
-			if err != nil {
-				return wire.Message{}, err
-			}
-			fmt.Println(signatures)
+			return msg, nil
 		case uint16(messages.MessageType_MessageType_Success):
 			fmt.Println("Should end with ResponseTransactionSign request")
 		case uint16(messages.MessageType_MessageType_ButtonRequest):
@@ -213,6 +226,11 @@ func TestTransactions(t *testing.T) {
 		return
 	}
 
+	if device.Driver.DeviceType() == deviceWallet.DeviceTypeEmulator {
+		err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
+		require.NoError(t, err)
+	}
+
 	_, err := device.Wipe()
 	require.NoError(t, err)
 
@@ -240,7 +258,7 @@ func TestTransactions(t *testing.T) {
 
 	msg, err := TransactionToDevice(device.Driver.DeviceType(), transactionInputs, transactionOutputs)
 	require.NoError(t, err)
-	require.Equal(t, msg.Kind, uint16(messages.MessageType_MessageType_ResponseTransactionSign))
+	require.Equal(t, uint16(messages.MessageType_MessageType_ResponseTransactionSign), msg.Kind)
 
 	signatures, err := deviceWallet.DecodeResponseTransactionSign(msg)
 	require.NoError(t, err)
