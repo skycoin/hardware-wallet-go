@@ -27,7 +27,7 @@ test_unit: ## Run unit tests
 	go test -v github.com/skycoin/hardware-wallet-go/src/device-wallet
 
 test_integration: ## Run integration tests
-	go test -v github.com/skycoin/hardware-wallet-go/src/device-wallet/integration
+	go test -count=1 -v github.com/skycoin/hardware-wallet-go/src/device-wallet/integration
 
 test: test_unit test_integration ## Run all tests
 

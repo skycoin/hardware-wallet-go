@@ -172,7 +172,9 @@ func TransactionToDevice(deviceType deviceWallet.DeviceType, transactionInputs [
 
 	if device.Driver.DeviceType() == deviceWallet.DeviceTypeEmulator {
 		err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
-		return wire.Message{}, err
+		if err != nil {
+			return wire.Message{}, err
+		}
 	}
 
 	msg, err := device.TransactionSign(transactionInputs, transactionOutputs)
@@ -256,7 +258,7 @@ func TestTransactions(t *testing.T) {
 
 	msg, err := TransactionToDevice(device.Driver.DeviceType(), transactionInputs, transactionOutputs)
 	require.NoError(t, err)
-	require.Equal(t, msg.Kind, uint16(messages.MessageType_MessageType_ResponseTransactionSign))
+	require.Equal(t, uint16(messages.MessageType_MessageType_ResponseTransactionSign), msg.Kind)
 
 	signatures, err := deviceWallet.DecodeResponseTransactionSign(msg)
 	require.NoError(t, err)
