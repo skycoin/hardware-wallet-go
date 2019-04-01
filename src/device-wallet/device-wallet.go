@@ -56,7 +56,7 @@ type Devicer interface {
 	WordAck(word string) (wire.Message, error)
 	PassphraseAck(passphrase string) (wire.Message, error)
 	ButtonAck() (wire.Message, error)
-	SetAutoPressButton(bool, ButtonType)
+	SetAutoPressButton(simulateButtonPress bool, simulateButtonType ButtonType) error
 }
 
 // Device provides hardware wallet functions
