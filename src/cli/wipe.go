@@ -6,7 +6,6 @@ import (
 	gcli "github.com/urfave/cli"
 
 	deviceWallet "github.com/skycoin/hardware-wallet-go/src/device-wallet"
-	messages "github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
 )
 
 func wipeCmd() gcli.Command {
@@ -33,29 +32,6 @@ func wipeCmd() gcli.Command {
 			if err != nil {
 				log.Error(err)
 				return
-			}
-
-			// get device connection instance
-			dev, err := device.Driver.GetDevice()
-			if err != nil {
-				log.Error(err)
-			}
-			defer dev.Close()
-
-			if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-				msg, err = deviceWallet.DeviceButtonAck(dev)
-				if err != nil {
-					log.Error(err)
-					return
-				}
-			}
-
-			if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-				err = deviceWallet.Initialize(dev)
-				if err != nil {
-					log.Error(err)
-					return
-				}
 			}
 
 			responseMsg, err := deviceWallet.DecodeSuccessOrFailMsg(msg)

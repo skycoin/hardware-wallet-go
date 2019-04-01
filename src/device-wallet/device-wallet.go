@@ -508,37 +508,31 @@ func (d *Device) Wipe() (wire.Message, error) {
 // ButtonAck when the device is waiting for the user to press a button
 // the PC need to acknowledge, showing it knows we are waiting for a user action
 func (d *Device) ButtonAck() (wire.Message, error) {
+	var msg wire.Message
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
 	defer d.dev.Close()
 
-	if d.simulateButtonPress {
-		return d.SimulateButtonPress()
-	}
-
-	return DeviceButtonAck(d.dev)
-}
-
-// DeviceButtonAck sends button ack msg
-func DeviceButtonAck(dev io.ReadWriteCloser) (wire.Message, error) {
-	var msg wire.Message
 	// Send ButtonAck
 	chunks, err := MessageButtonAck()
 	if err != nil {
 		return msg, err
 	}
-	err = sendToDeviceNoAnswer(dev, chunks)
+	err = sendToDeviceNoAnswer(d.dev, chunks)
 	if err != nil {
 		return msg, err
 	}
 
-	_, err = msg.ReadFrom(dev)
-	time.Sleep(1 * time.Second)
-	if err != nil {
-		return msg, err
+	// simulate button press
+	if d.simulateButtonPress {
+		if err := d.SimulateButtonPress(); err != nil {
+			return msg, err
+		}
 	}
-	return msg, nil
+
+	_, err = msg.ReadFrom(d.dev)
+	return msg, err
 }
 
 // PassphraseAck send this message when the device is waiting for the user to input a passphrase
@@ -590,42 +584,41 @@ func (d *Device) PinMatrixAck(p string) (wire.Message, error) {
 }
 
 // SimulateButtonPress simulates a button press on emulator
-func (d *Device) SimulateButtonPress() (wire.Message, error) {
-	if err := d.Connect(); err != nil {
-		return wire.Message{}, err
-	}
-	defer d.dev.Close()
-
+func (d *Device) SimulateButtonPress() error {
 	if d.Driver.DeviceType() != DeviceTypeEmulator {
-		return wire.Message{}, fmt.Errorf("wrong device type: %s", d.Driver.DeviceType())
+		return fmt.Errorf("wrong device type: %s", d.Driver.DeviceType())
 	}
 
 	simulateMsg, err := MessageSimulateButtonPress(d.simulateButtonType)
 	if err != nil {
-		return wire.Message{}, err
+		return err
 	}
 
 	_, err = d.dev.Write(simulateMsg.Bytes())
 	if err != nil {
-		return wire.Message{}, err
+		return err
 	}
 
-	var msg wire.Message
-	_, err = msg.ReadFrom(d.dev)
-	time.Sleep(1 * time.Second)
-	if err != nil {
-		return msg, err
-	}
-	return msg, nil
+	return nil
 }
 
 // SetAutoPressButton enables and sets button press type
-func (d *Device) SetAutoPressButton(simulateButtonPress bool, simulateButtonType ButtonType) {
+func (d *Device) SetAutoPressButton(simulateButtonPress bool, simulateButtonType ButtonType) error {
 	if d.Driver.DeviceType() == DeviceTypeEmulator {
-		switch simulateButtonType {
-		case ButtonLeft, ButtonRight, ButtonBoth:
-			d.simulateButtonPress = true
-			d.simulateButtonType = simulateButtonType
+		d.simulateButtonPress = simulateButtonPress
+
+		if simulateButtonPress {
+			switch simulateButtonType {
+			case ButtonLeft, ButtonRight, ButtonBoth:
+				d.simulateButtonType = simulateButtonType
+			default:
+				return fmt.Errorf("invalid button type: %d", simulateButtonType)
+			}
+		} else {
+			// set invalid button press type
+			d.simulateButtonType = 3
 		}
 	}
+
+	return nil
 }

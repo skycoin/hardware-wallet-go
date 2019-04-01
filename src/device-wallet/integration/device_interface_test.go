@@ -140,8 +140,10 @@ func TestGetAddressEmulator(t *testing.T) {
 		return
 	}
 
-	device.SetAutoPressButton(true, deviceWallet.ButtonRight)
-	_, err := device.Wipe()
+	err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
+	require.NoError(t, err)
+
+	_, err = device.Wipe()
 	require.NoError(t, err)
 
 	_, err = device.SetMnemonic("cloud flower upset remain green metal below cup stem infant art thank")
@@ -169,12 +171,7 @@ func TransactionToDevice(deviceType deviceWallet.DeviceType, transactionInputs [
 	for {
 		switch msg.Kind {
 		case uint16(messages.MessageType_MessageType_ResponseTransactionSign):
-			var signatures []string
-			signatures, err = deviceWallet.DecodeResponseTransactionSign(msg)
-			if err != nil {
-				return wire.Message{}, err
-			}
-			fmt.Println(signatures)
+			return msg, nil
 		case uint16(messages.MessageType_MessageType_Success):
 			fmt.Println("Should end with ResponseTransactionSign request")
 		case uint16(messages.MessageType_MessageType_ButtonRequest):
