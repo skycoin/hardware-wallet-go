@@ -35,6 +35,11 @@ func TestDevice(t *testing.T) {
 	// var inputWord string
 	// var err error
 
+	if device.Driver.DeviceType() == deviceWallet.DeviceTypeEmulator {
+		err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
+		require.NoError(t, err)
+	}
+
 	_, err := device.Wipe()
 	require.NoError(t, err)
 
@@ -135,8 +140,9 @@ func TestGetAddressUsb(t *testing.T) {
 }
 
 func TestGetAddressEmulator(t *testing.T) {
-	device := testHelperGetDeviceWithBestEffort("TestGetAddressEmulator", t)
-	if device == nil {
+	device := deviceWallet.NewDevice(deviceWallet.DeviceTypeEmulator)
+	if !device.Connected() {
+		t.Skip("TestGetAddressEmulator do not work if emulator is not running")
 		return
 	}
 
@@ -162,6 +168,11 @@ func TransactionToDevice(deviceType deviceWallet.DeviceType, transactionInputs [
 	device := deviceWallet.NewDevice(deviceType)
 	if device == nil {
 		return wire.Message{}, fmt.Errorf("invalid device type: %s", deviceType)
+	}
+
+	if device.Driver.DeviceType() == deviceWallet.DeviceTypeEmulator {
+		err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
+		return wire.Message{}, err
 	}
 
 	msg, err := device.TransactionSign(transactionInputs, transactionOutputs)
@@ -211,6 +222,11 @@ func TestTransactions(t *testing.T) {
 	device := testHelperGetDeviceWithBestEffort("TestTransactions", t)
 	if device == nil {
 		return
+	}
+
+	if device.Driver.DeviceType() == deviceWallet.DeviceTypeEmulator {
+		err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
+		require.NoError(t, err)
 	}
 
 	_, err := device.Wipe()
