@@ -37,6 +37,7 @@ func getEntropyCmd() gcli.Command {
 				return
 			}
 			defer dev.Close()
+			log.Infoln("Getting entropy from device", outFile)
 			err = device.SaveDeviceEntropyInFile(dev, outFile, entropyBytes)
 			if err != nil {
 				log.Error(err)
