@@ -69,7 +69,7 @@ func MessageCheckMessageSignature(message, signature, address string) ([][64]byt
 	if err != nil {
 		return [][64]byte{}, err
 	}
-	chunks := makeSkyWalletMessage(data, messages.MessageType_MessageType_Cancel)
+	chunks := makeSkyWalletMessage(data, messages.MessageType_MessageType_SkycoinCheckMessageSignature)
 	return chunks, nil
 }
 
@@ -232,9 +232,9 @@ func MessageSetMnemonic(mnemonic string) ([][64]byte, error) {
 }
 
 // MessageSignMessage prepare MessageSignMessage request
-func MessageSignMessage(addressN int, message string) ([][64]byte, error) {
+func MessageSignMessage(addressIndex int, message string) ([][64]byte, error) {
 	skycoinSignMessage := &messages.SkycoinSignMessage{
-		AddressN: proto.Uint32(uint32(addressN)),
+		AddressN: proto.Uint32(uint32(addressIndex)),
 		Message:  proto.String(message),
 	}
 

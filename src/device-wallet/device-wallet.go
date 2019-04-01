@@ -36,7 +36,7 @@ type Devicer interface {
 	Recovery(wordCount uint32, usePassphrase, dryRun bool) (wire.Message, error)
 	SetMnemonic(mnemonic string) (wire.Message, error)
 	TransactionSign(inputs []*messages.SkycoinTransactionInput, outputs []*messages.SkycoinTransactionOutput) (wire.Message, error)
-	SignMessage(addressN int, message string) (wire.Message, error)
+	SignMessage(addressIndex int, message string) (wire.Message, error)
 	Wipe() (wire.Message, error)
 	PinMatrixAck(p string) (wire.Message, error)
 	WordAck(word string) (wire.Message, error)
@@ -316,18 +316,18 @@ func (d *Device) GenerateMnemonic(wordCount uint32, usePassphrase bool) (wire.Me
 		return wire.Message{}, err
 	}
 	defer dev.Close()
-	chunks, err := MessageGenerateMnemonic(wordCount, usePassphrase)
+	generateMnemonicChunks, err := MessageGenerateMnemonic(wordCount, usePassphrase)
 	if err != nil {
 		return wire.Message{}, err
 	}
-	msg, err := d.Driver.SendToDevice(dev, chunks)
+	msg, err := d.Driver.SendToDevice(dev, generateMnemonicChunks)
 	if err != nil {
 		return msg, err
 	}
 
 	switch msg.Kind {
 	case uint16(messages.MessageType_MessageType_ButtonRequest):
-		chunks, err = MessageButtonAck()
+		chunks, err := MessageButtonAck()
 		if err != nil {
 			return wire.Message{}, err
 		}
@@ -336,13 +336,17 @@ func (d *Device) GenerateMnemonic(wordCount uint32, usePassphrase bool) (wire.Me
 			return wire.Message{}, err
 		}
 	case uint16(messages.MessageType_MessageType_EntropyRequest):
-		chunks, err = MessageEntropyAck(entropyBufferSize)
+		chunks, err := MessageEntropyAck(entropyBufferSize)
 		if err != nil {
 			return wire.Message{}, err
 		}
 		msg, err = d.Driver.SendToDevice(dev, chunks)
 		if err != nil {
 			return wire.Message{}, err
+		}
+		msg, err = d.Driver.SendToDevice(dev, generateMnemonicChunks)
+		if err != nil {
+			return msg, err
 		}
 	}
 
@@ -409,14 +413,14 @@ func (d *Device) SetMnemonic(mnemonic string) (wire.Message, error) {
 }
 
 // SignMessage Ask the device to sign a message using the secret key at given index.
-func (d *Device) SignMessage(addressN int, message string) (wire.Message, error) {
+func (d *Device) SignMessage(addressIndex int, message string) (wire.Message, error) {
 	dev, err := d.Driver.GetDevice()
 	if err != nil {
 		return wire.Message{}, err
 	}
 	defer dev.Close()
 
-	chunks, err := MessageSignMessage(addressN, message)
+	chunks, err := MessageSignMessage(addressIndex, message)
 	if err != nil {
 		return wire.Message{}, err
 	}
