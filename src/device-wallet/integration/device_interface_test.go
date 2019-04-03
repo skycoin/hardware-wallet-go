@@ -656,7 +656,7 @@ func TestSet12WordsMnemonicOk(t *testing.T) {
 	require.NoError(t, err)
 
 	// NOTE(denisacostaq@gmail.com): When
-	seed :="below pear clinic physical stage trust team wrist crystal insect valley pride"
+	seed := "below pear clinic physical stage trust team wrist crystal insect valley pride"
 	msg, err := device.SetMnemonic(seed)
 
 	// NOTE(denisacostaq@gmail.com): Assert
@@ -676,7 +676,7 @@ func TestSet24WordsMnemonicOk(t *testing.T) {
 	require.NoError(t, err)
 
 	// NOTE(denisacostaq@gmail.com): When
-	seed :="flash priority hotel stuff hole picnic vessel genre clean eager diesel " +
+	seed := "flash priority hotel stuff hole picnic vessel genre clean eager diesel " +
 		"shaft casual ugly ostrich awkward mechanic split siege round hold crew canal decade"
 	msg, err := device.SetMnemonic(seed)
 
@@ -707,7 +707,7 @@ func TestShouldHaveARequireBackupAfterGenerateMnemonic(t *testing.T) {
 	msg, err = device.GetFeatures()
 	require.NoError(t, err)
 	features := &messages.Features{}
-	err = proto.Unmarshal(msg.Data, features)
+	require.NoError(t, proto.Unmarshal(msg.Data, features))
 	require.True(t, *features.NeedsBackup)
 }
 
@@ -731,6 +731,6 @@ func TestShouldHaveARequirePinAfterGenerateMnemonic(t *testing.T) {
 	msg, err = device.GetFeatures()
 	require.NoError(t, err)
 	features := &messages.Features{}
-	err = proto.Unmarshal(msg.Data, features)
+	require.NoError(t, proto.Unmarshal(msg.Data, features))
 	require.False(t, *features.PinProtection)
 }
