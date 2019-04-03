@@ -292,13 +292,14 @@ func (d *Device) FirmwareUpload(payload []byte, hash [32]byte) error {
 	if d.Driver.DeviceType() != DeviceTypeUSB {
 		return errors.New("wrong device type")
 	}
-	dev, err := d.Driver.GetDevice()
+	var err error
+	d.dev, err = d.Driver.GetDevice()
 	if err != nil {
 		return err
 	}
-	defer dev.Close()
+	defer d.dev.Close()
 
-	err = Initialize(dev)
+	err = Initialize(d.dev)
 	if err != nil {
 		return err
 	}
@@ -332,7 +333,7 @@ func (d *Device) FirmwareUpload(payload []byte, hash [32]byte) error {
 	if err != nil {
 		return err
 	}
-	return d.Driver.SendToDeviceNoAnswer(dev, chunks)
+	return d.Driver.SendToDeviceNoAnswer(d.dev, chunks)
 }
 
 // GetFeatures send Features message to the device
