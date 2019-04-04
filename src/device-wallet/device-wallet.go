@@ -123,7 +123,8 @@ func (d *Device) Connect() error {
 	return nil
 }
 
-func(d *Device) Disconnect() error {
+// Disconnect the device
+func (d *Device) Disconnect() error {
 	if !d.Connected() {
 		return errors.New("device is not connected")
 	}
@@ -168,7 +169,11 @@ func (d *Device) SaveDeviceEntropyInFile(outFile string, entropyBytes uint32) er
 	if err := d.Connect(); err != nil {
 		return err
 	}
-	defer d.Disconnect()
+	defer func() {
+		if err := d.Disconnect(); err != nil {
+			log.Error(err)
+		}
+	}()
 	getEntropy := func(bytes uint32) (wire.Message, error) {
 		chunks, err := MessageDeviceGetEntropy(bytes)
 		if err == nil {

@@ -166,7 +166,8 @@ func TestGetDeviceEntropyShouldWorkOk(t *testing.T) {
 	// NOTE(denisacostaq@gmail.com): Assert
 	for bytesAmountsIdx := range bytesAmounts {
 		outFile := fmt.Sprint(os.TempDir(), "/", os.Getpid())
-		device.SaveDeviceEntropyInFile(outFile, bytesAmounts[bytesAmountsIdx])
+		err = device.SaveDeviceEntropyInFile(outFile, bytesAmounts[bytesAmountsIdx])
+		require.NotNil(t, err)
 		fileInfo, err := os.Stat(outFile)
 		require.NoError(t, err)
 		require.Equal(t, int64(bytesAmounts[bytesAmountsIdx]), fileInfo.Size())
