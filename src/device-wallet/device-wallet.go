@@ -292,15 +292,12 @@ func (d *Device) FirmwareUpload(payload []byte, hash [32]byte) error {
 	if d.Driver.DeviceType() != DeviceTypeUSB {
 		return errors.New("wrong device type")
 	}
-	var err error
-	d.dev, err = d.Driver.GetDevice()
-	if err != nil {
+	if err := d.Connect(); err != nil {
 		return err
 	}
 	defer d.dev.Close()
 
-	err = Initialize(d.dev)
-	if err != nil {
+	if err := Initialize(d.dev); err != nil {
 		return err
 	}
 
