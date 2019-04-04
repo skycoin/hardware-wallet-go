@@ -92,11 +92,11 @@ func MessageAddressGen(addressN, startIndex int, confirmAddress bool) ([][64]byt
 
 // MessageDeviceGetEntropy prepare GetEntropy request
 func MessageDeviceGetEntropy(entropyBytes uint32) ([][64]byte, error) {
-	skycoinAddress := &messages.GetEntropy{
+	getEntropy := &messages.GetEntropy{
 		Size_: &entropyBytes,
 	}
 
-	data, err := proto.Marshal(skycoinAddress)
+	data, err := proto.Marshal(getEntropy)
 	if err != nil {
 		return [][64]byte{}, err
 	}
