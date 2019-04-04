@@ -353,28 +353,22 @@ func (d *Device) ChangePin() (wire.Message, error) {
 
 // Connected check if a device is connected
 func (d *Device) Connected() bool {
-	dev, err := d.Driver.GetDevice()
-	if dev == nil {
+	if d.dev == nil {
 		return false
 	}
-	defer dev.Close()
-	if err != nil {
-		return false
-	}
-
 	chunks, err := MessageConnected()
 	if err != nil {
 		log.Error(err)
 		return false
 	}
 	for _, element := range chunks {
-		_, err = dev.Write(element[:])
+		_, err = d.dev.Write(element[:])
 		if err != nil {
 			return false
 		}
 	}
 	var msg wire.Message
-	_, err = msg.ReadFrom(dev)
+	_, err = msg.ReadFrom(d.dev)
 	if err != nil {
 		return false
 	}
