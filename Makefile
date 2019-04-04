@@ -10,9 +10,9 @@ build: ## Build project
 	cd cmd/cli && ./install.sh
 
 dep: vendor_proto ## Ensure package dependencies are up to date
-	dep ensure
+	dep ensure -v
 	# Ensure sources for protoc-gen-go and protobuf/proto are in sync
-	dep ensure -add github.com/gogo/protobuf/protoc-gen-gofast ## setup dependencies
+	dep ensure -v -add github.com/gogo/protobuf/protoc-gen-gofast ## setup dependencies
 
 mocks: ## Create all mock files for unit tests
 	echo "Generating mock files"
@@ -32,7 +32,6 @@ proto: ## Generate protocol buffer classes for communicating with hardware walle
 
 clean: ## Delete temporary build files
 	make -C src/device-wallet/messages clean-go
-	rm -rf vendor/github.com/google
 
 install-linters: ## Install linters
 	go get -u github.com/FiloSottile/vendorcheck
