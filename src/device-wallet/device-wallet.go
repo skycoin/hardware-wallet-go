@@ -111,6 +111,7 @@ func (d *Device) Connect() error {
 	// close any existing connections
 	if d.dev != nil {
 		d.dev.Close()
+		d.dev = nil
 	}
 
 	dev, err := d.Driver.GetDevice()
