@@ -123,6 +123,13 @@ func (d *Device) Connect() error {
 	return nil
 }
 
+func(d *Device) Disconnect() error {
+	if !d.Connected() {
+		return errors.New("device is not connected")
+	}
+	return d.dev.Close()
+}
+
 // AddressGen Ask the device to generate an address
 func (d *Device) AddressGen(addressN, startIndex int, confirmAddress bool) (wire.Message, error) {
 	if err := d.Connect(); err != nil {
@@ -139,7 +146,7 @@ func (d *Device) AddressGen(addressN, startIndex int, confirmAddress bool) (wire
 }
 
 // SaveDeviceEntropyInFile Ask the device to generate entropy and save it in a file
-func (d *Device) SaveDeviceEntropyInFile(dev io.ReadWriteCloser, outFile string, entropyBytes uint32) error {
+func (d *Device) SaveDeviceEntropyInFile(outFile string, entropyBytes uint32) error {
 	pb := Progbar{total: int(entropyBytes)}
 	if _, err := os.Stat(outFile); err == nil {
 		// nolint: gosec
@@ -158,10 +165,14 @@ func (d *Device) SaveDeviceEntropyInFile(dev io.ReadWriteCloser, outFile string,
 		}
 	}()
 	defer file.Close()
+	if err := d.Connect(); err != nil {
+		return err
+	}
+	defer d.Disconnect()
 	getEntropy := func(bytes uint32) (wire.Message, error) {
 		chunks, err := MessageDeviceGetEntropy(bytes)
 		if err == nil {
-			return d.Driver.SendToDevice(dev, chunks)
+			return d.Driver.SendToDevice(d.dev, chunks)
 		}
 		return wire.Message{}, err
 	}

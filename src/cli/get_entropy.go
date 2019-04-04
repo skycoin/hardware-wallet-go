@@ -31,15 +31,8 @@ func getEntropyCmd() gcli.Command {
 			if device == nil {
 				return
 			}
-			dev, err := device.Driver.GetDevice()
-			if err != nil {
-				log.Error("unable to open the device", err)
-				return
-			}
-			defer dev.Close()
 			log.Infoln("Getting entropy from device", outFile)
-			err = device.SaveDeviceEntropyInFile(dev, outFile, entropyBytes)
-			if err != nil {
+			if err := device.SaveDeviceEntropyInFile(outFile, entropyBytes); err != nil {
 				log.Error(err)
 				return
 			}
