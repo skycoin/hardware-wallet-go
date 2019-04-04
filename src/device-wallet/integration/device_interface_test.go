@@ -3,6 +3,7 @@ package integration
 import (
 	"fmt"
 	"log"
+	"os"
 	"testing"
 
 	"github.com/gogo/protobuf/proto"
@@ -137,6 +138,39 @@ func TestGetAddressUsb(t *testing.T) {
 	log.Print(addresses)
 	require.Equal(t, addresses[0], "2EU3JbveHdkxW6z5tdhbbB2kRAWvXC2pLzw")
 	require.Equal(t, addresses[1], "zC8GAQGQBfwk7vtTxVoRG7iMperHNuyYPs")
+}
+
+func TestGetDeviceEntropyShouldWorkOk(t *testing.T) {
+	// NOTE(denisacostaq@gmail.com): Giving
+	device := deviceWallet.NewDevice(deviceWallet.DeviceTypeUSB)
+	if err := device.Connect(); err != nil {
+		log.Println(err)
+	}
+	if !device.Connected() {
+		t.Skip("TestGetDeviceEntropyShouldWorkOk do not work if Usb device is not connected")
+		return
+	}
+	require.NoError(t, device.Disconnect())
+	msg, err := device.Wipe()
+	require.NoError(t, err)
+	_, err = deviceWallet.DecodeSuccessMsg(msg)
+	require.NoError(t, err)
+	msg, err = device.GenerateMnemonic(24, false)
+	require.NoError(t, err)
+	_, err = deviceWallet.DecodeSuccessMsg(msg)
+	require.NoError(t, err)
+
+	// NOTE(denisacostaq@gmail.com): When
+	bytesAmounts := [...]uint32{13, 985, 100000, 1024}
+
+	// NOTE(denisacostaq@gmail.com): Assert
+	for bytesAmountsIdx := range bytesAmounts {
+		outFile := fmt.Sprint(os.TempDir(), "/", os.Getpid())
+		device.SaveDeviceEntropyInFile(outFile, bytesAmounts[bytesAmountsIdx])
+		fileInfo, err := os.Stat(outFile)
+		require.NoError(t, err)
+		require.Equal(t, int64(bytesAmounts[bytesAmountsIdx]), fileInfo.Size())
+	}
 }
 
 func TestGetAddressEmulator(t *testing.T) {
