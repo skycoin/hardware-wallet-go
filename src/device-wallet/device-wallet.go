@@ -174,12 +174,37 @@ func (d *Device) SaveDeviceEntropyInFile(outFile string, entropyBytes uint32) er
 			log.Error(err)
 		}
 	}()
-	getEntropy := func(bytes uint32) (wire.Message, error) {
-		chunks, err := MessageDeviceGetEntropy(bytes)
-		if err == nil {
-			return d.Driver.SendToDevice(d.dev, chunks)
+	processGetEntropyResponse := func(msg wire.Message) (*messages.Entropy, error) {
+		if err != nil || msg.Kind != uint16(messages.MessageType_MessageType_Entropy) {
+			if err == nil {
+				var msgStr string
+				msgStr, err = DecodeFailMsg(msg)
+				if err != nil {
+					log.Errorf("Error decoding device response as fails msg %s", err)
+					return &messages.Entropy{}, err
+				}
+				err = errors.New(msgStr)
+			}
+			log.Errorf("Error getting entropy from device %s", err)
+			return &messages.Entropy{}, err
 		}
-		return wire.Message{}, err
+		entropy, err := DecodeResponseEntropyMessage(msg)
+		if err != nil {
+			log.Errorf("Error decoding device response %s", err)
+			return &messages.Entropy{}, err
+		}
+		return entropy, nil
+	}
+	getEntropy := func(bytes uint32) (*messages.Entropy, error) {
+		chunks, err := MessageDeviceGetEntropy(bytes)
+		if err != nil {
+			return &messages.Entropy{}, err
+		}
+		resp, err := d.Driver.SendToDevice(d.dev, chunks)
+		if err != nil {
+			return &messages.Entropy{}, err
+		}
+		return processGetEntropyResponse(resp)
 	}
 	var receivedEntropyBytes uint32
 	writeBufferDown := func(buf []byte) error {
@@ -197,30 +222,20 @@ func (d *Device) SaveDeviceEntropyInFile(outFile string, entropyBytes uint32) er
 		pb.PrintProg(int(receivedEntropyBytes))
 		return nil
 	}
-	msg, err := getEntropy(entropyBytes)
+	entropy, err := getEntropy(entropyBytes)
 	if err != nil {
-		log.Errorf("Error getting entropy from device %s", err)
-		return err
-	}
-	entropy, err := DecodeResponseEntropyMessage(msg)
-	if err != nil {
-		log.Errorf("Error decoding device response %s", err)
-		return err
+			log.Error(err)
+			return err
 	}
 	receivedEntropyBytes = uint32(len(entropy.GetEntropy()))
 	if err := writeBufferDown(entropy.GetEntropy()); err != nil {
 		log.Errorf("error writing file %s.\n %s", outFile, err.Error())
 		return err
 	}
-	for msg.Kind == uint16(messages.MessageType_MessageType_Entropy) && receivedEntropyBytes < entropyBytes {
-		msg, err := getEntropy(entropyBytes - receivedEntropyBytes)
+	for receivedEntropyBytes < entropyBytes {
+		entropy, err := getEntropy(entropyBytes - receivedEntropyBytes)
 		if err != nil {
-			log.Errorf("Error getting entropy from device %s", err.Error())
-			return err
-		}
-		entropy, err = DecodeResponseEntropyMessage(msg)
-		if err != nil {
-			log.Errorf("error decoding device response %s", err.Error())
+			log.Error(err)
 			return err
 		}
 		receivedEntropyBytes += uint32(len(entropy.GetEntropy()))
