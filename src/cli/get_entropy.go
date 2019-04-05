@@ -31,7 +31,7 @@ func getEntropyCmd() gcli.Command {
 			if device == nil {
 				return
 			}
-			log.Infoln("Getting entropy from device", outFile)
+			log.Infoln("Getting entropy from device")
 			if err := device.SaveDeviceEntropyInFile(outFile, entropyBytes); err != nil {
 				log.Error(err)
 				return
@@ -47,7 +47,8 @@ func getEntropyCmd() gcli.Command {
 			},
 			gcli.StringFlag{
 				Name:  "outFile",
-				Usage: "File path to write out the entropy buffers.",
+				Usage: `File path to write out the entropy buffers, a "-" set the file to stdout.`,
+				Value: "-",
 			},
 			gcli.StringFlag{
 				Name:   "deviceType",

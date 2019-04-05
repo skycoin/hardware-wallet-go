@@ -147,33 +147,18 @@ func (d *Device) AddressGen(addressN, startIndex int, confirmAddress bool) (wire
 }
 
 // SaveDeviceEntropyInFile Ask the device to generate entropy and save it in a file
+// if `outFile` is the "-" string, the output file is considered stdout
 func (d *Device) SaveDeviceEntropyInFile(outFile string, entropyBytes uint32) error {
-	pb := Progbar{total: int(entropyBytes)}
-	if _, err := os.Stat(outFile); err == nil {
-		// nolint: gosec
-		if err = os.Chmod(outFile, 0777); err != nil {
-			log.Errorf("error with %s %s", outFile, err)
-		}
+	usingStdout := false
+	if outFile == "-" {
+		usingStdout = true
 	}
-	file, err := os.Create(outFile)
-	if err != nil {
-		log.Errorf("error creating output file %s", err)
-		return err
+	if !usingStdout {
+		log.Infoln("Saving entropy to", outFile)
 	}
-	defer func() {
-		if err := os.Chmod(outFile, 0444); err != nil {
-			log.Error(err)
-		}
-	}()
-	defer file.Close()
-	if err := d.Connect(); err != nil {
-		return err
-	}
-	defer func() {
-		if err := d.Disconnect(); err != nil {
-			log.Error(err)
-		}
-	}()
+	var receivedEntropyBytes uint32
+	var processBytes func(buf []byte) error
+	var err error
 	processGetEntropyResponse := func(msg wire.Message) (*messages.Entropy, error) {
 		if err != nil || msg.Kind != uint16(messages.MessageType_MessageType_Entropy) {
 			if err == nil {
@@ -206,29 +191,81 @@ func (d *Device) SaveDeviceEntropyInFile(outFile string, entropyBytes uint32) er
 		}
 		return processGetEntropyResponse(resp)
 	}
-	var receivedEntropyBytes uint32
-	writeBufferDown := func(buf []byte) error {
-		var wroteBytes = 0
-		for wroteBytes < len(buf) {
-			var res int
-			if res, err = file.Write(buf[wroteBytes:]); err != nil {
+	checkProducedFile := func() error {
+		if !usingStdout {
+			fileInfo, err := os.Stat(outFile)
+			if err != nil {
+				log.Error(err)
 				return err
 			}
-			wroteBytes += res
+			if fileInfo.Size() != int64(entropyBytes) {
+				return fmt.Errorf(
+					"no engout bytes saved in the file %s\n current: %d\nrequired: %d",
+					outFile, fileInfo.Size(), entropyBytes)
+			}
 		}
-		if wroteBytes != len(buf) {
-			return errors.New("invalid bytes amount wrote")
-		}
-		pb.PrintProg(int(receivedEntropyBytes))
 		return nil
 	}
+	if usingStdout {
+		processBytes = func(buf []byte) error {
+			fmt.Print(buf)
+			return nil
+		}
+	} else {
+		pb := Progbar{total: int(entropyBytes)}
+		defer func() {
+			if checkProducedFile() == nil {
+				pb.PrintComplete()
+			}
+		}()
+		if _, err := os.Stat(outFile); err == nil {
+			// nolint: gosec
+			if err = os.Chmod(outFile, 0777); err != nil {
+				log.Errorf("error with %s %s", outFile, err)
+			}
+		}
+		file, err := os.Create(outFile)
+		if err != nil {
+			log.Errorf("error creating output file %s", err)
+			return err
+		}
+		defer func() {
+			if err := os.Chmod(outFile, 0444); err != nil {
+				log.Error(err)
+			}
+		}()
+		defer file.Close()
+		processBytes = func(buf []byte) error {
+			var wroteBytes = 0
+			for wroteBytes < len(buf) {
+				var res int
+				if res, err = file.Write(buf[wroteBytes:]); err != nil {
+					return err
+				}
+				wroteBytes += res
+			}
+			if wroteBytes != len(buf) {
+				return errors.New("invalid bytes amount wrote")
+			}
+			pb.PrintProg(int(receivedEntropyBytes))
+			return nil
+		}
+	}
+	if err := d.Connect(); err != nil {
+		return err
+	}
+	defer func() {
+		if err := d.Disconnect(); err != nil {
+			log.Error(err)
+		}
+	}()
 	entropy, err := getEntropy(entropyBytes)
 	if err != nil {
 			log.Error(err)
 			return err
 	}
 	receivedEntropyBytes = uint32(len(entropy.GetEntropy()))
-	if err := writeBufferDown(entropy.GetEntropy()); err != nil {
+	if err := processBytes(entropy.GetEntropy()); err != nil {
 		log.Errorf("error writing file %s.\n %s", outFile, err.Error())
 		return err
 	}
@@ -239,27 +276,12 @@ func (d *Device) SaveDeviceEntropyInFile(outFile string, entropyBytes uint32) er
 			return err
 		}
 		receivedEntropyBytes += uint32(len(entropy.GetEntropy()))
-		if err := writeBufferDown(entropy.GetEntropy()); err != nil {
+		if err := processBytes(entropy.GetEntropy()); err != nil {
 			log.Errorf("error writing file %s.\n %s", outFile, err.Error())
 			return err
 		}
 	}
-	if err != nil {
-		log.Error(err)
-		return err
-	}
-	fileInfo, err := os.Stat(outFile)
-	if err != nil {
-		log.Error(err)
-		return err
-	}
-	if fileInfo.Size() != int64(entropyBytes) {
-		return fmt.Errorf(
-			"no engout bytes saved in the file %s\n current: %d\nrequired: %d",
-			outFile, fileInfo.Size(), entropyBytes)
-	}
-	pb.PrintComplete()
-	return nil
+	return checkProducedFile()
 }
 
 // ApplySettings send ApplySettings request to the device
