@@ -91,9 +91,9 @@ func MessageAddressGen(addressN, startIndex int, confirmAddress bool) ([][64]byt
 	return chunks, nil
 }
 
-// MessageDeviceGetEntropy prepare GetEntropy request
-func MessageDeviceGetEntropy(entropyBytes uint32) ([][64]byte, error) {
-	getEntropy := &messages.GetEntropy{
+// MessageDeviceGetRawEntropy prepare GetEntropy request
+func MessageDeviceGetRawEntropy(entropyBytes uint32) ([][64]byte, error) {
+	getEntropy := &messages.GetRawEntropy{
 		Size_: &entropyBytes,
 	}
 
@@ -102,7 +102,7 @@ func MessageDeviceGetEntropy(entropyBytes uint32) ([][64]byte, error) {
 		return [][64]byte{}, err
 	}
 
-	chunks := makeSkyWalletMessage(data, messages.MessageType_MessageType_GetEntropy)
+	chunks := makeSkyWalletMessage(data, messages.MessageType_MessageType_GetRawEntropy)
 	return chunks, nil
 }
 

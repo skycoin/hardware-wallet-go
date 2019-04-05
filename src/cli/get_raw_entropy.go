@@ -6,13 +6,13 @@ import (
 	deviceWallet "github.com/skycoin/hardware-wallet-go/src/device-wallet"
 )
 
-func getEntropyCmd() gcli.Command {
-	name := "getEntropy"
+func getRawEntropyCmd() gcli.Command {
+	name := "getRawEntropy"
 	return gcli.Command{
 		Name:         name,
 		ShortName:    "",
 		Aliases:      nil,
-		Usage:        "Get internal entropy from the device and write it down to a file",
+		Usage:        "Get device raw internal entropy and write it down to a file",
 		UsageText:    "",
 		Description:  "",
 		ArgsUsage:    "",
@@ -32,7 +32,7 @@ func getEntropyCmd() gcli.Command {
 				return
 			}
 			log.Infoln("Getting entropy from device")
-			if err := device.SaveDeviceEntropyInFile(outFile, entropyBytes); err != nil {
+			if err := device.SaveDeviceEntropyInFile(outFile, entropyBytes, deviceWallet.MessageDeviceGetRawEntropy); err != nil {
 				log.Error(err)
 				return
 			}

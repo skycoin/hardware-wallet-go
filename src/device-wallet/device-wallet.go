@@ -148,7 +148,7 @@ func (d *Device) AddressGen(addressN, startIndex int, confirmAddress bool) (wire
 
 // SaveDeviceEntropyInFile Ask the device to generate entropy and save it in a file
 // if `outFile` is the "-" string, the output file is considered stdout
-func (d *Device) SaveDeviceEntropyInFile(outFile string, entropyBytes uint32) error {
+func (d *Device) SaveDeviceEntropyInFile(outFile string, entropyBytes uint32, getEntropyMsgBuilder func(entropyBytes uint32) ([][64]byte, error)) error {
 	usingStdout := false
 	if outFile == "-" {
 		usingStdout = true
@@ -181,7 +181,7 @@ func (d *Device) SaveDeviceEntropyInFile(outFile string, entropyBytes uint32) er
 		return entropy, nil
 	}
 	getEntropy := func(bytes uint32) (*messages.Entropy, error) {
-		chunks, err := MessageDeviceGetEntropy(bytes)
+		chunks, err := getEntropyMsgBuilder(bytes)
 		if err != nil {
 			return &messages.Entropy{}, err
 		}
