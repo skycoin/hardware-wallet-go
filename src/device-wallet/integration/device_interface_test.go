@@ -125,10 +125,14 @@ func TestDevice(t *testing.T) {
 
 func TestGetAddressUsb(t *testing.T) {
 	device := deviceWallet.NewDevice(deviceWallet.DeviceTypeUSB)
+	if err := device.Connect(); err != nil {
+		log.Errorln(err)
+	}
 	if !device.Connected() {
 		t.Skip("TestGetAddressUsb do not work if Usb device is not connected")
 		return
 	}
+	require.NoError(t, device.Disconnect())
 
 	_, err := device.Wipe()
 	require.NoError(t, err)
