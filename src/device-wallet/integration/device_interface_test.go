@@ -8,8 +8,9 @@ import (
 	"github.com/gogo/protobuf/proto"
 	"github.com/stretchr/testify/require"
 
-	deviceWallet "github.com/skycoin/hardware-wallet-go/src/device-wallet"
 	"github.com/skycoin/skycoin/src/util/logging"
+
+	deviceWallet "github.com/skycoin/hardware-wallet-go/src/device-wallet"
 	messages "github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
 	"github.com/skycoin/hardware-wallet-go/src/device-wallet/wire"
 )

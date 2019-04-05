@@ -261,8 +261,8 @@ func (d *Device) SaveDeviceEntropyInFile(outFile string, entropyBytes uint32) er
 	}()
 	entropy, err := getEntropy(entropyBytes)
 	if err != nil {
-			log.Error(err)
-			return err
+		log.Error(err)
+		return err
 	}
 	receivedEntropyBytes = uint32(len(entropy.GetEntropy()))
 	if err := processBytes(entropy.GetEntropy()); err != nil {
