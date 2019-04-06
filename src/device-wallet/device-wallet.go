@@ -185,17 +185,16 @@ func (d *Device) SaveDeviceEntropyInFile(outFile string, entropyBytes uint32, ge
 					return &messages.Entropy{}, err
 				}
 				return processGetEntropyResponse(msg)
-			} else {
-				var msgStr string
-				msgStr, err = DecodeFailMsg(msg)
-				if err != nil {
-					log.Errorf("Error decoding device response as fails msg %s", err)
-					return &messages.Entropy{}, err
-				}
-				err = errors.New(msgStr)
-				log.Errorf("Error getting entropy from device %s", err)
+			}
+			var msgStr string
+			msgStr, err = DecodeFailMsg(msg)
+			if err != nil {
+				log.Errorf("Error decoding device response as fails msg %s", err)
 				return &messages.Entropy{}, err
 			}
+			err = errors.New(msgStr)
+			log.Errorf("Error getting entropy from device %s", err)
+			return &messages.Entropy{}, err
 		}
 		entropy, err := DecodeResponseEntropyMessage(msg)
 		if err != nil {
