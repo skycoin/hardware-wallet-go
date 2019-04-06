@@ -9,8 +9,13 @@ all: build
 build: ## Build project
 	cd cmd/cli && ./install.sh
 
-dep: vendor_proto ## Ensure package dependencies are up to date
+init: ## initiaize submodule
 	dep ensure -v
+	git submodule init
+	git submodule update
+	make proto
+
+dep: proto ## Ensure package dependencies are up to date
 	# Ensure sources for protoc-gen-go and protobuf/proto are in sync
 	dep ensure -v -add github.com/gogo/protobuf/protoc-gen-gofast ## setup dependencies
 
