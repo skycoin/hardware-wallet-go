@@ -106,6 +106,21 @@ func MessageDeviceGetRawEntropy(entropyBytes uint32) ([][64]byte, error) {
 	return chunks, nil
 }
 
+// MessageDeviceGetMixedEntropy prepare GetMixedEntropy request
+func MessageDeviceGetMixedEntropy(entropyBytes uint32) ([][64]byte, error) {
+	getEntropy := &messages.GetMixedEntropy{
+		Size_: &entropyBytes,
+	}
+
+	data, err := proto.Marshal(getEntropy)
+	if err != nil {
+		return [][64]byte{}, err
+	}
+
+	chunks := makeSkyWalletMessage(data, messages.MessageType_MessageType_GetMixedEntropy)
+	return chunks, nil
+}
+
 // MessageApplySettings prepare MessageApplySettings request
 func MessageApplySettings(usePassphrase bool, label string) ([][64]byte, error) {
 	applySettings := &messages.ApplySettings{
