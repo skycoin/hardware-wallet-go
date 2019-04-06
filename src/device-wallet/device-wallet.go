@@ -159,9 +159,33 @@ func (d *Device) SaveDeviceEntropyInFile(outFile string, entropyBytes uint32, ge
 	var receivedEntropyBytes uint32
 	var processBytes func(buf []byte) error
 	var err error
-	processGetEntropyResponse := func(msg wire.Message) (*messages.Entropy, error) {
+	var processGetEntropyResponse func(msg wire.Message) (*messages.Entropy, error)
+	processGetEntropyResponse = func(msg wire.Message) (*messages.Entropy, error) {
 		if err != nil || msg.Kind != uint16(messages.MessageType_MessageType_Entropy) {
-			if err == nil {
+			if err != nil {
+				return &messages.Entropy{}, err
+			}
+			if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
+				// Send ButtonAck
+				chunks, err := MessageButtonAck()
+				if err != nil {
+					return &messages.Entropy{}, err
+				}
+				if err = sendToDeviceNoAnswer(d.dev, chunks); err != nil {
+					return &messages.Entropy{}, err
+				}
+				// simulate button press
+				if d.simulateButtonPress {
+					if err := d.SimulateButtonPress(); err != nil {
+						return &messages.Entropy{}, err
+					}
+				}
+				msg = wire.Message{}
+				if _, err = msg.ReadFrom(d.dev); err != nil {
+					return &messages.Entropy{}, err
+				}
+				return processGetEntropyResponse(msg)
+			} else {
 				var msgStr string
 				msgStr, err = DecodeFailMsg(msg)
 				if err != nil {
@@ -169,9 +193,9 @@ func (d *Device) SaveDeviceEntropyInFile(outFile string, entropyBytes uint32, ge
 					return &messages.Entropy{}, err
 				}
 				err = errors.New(msgStr)
+				log.Errorf("Error getting entropy from device %s", err)
+				return &messages.Entropy{}, err
 			}
-			log.Errorf("Error getting entropy from device %s", err)
-			return &messages.Entropy{}, err
 		}
 		entropy, err := DecodeResponseEntropyMessage(msg)
 		if err != nil {
