@@ -10,16 +10,7 @@ func getMixedEntropyCmd() gcli.Command {
 	name := "getMixedEntropy"
 	return gcli.Command{
 		Name:         name,
-		ShortName:    "",
-		Aliases:      nil,
 		Usage:        "Get device internal mixed entropy and write it down to a file",
-		UsageText:    "",
-		Description:  "",
-		ArgsUsage:    "",
-		Category:     "",
-		BashComplete: nil,
-		Before:       nil,
-		After:        nil,
 		Action: func(c *gcli.Context) {
 			entropyBytes := uint32(c.Int("entropyBytes"))
 			outFile := c.String("outFile")
@@ -60,7 +51,5 @@ func getMixedEntropyCmd() gcli.Command {
 		SkipArgReorder:     false,
 		HideHelp:           false,
 		Hidden:             false,
-		HelpName:           "",
-		CustomHelpTemplate: "",
 	}
 }
