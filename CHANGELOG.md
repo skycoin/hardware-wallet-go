@@ -8,8 +8,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 
-- Add a `getEntropy` to get entropy from the physical device.
-- Add a progress bar, currently used in `getEntropy` only.
+- Add a progress bar, currently used in get entropy messages only.
+- Add a `getRawEntropy` and `getMixedEntropy` to get entropy from the physical device.
 - Use `protobuf` file definitions from a [`git submodule`](http://github.com/skycoin/hardware-wallet-protob.git).
 - Mnemonic and recovery functions support `--wordCount` argument for seed sizes of `24` and `12` (default) .
 - Add `-deviceType` flag and `DEVICE_TYPE` env var to set devicetype, options are `USB` or `EMULATOR`.
