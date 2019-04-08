@@ -168,18 +168,24 @@ func TestGetDeviceEntropyShouldWorkOk(t *testing.T) {
 	require.NoError(t, err)
 	_, err = deviceWallet.DecodeSuccessMsg(msg)
 	require.NoError(t, err)
-
-	// NOTE(denisacostaq@gmail.com): When
 	bytesAmounts := [...]uint32{13, 985, 100000, 1024}
+	generators := [...]func(entropyBytes uint32) ([][64]byte, error){
+		deviceWallet.MessageDeviceGetRawEntropy,
+		deviceWallet.MessageDeviceGetMixedEntropy,
+	}
 
-	// NOTE(denisacostaq@gmail.com): Assert
-	for bytesAmountsIdx := range bytesAmounts {
-		outFile := fmt.Sprint(os.TempDir(), "/", os.Getpid())
-		err = device.SaveDeviceEntropyInFile(outFile, bytesAmounts[bytesAmountsIdx], deviceWallet.MessageDeviceGetRawEntropy)
-		require.NoError(t, err)
-		fileInfo, err := os.Stat(outFile)
-		require.NoError(t, err)
-		require.Equal(t, int64(bytesAmounts[bytesAmountsIdx]), fileInfo.Size())
+	for gIdx := range generators {
+		for bytesAmountsIdx := range bytesAmounts {
+			outFile := fmt.Sprint(os.TempDir(), "/", os.Getpid())
+			// NOTE(denisacostaq@gmail.com): When
+			err = device.SaveDeviceEntropyInFile(
+				outFile, bytesAmounts[bytesAmountsIdx], generators[gIdx])
+			// NOTE(denisacostaq@gmail.com): Assert
+			require.NoError(t, err)
+			fileInfo, err := os.Stat(outFile)
+			require.NoError(t, err)
+			require.Equal(t, int64(bytesAmounts[bytesAmountsIdx]), fileInfo.Size())
+		}
 	}
 }
 
