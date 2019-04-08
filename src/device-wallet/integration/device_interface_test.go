@@ -27,9 +27,7 @@ func testHelperGetDeviceWithBestEffort(testName string, t *testing.T) *deviceWal
 
 func TestDevice(t *testing.T) {
 	device := testHelperGetDeviceWithBestEffort("TestDevice", t)
-	if device == nil {
-		return
-	}
+	require.NotNil(t, device)
 	// var msg wire.Message
 	// var chunks [][64]byte
 	// var inputWord string
@@ -120,6 +118,7 @@ func TestDevice(t *testing.T) {
 
 func TestGetAddressUsb(t *testing.T) {
 	device := deviceWallet.NewDevice(deviceWallet.DeviceTypeUSB)
+	require.NotNil(t, device)
 	if !device.Connected() {
 		t.Skip("TestGetAddressUsb do not work if Usb device is not connected")
 		return
@@ -141,6 +140,7 @@ func TestGetAddressUsb(t *testing.T) {
 
 func TestGetAddressEmulator(t *testing.T) {
 	device := deviceWallet.NewDevice(deviceWallet.DeviceTypeEmulator)
+	require.NotNil(t, device)
 	if !device.Connected() {
 		t.Skip("TestGetAddressEmulator do not work if emulator is not running")
 		return
@@ -222,9 +222,7 @@ func TransactionToDevice(deviceType deviceWallet.DeviceType, transactionInputs [
 
 func TestTransactions(t *testing.T) {
 	device := testHelperGetDeviceWithBestEffort("TestTransactions", t)
-	if device == nil {
-		return
-	}
+	require.NotNil(t, device)
 
 	if device.Driver.DeviceType() == deviceWallet.DeviceTypeEmulator {
 		err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
