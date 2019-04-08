@@ -338,8 +338,14 @@ func (d *Device) FirmwareUpload(payload []byte, hash [32]byte) error {
 	}
 
 	switch uploadmsg.Kind {
-	case uint16(messages.MessageType_MessageType_Success):
-		log.Printf("Success %d! FirmwareUpload %s\n", uploadmsg.Kind, uploadmsg.Data)
+	case uint16(messages.MessageType_MessageType_ButtonRequest):
+		log.Println("Please confirm in the device if fingerprints match")
+		// Send ButtonAck
+		chunks, err = MessageButtonAck()
+		if err != nil {
+			return err
+		}
+		return d.Driver.SendToDeviceNoAnswer(d.dev, chunks)
 	case uint16(messages.MessageType_MessageType_Failure):
 		msg, err := DecodeFailMsg(erasemsg)
 		if err != nil {
@@ -350,13 +356,6 @@ func (d *Device) FirmwareUpload(payload []byte, hash [32]byte) error {
 	default:
 		return fmt.Errorf("received unexpected message type: %s", messages.MessageType(erasemsg.Kind))
 	}
-
-	// Send ButtonAck
-	chunks, err = MessageButtonAck()
-	if err != nil {
-		return err
-	}
-	return d.Driver.SendToDeviceNoAnswer(d.dev, chunks)
 }
 
 // GetFeatures send Features message to the device
