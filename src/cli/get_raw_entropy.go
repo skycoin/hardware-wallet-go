@@ -9,8 +9,8 @@ import (
 func getRawEntropyCmd() gcli.Command {
 	name := "getRawEntropy"
 	return gcli.Command{
-		Name:         name,
-		Usage:        "Get device raw internal entropy and write it down to a file",
+		Name:  name,
+		Usage: "Get device raw internal entropy and write it down to a file",
 		Action: func(c *gcli.Context) {
 			entropyBytes := uint32(c.Int("entropyBytes"))
 			outFile := c.String("outFile")
@@ -47,9 +47,9 @@ func getRawEntropyCmd() gcli.Command {
 				EnvVar: "DEVICE_TYPE",
 			},
 		},
-		SkipFlagParsing:    false,
-		SkipArgReorder:     false,
-		HideHelp:           false,
-		Hidden:             false,
+		SkipFlagParsing: false,
+		SkipArgReorder:  false,
+		HideHelp:        false,
+		Hidden:          false,
 	}
 }
