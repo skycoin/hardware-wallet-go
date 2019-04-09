@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Changed
 
+- Opening an `USB` device apply a filter for vendor and product.
 - Change project structure to follow standard project layout
 
 ### Removed
