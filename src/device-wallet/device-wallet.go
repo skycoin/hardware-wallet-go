@@ -355,8 +355,9 @@ func (d *Device) FirmwareUpload(payload []byte, hash [32]byte) error {
 		case uint16(messages.MessageType_MessageType_Failure):
 			var msgStr string
 			if msgStr, err = DecodeFailMsg(resp); err != nil {
-				log.Errorln(msgStr)
+				return err
 			}
+			return errors.New(msgStr)
 		default:
 			return errors.New("unknown response")
 		}
