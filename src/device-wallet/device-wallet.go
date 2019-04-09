@@ -137,13 +137,12 @@ func (d *Device) AddressGen(addressN, startIndex int, confirmAddress bool) (wire
 }
 
 // ApplySettings send ApplySettings request to the device
-func (d *Device) ApplySettings(usePassphrase bool, label string) (wire.Message, error) {
+func (d *Device) ApplySettings(usePassphrase bool, label string, language string) (wire.Message, error) {
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
 	defer d.dev.Close()
-
-	chunks, err := MessageApplySettings(usePassphrase, label)
+	chunks, err := MessageApplySettings(usePassphrase, label, language)
 	if err != nil {
 		return wire.Message{}, err
 	}
