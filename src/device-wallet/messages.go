@@ -92,11 +92,13 @@ func MessageAddressGen(addressN, startIndex int, confirmAddress bool) ([][64]byt
 }
 
 // MessageApplySettings prepare MessageApplySettings request
-func MessageApplySettings(usePassphrase bool, label string, language string) ([][64]byte, error) {
+func MessageApplySettings(usePassphrase *bool, label string, language string) ([][64]byte, error) {
 	applySettings := &messages.ApplySettings{
 		Label:         proto.String(label),
 		Language:      proto.String(language),
-		UsePassphrase: proto.Bool(usePassphrase),
+	}
+	if usePassphrase != nil {
+		applySettings.UsePassphrase = proto.Bool(*usePassphrase)
 	}
 	log.Println(applySettings)
 	data, err := proto.Marshal(applySettings)
