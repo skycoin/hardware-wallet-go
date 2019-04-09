@@ -724,7 +724,7 @@ func TestMsgApplySettingsLabelGetFeaturesSuccess(t *testing.T) {
 
 	// NOTE(denisacostaq@gmail.com): When
 	var label = "my custom device label"
-	resp, err := device.ApplySettings(false, label)
+	resp, err := device.ApplySettings(false, label, "")
 	require.NoError(t, err)
 	for resp.Kind != uint16(messages.MessageType_MessageType_Failure) && resp.Kind != uint16(messages.MessageType_MessageType_Success) {
 		require.Equal(t, messages.MessageType_MessageType_ButtonRequest, messages.MessageType(resp.Kind))
@@ -754,7 +754,7 @@ func TestMsgApplySettingsLabelShouldNotBeReset(t *testing.T) {
 
 	// NOTE(denisacostaq@gmail.com): When
 	var label = "my custom device label"
-	resp, err := device.ApplySettings(false, label)
+	resp, err := device.ApplySettings(false, label, "")
 	require.NoError(t, err)
 	for resp.Kind != uint16(messages.MessageType_MessageType_Failure) && resp.Kind != uint16(messages.MessageType_MessageType_Success) {
 		require.Equal(t, messages.MessageType_MessageType_ButtonRequest, messages.MessageType(resp.Kind))
@@ -773,7 +773,7 @@ func TestMsgApplySettingsLabelShouldNotBeReset(t *testing.T) {
 	require.Equal(t, false, *features.PassphraseProtection)
 
 	// NOTE(denisacostaq@gmail.com): Assert
-	resp, err = device.ApplySettings(true, "")
+	resp, err = device.ApplySettings(true, "", "")
 	require.NoError(t, err)
 	for resp.Kind != uint16(messages.MessageType_MessageType_Failure) && resp.Kind != uint16(messages.MessageType_MessageType_Success) {
 		require.Equal(t, messages.MessageType_MessageType_ButtonRequest, messages.MessageType(resp.Kind))
@@ -790,4 +790,22 @@ func TestMsgApplySettingsLabelShouldNotBeReset(t *testing.T) {
 	require.Equal(t, label, *features.Label)
 	require.NotNil(t, features.PassphraseProtection)
 	require.Equal(t, true, *features.PassphraseProtection)
+}
+
+func TestMsgApplySettingsUnsupportedLanguage(t *testing.T) {
+	// NOTE(denisacostaq@gmail.com): Giving
+	device := testHelperGetDeviceWithBestEffort("TestShouldHaveARequirePinAfterGenerateMnemonic", t)
+	require.NotNil(t, device)
+	err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
+	require.NoError(t, err)
+	_, err = device.Wipe()
+	require.NoError(t, err)
+
+	// NOTE(denisacostaq@gmail.com): When
+	var language = "chinese"
+	resp, err := device.ApplySettings(false, "", language)
+
+	// NOTE(denisacostaq@gmail.com): Assert
+	require.NoError(t, err)
+	require.Equal(t, messages.MessageType_MessageType_Failure, messages.MessageType(resp.Kind))
 }
