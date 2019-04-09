@@ -427,7 +427,7 @@ func (d *Device) Recovery(wordCount uint32, usePassphrase, dryRun bool) (wire.Me
 	if err != nil {
 		return msg, err
 	}
-	log.Printf("Recovery device %d! Answer is: %s\n", msg.Kind, msg.Data)
+	log.Printf("Recovery device response kind is: %d\n", msg.Kind)
 
 	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
 		msg, err = d.ButtonAck()
