@@ -712,3 +712,33 @@ func TestShouldHaveARequirePinAfterGenerateMnemonic(t *testing.T) {
 	require.NoError(t, proto.Unmarshal(msg.Data, features))
 	require.False(t, *features.PinProtection)
 }
+
+func TestMsgApplySettingsLabelGetFeaturesSuccess(t *testing.T) {
+	// NOTE(denisacostaq@gmail.com): Giving
+	device := testHelperGetDeviceWithBestEffort("TestShouldHaveARequirePinAfterGenerateMnemonic", t)
+	require.NotNil(t, device)
+	err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
+	require.NoError(t, err)
+	_, err = device.Wipe()
+	require.NoError(t, err)
+
+	// NOTE(denisacostaq@gmail.com): When
+	var label = "my custom device label"
+	resp, err := device.ApplySettings(false, label)
+	require.NoError(t, err)
+	for resp.Kind != uint16(messages.MessageType_MessageType_Failure) && resp.Kind != uint16(messages.MessageType_MessageType_Success) {
+		require.Equal(t, messages.MessageType_MessageType_ButtonRequest, messages.MessageType(resp.Kind))
+		resp, err = device.ButtonAck()
+		require.NoError(t, err)
+	}
+
+	// NOTE(denisacostaq@gmail.com): Assert
+	resp, err = device.GetFeatures()
+	require.NoError(t, err)
+	require.Equal(t, messages.MessageType_MessageType_Features, messages.MessageType(resp.Kind))
+	features := &messages.Features{}
+	err = proto.Unmarshal(resp.Data, features)
+	require.NoError(t, err)
+	require.NotNil(t, features.Label)
+	require.Equal(t, label, *features.Label)
+}
