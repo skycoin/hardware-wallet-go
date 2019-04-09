@@ -40,7 +40,7 @@ const (
 )
 
 const (
-	skycoinVendorID = 0x313A
+	skycoinVendorID    = 0x313A
 	skycoinHwProductID = 0x0001
 )
 
