@@ -345,7 +345,18 @@ func (d *Device) FirmwareUpload(payload []byte, hash [32]byte) error {
 		if err != nil {
 			return err
 		}
-		return d.Driver.SendToDeviceNoAnswer(d.dev, chunks)
+		resp, err := d.Driver.SendToDevice(d.dev, chunks)
+		if err != nil {
+			return err
+		}
+		var msgStr string
+		if msgStr, err = DecodeSuccessMsg(resp); err != nil {
+			return err
+		}
+		if len(msgStr) != 0 {
+			log.Infoln(msgStr)
+		}
+		return nil
 	case uint16(messages.MessageType_MessageType_Failure):
 		msg, err := DecodeFailMsg(erasemsg)
 		if err != nil {
