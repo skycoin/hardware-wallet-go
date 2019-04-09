@@ -39,6 +39,11 @@ const (
 	DeviceTypeInvalid
 )
 
+const (
+	skycoinVendorID = 0x313A
+	skycoinHwProductID = 0x0001
+)
+
 //go:generate mockery -name DeviceDriver -case underscore -inpkg -testonly
 
 // DeviceDriver is the api for hardware wallet communication
@@ -128,7 +133,7 @@ func getUsbDevice() (usb.Device, error) {
 	b := usb.Init(w, h)
 
 	var infos []usb.Info
-	infos, err = b.Enumerate()
+	infos, err = b.Enumerate(skycoinVendorID, skycoinHwProductID)
 	if len(infos) <= 0 {
 		return nil, err
 	}
