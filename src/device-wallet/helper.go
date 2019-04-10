@@ -151,6 +151,28 @@ func getUsbDevice() (usb.Device, error) {
 	return nil, err
 }
 
+// getUsbInfo returns usb connections info and the usb interface initialized
+func getUsbInfo() ([]usb.Info, *usb.USB, error) {
+	w, err := usb.InitWebUSB()
+	if err != nil {
+		log.Printf("webusb: %s", err)
+		return nil, nil, err
+	}
+	h, err := usb.InitHIDAPI()
+	if err != nil {
+		log.Printf("hidapi: %s", err)
+		return nil, nil, err
+	}
+	b := usb.Init(w, h)
+
+	var infos []usb.Info
+	infos, err = b.Enumerate(skycoinVendorID, skycoinHwProductID)
+	if len(infos) <= 0 {
+		return nil, nil, err
+	}
+	return infos, b, nil
+}
+
 func binaryWrite(message io.Writer, data interface{}) {
 	err := binary.Write(message, binary.BigEndian, data)
 	if err != nil {
