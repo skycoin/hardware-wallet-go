@@ -26,7 +26,20 @@ func getUsbDetails() gcli.Command {
 				return
 			}
 
-			log.Println(device.GetUsbInfo())
+			infos, err := device.GetUsbInfo()
+			if err != nil {
+				log.Errorln(err)
+			}
+			for infoIdx := range infos {
+				log.Infoln("-----------------------------------------")
+				if infos[infoIdx].VendorID == deviceWallet.SkycoinVendorID {
+					log.Printf("%-13d%-5s%s", infos[infoIdx].VendorID, "==>", "Skycoin Fundation")
+				}
+				if infos[infoIdx].ProductID == deviceWallet.SkycoinHwProductID {
+					log.Printf("%-13d%-5s%s", infos[infoIdx].ProductID, "==>", "Hardware Wallet")
+				}
+				log.Printf("%-13s%-5s%s", "Device path", "==>", infos[infoIdx].Path)
+			}
 		},
 	}
 }
