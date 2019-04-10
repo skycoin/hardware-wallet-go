@@ -96,6 +96,7 @@ func NewApp() (*App, error) {
 		sandbox(),
 		getRawEntropyCmd(),
 		getMixedEntropyCmd(),
+		getUsbDetails(),
 	}
 
 	app.Name = "skycoin-hw-cli"
