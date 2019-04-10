@@ -19,10 +19,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Add skycoin `v0.25.1` dependency.
 - Support in apply settings command for configuring device label.
 - Sign Skycoin transactions using `transactionSign` command.
+- Add `SimulateButtonPress` function to simulate emulator button press.
 
 ### Fixed
 
 - Change protobuf messages for check signature to be consistent with [harware-wallet](https://github.com/skycoin/hardware-wallet/blob/2648cf384b5455c994ba54acf6a31cd1272c6f66/tiny-firmware/protob/messages.options#L21).
+- CLI returns error during firmaware update if device is not in bootloader mode.
 
 ### Changed
 
