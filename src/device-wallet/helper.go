@@ -40,8 +40,8 @@ const (
 )
 
 const (
-	skycoinVendorID    = 0x313A
-	skycoinHwProductID = 0x0001
+	SkycoinVendorID    = 0x313A
+	SkycoinHwProductID = 0x0001
 )
 
 //go:generate mockery -name DeviceDriver -case underscore -inpkg -testonly
@@ -165,7 +165,7 @@ func getUsbInfo() ([]usb.Info, *usb.USB, error) {
 	b := usb.Init(w, h)
 
 	var infos []usb.Info
-	infos, err = b.Enumerate(skycoinVendorID, skycoinHwProductID)
+	infos, err = b.Enumerate(SkycoinVendorID, SkycoinHwProductID)
 	if len(infos) <= 0 {
 		return nil, nil, err
 	}
