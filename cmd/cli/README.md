@@ -95,7 +95,7 @@ GLOBAL OPTIONS:
    --version, -v  print the version
 ```
 
-All commands support a `--deviceType` option. Supported values are `USB` and `EMULATOR`.
+All commands accept `--deviceType` option. Supported values are `USB` and `EMULATOR`.
 
 ### Apply settings
 
