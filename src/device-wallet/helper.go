@@ -40,7 +40,10 @@ const (
 )
 
 const (
-	SkycoinVendorID    = 0x313A
+	// SkycoinVendorID from https://github.com/skycoin/hardware-wallet/blob/50000f674c56c0cc18eec30d55978b73ed279b2e/tiny-firmware/bootloader/usb.c#L57
+	SkycoinVendorID = 0x313A
+
+	// SkycoinHwProductID from https://github.com/skycoin/hardware-wallet/blob/50000f674c56c0cc18eec30d55978b73ed279b2e/tiny-firmware/bootloader/usb.c#L58
 	SkycoinHwProductID = 0x0001
 )
 
@@ -92,6 +95,7 @@ func (drv *Driver) GetDevice() (io.ReadWriteCloser, error) {
 	return dev, err
 }
 
+// GetDeviceInfos returns information from the attached usb
 func (drv *Driver) GetDeviceInfos() ([]usb.Info, error) {
 	if drv.DeviceType() == DeviceTypeUSB {
 		infos, _, err := getUsbInfo()

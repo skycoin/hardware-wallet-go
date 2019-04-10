@@ -3,10 +3,11 @@ package devicewallet
 import (
 	"errors"
 	"fmt"
-	"github.com/skycoin/hardware-wallet-go/src/device-wallet/usb"
 	"io"
 	"os"
 	"time"
+
+	"github.com/skycoin/hardware-wallet-go/src/device-wallet/usb"
 
 	"github.com/skycoin/skycoin/src/util/logging"
 
@@ -132,6 +133,7 @@ func (d *Device) Disconnect() error {
 	return d.dev.Close()
 }
 
+// GetUsbInfo returns information from the attached usb
 func (d *Device) GetUsbInfo() ([]usb.Info, error) {
 	if d.Driver.DeviceType() == DeviceTypeUSB {
 		if err := d.Connect(); err != nil {
