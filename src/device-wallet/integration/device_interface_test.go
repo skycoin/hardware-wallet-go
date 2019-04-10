@@ -715,7 +715,7 @@ func TestShouldHaveARequirePinAfterGenerateMnemonic(t *testing.T) {
 
 func TestMsgApplySettingsLabelGetFeaturesSuccess(t *testing.T) {
 	// NOTE(denisacostaq@gmail.com): Giving
-	device := testHelperGetDeviceWithBestEffort("TestShouldHaveARequirePinAfterGenerateMnemonic", t)
+	device := testHelperGetDeviceWithBestEffort("TestMsgApplySettingsLabelGetFeaturesSuccess", t)
 	require.NotNil(t, device)
 	err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
 	require.NoError(t, err)
@@ -724,7 +724,8 @@ func TestMsgApplySettingsLabelGetFeaturesSuccess(t *testing.T) {
 
 	// NOTE(denisacostaq@gmail.com): When
 	var label = "my custom device label"
-	resp, err := device.ApplySettings(false, label, "")
+	usePassphrase := false
+	resp, err := device.ApplySettings(&usePassphrase, label, "")
 	require.NoError(t, err)
 	for resp.Kind != uint16(messages.MessageType_MessageType_Failure) && resp.Kind != uint16(messages.MessageType_MessageType_Success) {
 		require.Equal(t, messages.MessageType_MessageType_ButtonRequest, messages.MessageType(resp.Kind))
@@ -745,7 +746,7 @@ func TestMsgApplySettingsLabelGetFeaturesSuccess(t *testing.T) {
 
 func TestMsgApplySettingsLabelShouldNotBeReset(t *testing.T) {
 	// NOTE(denisacostaq@gmail.com): Giving
-	device := testHelperGetDeviceWithBestEffort("TestShouldHaveARequirePinAfterGenerateMnemonic", t)
+	device := testHelperGetDeviceWithBestEffort("TestMsgApplySettingsLabelShouldNotBeReset", t)
 	require.NotNil(t, device)
 	err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
 	require.NoError(t, err)
@@ -754,7 +755,8 @@ func TestMsgApplySettingsLabelShouldNotBeReset(t *testing.T) {
 
 	// NOTE(denisacostaq@gmail.com): When
 	var label = "my custom device label"
-	resp, err := device.ApplySettings(false, label, "")
+	usePassphrase := false
+	resp, err := device.ApplySettings(&usePassphrase, label, "")
 	require.NoError(t, err)
 	for resp.Kind != uint16(messages.MessageType_MessageType_Failure) && resp.Kind != uint16(messages.MessageType_MessageType_Success) {
 		require.Equal(t, messages.MessageType_MessageType_ButtonRequest, messages.MessageType(resp.Kind))
@@ -773,7 +775,8 @@ func TestMsgApplySettingsLabelShouldNotBeReset(t *testing.T) {
 	require.Equal(t, false, *features.PassphraseProtection)
 
 	// NOTE(denisacostaq@gmail.com): Assert
-	resp, err = device.ApplySettings(true, "", "")
+	usePassphrase = true
+	resp, err = device.ApplySettings(&usePassphrase, "", "")
 	require.NoError(t, err)
 	for resp.Kind != uint16(messages.MessageType_MessageType_Failure) && resp.Kind != uint16(messages.MessageType_MessageType_Success) {
 		require.Equal(t, messages.MessageType_MessageType_ButtonRequest, messages.MessageType(resp.Kind))
@@ -794,7 +797,7 @@ func TestMsgApplySettingsLabelShouldNotBeReset(t *testing.T) {
 
 func TestMsgApplySettingsUnsupportedLanguage(t *testing.T) {
 	// NOTE(denisacostaq@gmail.com): Giving
-	device := testHelperGetDeviceWithBestEffort("TestShouldHaveARequirePinAfterGenerateMnemonic", t)
+	device := testHelperGetDeviceWithBestEffort("TestMsgApplySettingsUnsupportedLanguage", t)
 	require.NotNil(t, device)
 	err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
 	require.NoError(t, err)
