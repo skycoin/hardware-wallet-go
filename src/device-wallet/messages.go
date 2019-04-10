@@ -122,10 +122,10 @@ func MessageDeviceGetMixedEntropy(entropyBytes uint32) ([][64]byte, error) {
 }
 
 // MessageApplySettings prepare MessageApplySettings request
-func MessageApplySettings(usePassphrase bool, label string) ([][64]byte, error) {
+func MessageApplySettings(usePassphrase bool, label string, language string) ([][64]byte, error) {
 	applySettings := &messages.ApplySettings{
 		Label:         proto.String(label),
-		Language:      proto.String(""),
+		Language:      proto.String(language),
 		UsePassphrase: proto.Bool(usePassphrase),
 	}
 	log.Println(applySettings)
