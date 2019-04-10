@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Support in apply settings command for configuring device label.
 - Sign Skycoin transactions using `transactionSign` command.
 - Add `SimulateButtonPress` function to simulate emulator button press.
+- Define the device language through `-language` flag of `applySettings` command. Only `english` supported.
 
 ### Fixed
 
@@ -30,10 +31,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Removed
 
+- Remove `protobuf` files from the project.
 - Installation instructions for `protobuf` related tools, use this from `hardware-wallet-protob` submodule.
-- Removed `protobuf` files from the project.
-
-### Fixed
 
 ### Security
 
