@@ -120,20 +120,7 @@ func getEmulatorDevice() (net.Conn, error) {
 
 // getUsbDevice returns a usb device connection instance
 func getUsbDevice() (usb.Device, error) {
-	w, err := usb.InitWebUSB()
-	if err != nil {
-		log.Printf("webusb: %s", err)
-		return nil, err
-	}
-	h, err := usb.InitHIDAPI()
-	if err != nil {
-		log.Printf("hidapi: %s", err)
-		return nil, err
-	}
-	b := usb.Init(w, h)
-
-	var infos []usb.Info
-	infos, err = b.Enumerate(skycoinVendorID, skycoinHwProductID)
+	infos, b, err := getUsbInfo()
 	if len(infos) <= 0 {
 		return nil, err
 	}
