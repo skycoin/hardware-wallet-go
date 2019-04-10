@@ -33,9 +33,7 @@ func testHelperGetDeviceWithBestEffort(testName string, t *testing.T) *deviceWal
 
 func TestDevice(t *testing.T) {
 	device := testHelperGetDeviceWithBestEffort("TestDevice", t)
-	if device == nil {
-		return
-	}
+	require.NotNil(t, device)
 	// var msg wire.Message
 	// var chunks [][64]byte
 	// var inputWord string
@@ -126,6 +124,7 @@ func TestDevice(t *testing.T) {
 
 func TestGetAddressUsb(t *testing.T) {
 	device := deviceWallet.NewDevice(deviceWallet.DeviceTypeUSB)
+	require.NotNil(t, device)
 	if err := device.Connect(); err != nil {
 		log.Errorln(err)
 	}
@@ -191,6 +190,7 @@ func TestGetDeviceEntropyShouldWorkOk(t *testing.T) {
 
 func TestGetAddressEmulator(t *testing.T) {
 	device := deviceWallet.NewDevice(deviceWallet.DeviceTypeEmulator)
+	require.NotNil(t, device)
 	if err := device.Connect(); err != nil {
 		log.Error(err)
 	}
@@ -264,9 +264,7 @@ func TransactionToDevice(t *testing.T, deviceType deviceWallet.DeviceType, trans
 
 func TestTransactions(t *testing.T) {
 	device := testHelperGetDeviceWithBestEffort("TestTransactions", t)
-	if device == nil {
-		return
-	}
+	require.NotNil(t, device)
 
 	if device.Driver.DeviceType() == deviceWallet.DeviceTypeEmulator {
 		err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
@@ -638,4 +636,133 @@ func TestTransactions(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, uint16(messages.MessageType_MessageType_Success), msg.Kind) // Success message
 	require.Equal(t, "2EU3JbveHdkxW6z5tdhbbB2kRAWvXC2pLzw", string(msg.Data[2:]))
+}
+
+func TestNotInitializedFromFactory(t *testing.T) {
+	// NOTE(denisacostaq@gmail.com): Giving
+	device := testHelperGetDeviceWithBestEffort("TestNotInitializedFromFactory", t)
+	require.NotNil(t, device)
+	err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
+	require.NoError(t, err)
+	_, err = device.Wipe()
+	require.NoError(t, err)
+
+	// NOTE(denisacostaq@gmail.com): When
+	msg, err := device.GetFeatures()
+
+	// NOTE(denisacostaq@gmail.com): Assert
+	require.NoError(t, err)
+	features := &messages.Features{}
+	err = proto.Unmarshal(msg.Data, features)
+	require.NoError(t, err)
+	require.NotNil(t, features.Initialized)
+	require.False(t, *features.Initialized)
+}
+
+func TestGenerateMnemonicOk(t *testing.T) {
+	// NOTE(denisacostaq@gmail.com): Giving
+	device := testHelperGetDeviceWithBestEffort("TestGenerateMnemonicOk", t)
+	require.NotNil(t, device)
+	err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
+	require.NoError(t, err)
+	_, err = device.Wipe()
+	require.NoError(t, err)
+
+	// NOTE(denisacostaq@gmail.com): When
+	msg, err := device.GenerateMnemonic(24, false)
+
+	// NOTE(denisacostaq@gmail.com): Assert
+	require.NoError(t, err)
+	success := &messages.Success{}
+	err = proto.Unmarshal(msg.Data, success)
+	require.NoError(t, err)
+}
+
+func TestSet12WordsMnemonicOk(t *testing.T) {
+	// NOTE(denisacostaq@gmail.com): Giving
+	device := testHelperGetDeviceWithBestEffort("TestSet12WordsMnemonicOk", t)
+	require.NotNil(t, device)
+	err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
+	require.NoError(t, err)
+	_, err = device.Wipe()
+	require.NoError(t, err)
+
+	// NOTE(denisacostaq@gmail.com): When
+	seed := "below pear clinic physical stage trust team wrist crystal insect valley pride"
+	msg, err := device.SetMnemonic(seed)
+
+	// NOTE(denisacostaq@gmail.com): Assert
+	require.NoError(t, err)
+	success := &messages.Success{}
+	err = proto.Unmarshal(msg.Data, success)
+	require.NoError(t, err)
+}
+
+func TestSet24WordsMnemonicOk(t *testing.T) {
+	// NOTE(denisacostaq@gmail.com): Giving
+	device := testHelperGetDeviceWithBestEffort("TestSet24WordsMnemonicOk", t)
+	require.NotNil(t, device)
+	err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
+	require.NoError(t, err)
+	_, err = device.Wipe()
+	require.NoError(t, err)
+
+	// NOTE(denisacostaq@gmail.com): When
+	seed := "flash priority hotel stuff hole picnic vessel genre clean eager diesel " +
+		"shaft casual ugly ostrich awkward mechanic split siege round hold crew canal decade"
+	msg, err := device.SetMnemonic(seed)
+
+	// NOTE(denisacostaq@gmail.com): Assert
+	require.NoError(t, err)
+	success := &messages.Success{}
+	err = proto.Unmarshal(msg.Data, success)
+	require.NoError(t, err)
+}
+
+func TestShouldHaveARequireBackupAfterGenerateMnemonic(t *testing.T) {
+	// NOTE(denisacostaq@gmail.com): Giving
+	device := testHelperGetDeviceWithBestEffort("TestShouldHaveARequireBackupAfterGenerateMnemonic", t)
+	require.NotNil(t, device)
+	err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
+	require.NoError(t, err)
+	_, err = device.Wipe()
+	require.NoError(t, err)
+
+	// NOTE(denisacostaq@gmail.com): When
+	msg, err := device.GenerateMnemonic(24, false)
+	require.NoError(t, err)
+	success := &messages.Success{}
+	err = proto.Unmarshal(msg.Data, success)
+	require.NoError(t, err)
+
+	// NOTE(denisacostaq@gmail.com): Assert
+	msg, err = device.GetFeatures()
+	require.NoError(t, err)
+	features := &messages.Features{}
+	require.NoError(t, proto.Unmarshal(msg.Data, features))
+	require.True(t, *features.NeedsBackup)
+}
+
+func TestShouldHaveARequirePinAfterGenerateMnemonic(t *testing.T) {
+	// NOTE(denisacostaq@gmail.com): Giving
+	device := testHelperGetDeviceWithBestEffort("TestShouldHaveARequirePinAfterGenerateMnemonic", t)
+	require.NotNil(t, device)
+	err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
+	require.NoError(t, err)
+	_, err = device.Wipe()
+	require.NoError(t, err)
+
+	// NOTE(denisacostaq@gmail.com): When
+	msg, err := device.GenerateMnemonic(24, false)
+	require.NoError(t, err)
+	success := &messages.Success{}
+	err = proto.Unmarshal(msg.Data, success)
+	require.NoError(t, err)
+
+	// NOTE(denisacostaq@gmail.com): Assert
+	msg, err = device.GetFeatures()
+	require.NoError(t, err)
+	features := &messages.Features{}
+	require.NoError(t, proto.Unmarshal(msg.Data, features))
+	require.False(t, *features.PinProtection)
 }
