@@ -15,7 +15,7 @@ Skycoin Hardware wallet command line interface
     - [Configure device mnemonic](#configure-device-mnemonic)
       - [Examples](#examples-1)
         - [Text output](#text-output-1)
-    - [Generate mnemonic](#generate-mnemonic)
+    - [Ask device to generate mnemonic](#generate-mnemonic)
       - [Examples](#examples-2)
         - [Text output](#text-output-2)
     - [Configure device PIN code](#configure-device-pin-code)
@@ -27,19 +27,19 @@ Skycoin Hardware wallet command line interface
     - [Ask device to check signature](#ask-device-to-check-signature)
       - [Examples](#examples-5)
         - [Text output](#text-output-5)
-  - [Note](#note)
+      - [Note](#note)
     - [Wipe device](#wipe-device)
       - [Examples](#examples-6)
         - [Text output](#text-output-6)
-    - [Backup device](#backup-device)
+    - [Ask the device to perform the seed backup procedure](#backup-device)
       - [Examples](#examples-7)
         - [Text output](#text-output-7)
-    - [Recovery device](#recovery-device)
+    - [Ask the device to perform the seed recovery procedure](#recovery-device)
       - [Examples](#examples-8)
         - [Text output](#text-output-8)
-    - [Device features](#device-features)
-    - [Device cancel](#device-cancel)
-    - [Transaction sign](#transaction-sign)
+    - [Ask the device Features](#device-features)
+    - [Ask the device to cancel the ongoing procedure](#device-cancel)
+    - [Ask the device to sign a transaction using the provided information](#transaction-sign)
 
 <!-- /MarkdownTOC -->
 
@@ -339,7 +339,7 @@ Success 2! address that issued the signature is:
 ```
 </details>
 
-## Note
+#### Note
 
 The `[option]` in subcommand must be set before the rest of the values, otherwise the `option` won't
 be parsed. For example:
