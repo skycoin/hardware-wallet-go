@@ -803,7 +803,25 @@ func TestMsgApplySettingsUnsupportedLanguage(t *testing.T) {
 
 	// NOTE(denisacostaq@gmail.com): When
 	var language = "chinese"
-	resp, err := device.ApplySettings(false, "", language)
+	usePassphrase := false
+	resp, err := device.ApplySettings(&usePassphrase, "", language)
+
+	// NOTE(denisacostaq@gmail.com): Assert
+	require.NoError(t, err)
+	require.Equal(t, messages.MessageType_MessageType_Failure, messages.MessageType(resp.Kind))
+}
+
+func TestMsgApplySettingsNoSettingsFailure(t *testing.T) {
+	// NOTE(denisacostaq@gmail.com): Giving
+	device := testHelperGetDeviceWithBestEffort("TestMsgApplySettingsNoSettingsFailure", t)
+	require.NotNil(t, device)
+	err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
+	require.NoError(t, err)
+	_, err = device.Wipe()
+	require.NoError(t, err)
+
+	// NOTE(denisacostaq@gmail.com): When
+	resp, err := device.ApplySettings(nil, "", "")
 
 	// NOTE(denisacostaq@gmail.com): Assert
 	require.NoError(t, err)
