@@ -308,13 +308,12 @@ func (d *Device) SaveDeviceEntropyInFile(outFile string, entropyBytes uint32, ge
 }
 
 // ApplySettings send ApplySettings request to the device
-func (d *Device) ApplySettings(usePassphrase bool, label string) (wire.Message, error) {
+func (d *Device) ApplySettings(usePassphrase bool, label string, language string) (wire.Message, error) {
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
 	defer d.dev.Close()
-
-	chunks, err := MessageApplySettings(usePassphrase, label)
+	chunks, err := MessageApplySettings(usePassphrase, label, language)
 	if err != nil {
 		return wire.Message{}, err
 	}
@@ -503,8 +502,30 @@ func (d *Device) FirmwareUpload(payload []byte, hash [32]byte) error {
 	}
 
 	switch uploadmsg.Kind {
-	case uint16(messages.MessageType_MessageType_Success):
-		log.Printf("Success %d! FirmwareUpload %s\n", uploadmsg.Kind, uploadmsg.Data)
+	case uint16(messages.MessageType_MessageType_ButtonRequest):
+		log.Println("Please confirm in the device if fingerprints match")
+		// Send ButtonAck
+		chunks, err = MessageButtonAck()
+		if err != nil {
+			return err
+		}
+		resp, err := d.Driver.SendToDevice(d.dev, chunks)
+		if err != nil {
+			return err
+		}
+		switch resp.Kind {
+		case uint16(messages.MessageType_MessageType_Success):
+			return nil
+		case uint16(messages.MessageType_MessageType_Failure):
+			var msgStr string
+			if msgStr, err = DecodeFailMsg(resp); err != nil {
+				return err
+			}
+			return errors.New(msgStr)
+		default:
+			return errors.New("unknown response")
+		}
+		return nil
 	case uint16(messages.MessageType_MessageType_Failure):
 		msg, err := DecodeFailMsg(erasemsg)
 		if err != nil {
@@ -515,13 +536,6 @@ func (d *Device) FirmwareUpload(payload []byte, hash [32]byte) error {
 	default:
 		return fmt.Errorf("received unexpected message type: %s", messages.MessageType(erasemsg.Kind))
 	}
-
-	// Send ButtonAck
-	chunks, err = MessageButtonAck()
-	if err != nil {
-		return err
-	}
-	return d.Driver.SendToDeviceNoAnswer(d.dev, chunks)
 }
 
 // GetFeatures send Features message to the device
@@ -592,7 +606,7 @@ func (d *Device) Recovery(wordCount uint32, usePassphrase, dryRun bool) (wire.Me
 	if err != nil {
 		return msg, err
 	}
-	log.Printf("Recovery device %d! Answer is: %s\n", msg.Kind, msg.Data)
+	log.Printf("Recovery device response kind is: %d\n", msg.Kind)
 
 	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
 		msg, err = d.ButtonAck()
