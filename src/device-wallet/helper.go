@@ -51,6 +51,7 @@ type DeviceDriver interface {
 	SendToDevice(dev io.ReadWriteCloser, chunks [][64]byte) (wire.Message, error)
 	SendToDeviceNoAnswer(dev io.ReadWriteCloser, chunks [][64]byte) error
 	GetDevice() (io.ReadWriteCloser, error)
+	GetDeviceInfos() ([]usb.Info, error)
 	DeviceType() DeviceType
 }
 
@@ -89,6 +90,17 @@ func (drv *Driver) GetDevice() (io.ReadWriteCloser, error) {
 		err = errors.New("No device connected")
 	}
 	return dev, err
+}
+
+func (drv *Driver) GetDeviceInfos() ([]usb.Info, error) {
+	if drv.DeviceType() == DeviceTypeUSB {
+		infos, _, err := getUsbInfo()
+		if err != nil {
+			return nil, err
+		}
+		return infos, nil
+	}
+	return nil, errors.New("reading device info make sense for physical devices only")
 }
 
 func sendToDeviceNoAnswer(dev io.ReadWriteCloser, chunks [][64]byte) error {
