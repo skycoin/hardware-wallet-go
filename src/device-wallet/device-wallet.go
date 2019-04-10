@@ -3,6 +3,7 @@ package devicewallet
 import (
 	"errors"
 	"fmt"
+	"github.com/skycoin/hardware-wallet-go/src/device-wallet/usb"
 	"io"
 	"os"
 	"time"
@@ -129,6 +130,22 @@ func (d *Device) Disconnect() error {
 		return errors.New("device is not connected")
 	}
 	return d.dev.Close()
+}
+
+func (d *Device) GetUsbInfo() ([]usb.Info, error) {
+	if d.Driver.DeviceType() == DeviceTypeUSB {
+		if err := d.Connect(); err != nil {
+			return nil, err
+		}
+		if err := d.Disconnect(); err != nil {
+			return nil, err
+		}
+	}
+	devInfos, err := d.Driver.GetDeviceInfos()
+	if err != nil {
+		return nil, err
+	}
+	return devInfos, nil
 }
 
 // AddressGen Ask the device to generate an address
