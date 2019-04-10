@@ -584,9 +584,9 @@ func TestTransactions(t *testing.T) {
 	require.Equal(t, "2EU3JbveHdkxW6z5tdhbbB2kRAWvXC2pLzw", string(msg.Data[2:]))
 }
 
-func TestNotInitializedAtBirth(t *testing.T) {
+func TestNotInitializedFromFactory(t *testing.T) {
 	// NOTE(denisacostaq@gmail.com): Giving
-	device := testHelperGetDeviceWithBestEffort("TestNotInitializedAtBirth", t)
+	device := testHelperGetDeviceWithBestEffort("TestNotInitializedFromFactory", t)
 	require.NotNil(t, device)
 	err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
 	require.NoError(t, err)
