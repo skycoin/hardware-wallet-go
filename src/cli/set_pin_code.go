@@ -45,6 +45,15 @@ func setPinCode() gcli.Command {
 					return
 				}
 			}
+
+			// handle success or failure msg
+			respMsg, err := deviceWallet.DecodeSuccessOrFailMsg(msg)
+			if err != nil {
+				log.Error(err)
+				return
+			}
+
+			fmt.Println(respMsg)
 		},
 	}
 }
