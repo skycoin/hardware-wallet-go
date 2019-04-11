@@ -6,7 +6,7 @@ import (
 	gcli "github.com/urfave/cli"
 
 	deviceWallet "github.com/skycoin/hardware-wallet-go/src/device-wallet"
-	messages "github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
+	"github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
 )
 
 func setPinCode() gcli.Command {
@@ -45,6 +45,15 @@ func setPinCode() gcli.Command {
 					return
 				}
 			}
+
+			// handle success or failure msg
+			respMsg, err := deviceWallet.DecodeSuccessOrFailMsg(msg)
+			if err != nil {
+				log.Error(err)
+				return
+			}
+
+			fmt.Println(respMsg)
 		},
 	}
 }
