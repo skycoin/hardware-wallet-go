@@ -6,7 +6,7 @@
 
 all: build
 
-build: ## Build project
+build: proto ## Build project
 	cd cmd/cli && ./install.sh
 
 init: ## initiaize submodule
