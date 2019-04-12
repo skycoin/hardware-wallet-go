@@ -37,3 +37,7 @@
   name = "github.com/skycoin/skycoin"
   version = "0.25.0"
 
+[[constraint]]
+  name = "github.com/skycoin/hardware-wallet-protob"
+  branch = "add-generated-go-proto-files"
+

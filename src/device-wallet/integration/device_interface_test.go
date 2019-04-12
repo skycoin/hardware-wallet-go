@@ -10,8 +10,9 @@ import (
 
 	"github.com/skycoin/skycoin/src/util/logging"
 
+	messages "github.com/skycoin/hardware-wallet-protob/go"
+
 	deviceWallet "github.com/skycoin/hardware-wallet-go/src/device-wallet"
-	messages "github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
 	"github.com/skycoin/hardware-wallet-go/src/device-wallet/wire"
 )
 
