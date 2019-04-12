@@ -33,7 +33,7 @@ func getUsbDetails() gcli.Command {
 			for infoIdx := range infos {
 				log.Infoln("-----------------------------------------")
 				if infos[infoIdx].VendorID == deviceWallet.SkycoinVendorID {
-					log.Printf("%-13d%-5s%s", infos[infoIdx].VendorID, "==>", "Skycoin Fundation")
+					log.Printf("%-13d%-5s%s", infos[infoIdx].VendorID, "==>", "Skycoin Foundation")
 				}
 				if infos[infoIdx].ProductID == deviceWallet.SkycoinHwProductID {
 					log.Printf("%-13d%-5s%s", infos[infoIdx].ProductID, "==>", "Hardware Wallet")
