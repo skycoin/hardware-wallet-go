@@ -27,9 +27,6 @@ test_integration: ## Run integration tests
 
 test: test_unit test_integration ## Run all tests
 
-clean: ## Delete temporary build files
-	make -C src/device-wallet/messages clean-go
-
 install-linters: ## Install linters
 	go get -u github.com/FiloSottile/vendorcheck
 	# For some reason this install method is not recommended, see https://github.com/golangci/golangci-lint#install
