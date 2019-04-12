@@ -11,7 +11,8 @@ import (
 
 	"github.com/skycoin/skycoin/src/util/logging"
 
-	messages "github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
+	messages "github.com/skycoin/hardware-wallet-protob/go"
+
 	"github.com/skycoin/hardware-wallet-go/src/device-wallet/wire"
 )
 
@@ -41,7 +42,7 @@ const (
 // Devicer provides api for the hw wallet functions
 type Devicer interface {
 	AddressGen(addressN, startIndex int, confirmAddress bool) (wire.Message, error)
-	ApplySettings(usePassphrase bool, label string) (wire.Message, error)
+	ApplySettings(usePassphrase bool, label string, language string) (wire.Message, error)
 	Backup() (wire.Message, error)
 	Cancel() (wire.Message, error)
 	CheckMessageSignature(message, signature, address string) (wire.Message, error)
