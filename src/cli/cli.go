@@ -88,6 +88,7 @@ func NewApp() (*App, error) {
 		signMessageCmd(),
 		checkMessageSignatureCmd(),
 		setPinCode(),
+		removePinCode(),
 		wipeCmd(),
 		backupCmd(),
 		recoveryCmd(),

@@ -421,12 +421,12 @@ func (d *Device) CheckMessageSignature(message, signature, address string) (wire
 // To set the PIN "12345", the positions are:
 // top, bottom-right, top-left, right, top-right
 // so you must send "83769".
-func (d *Device) ChangePin() (wire.Message, error) {
+func (d *Device) ChangePin(removePin *bool) (wire.Message, error) {
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
 	defer d.dev.Close()
-	chunks, err := MessageChangePin()
+	chunks, err := MessageChangePin(removePin)
 	if err != nil {
 		return wire.Message{}, err
 	}

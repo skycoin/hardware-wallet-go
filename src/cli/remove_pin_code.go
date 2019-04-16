@@ -10,11 +10,11 @@ import (
 	deviceWallet "github.com/skycoin/hardware-wallet-go/src/device-wallet"
 )
 
-func setPinCode() gcli.Command {
-	name := "setPinCode"
+func removePinCode() gcli.Command {
+	name := "removePinCode"
 	return gcli.Command{
 		Name:        name,
-		Usage:       "Configure a PIN code on a device.",
+		Usage:       "Remove a PIN code on a device.",
 		Description: "",
 		Flags: []gcli.Flag{
 			gcli.StringFlag{
@@ -31,7 +31,9 @@ func setPinCode() gcli.Command {
 			}
 
 			var pinEnc string
-			msg, err := device.ChangePin(nil)
+			removePin := new(bool)
+			*removePin = true
+			msg, err := device.ChangePin(removePin)
 			if err != nil {
 				log.Error(err)
 				return

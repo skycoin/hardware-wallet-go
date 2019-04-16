@@ -152,8 +152,11 @@ func MessageBackup() ([][64]byte, error) {
 }
 
 // MessageChangePin prepare MessageChangePin request
-func MessageChangePin() ([][64]byte, error) {
+func MessageChangePin(remove *bool) ([][64]byte, error) {
 	changePin := &messages.ChangePin{}
+	if remove != nil {
+		changePin.Remove = proto.Bool(*remove)
+	}
 	data, err := proto.Marshal(changePin)
 	if err != nil {
 		return [][64]byte{}, err
