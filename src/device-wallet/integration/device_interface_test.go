@@ -2,23 +2,30 @@ package integration
 
 import (
 	"fmt"
-	"log"
+	"os"
 	"testing"
 
 	"github.com/gogo/protobuf/proto"
 	"github.com/stretchr/testify/require"
 
+	"github.com/skycoin/skycoin/src/util/logging"
+
+	messages "github.com/skycoin/hardware-wallet-protob/go"
+
 	deviceWallet "github.com/skycoin/hardware-wallet-go/src/device-wallet"
-	messages "github.com/skycoin/hardware-wallet-go/src/device-wallet/messages/go"
 	"github.com/skycoin/hardware-wallet-go/src/device-wallet/wire"
+)
+
+var (
+	log = logging.MustGetLogger("device-interface-tests")
 )
 
 func testHelperGetDeviceWithBestEffort(testName string, t *testing.T) *deviceWallet.Device {
 	emDevice := deviceWallet.NewDevice(deviceWallet.DeviceTypeEmulator)
 	usbDevice := deviceWallet.NewDevice(deviceWallet.DeviceTypeUSB)
-	if usbDevice.Connected() {
+	if usbDevice.Connect() == nil {
 		return usbDevice
-	} else if emDevice.Connected() {
+	} else if emDevice.Connect() == nil {
 		return emDevice
 	}
 	t.Skip(testName + " does not work if neither Emulator nor USB device is connected")
@@ -123,6 +130,7 @@ func TestGetAddressUsb(t *testing.T) {
 		t.Skip("TestGetAddressUsb do not work if Usb device is not connected")
 		return
 	}
+	require.NoError(t, device.Disconnect())
 
 	_, err := device.Wipe()
 	require.NoError(t, err)
@@ -138,13 +146,57 @@ func TestGetAddressUsb(t *testing.T) {
 	require.Equal(t, addresses[1], "zC8GAQGQBfwk7vtTxVoRG7iMperHNuyYPs")
 }
 
+func TestGetDeviceEntropyShouldWorkOk(t *testing.T) {
+	// NOTE(denisacostaq@gmail.com): Giving
+	device := deviceWallet.NewDevice(deviceWallet.DeviceTypeUSB)
+	if err := device.Connect(); err != nil {
+		log.Errorln(err)
+	}
+	if !device.Connected() {
+		t.Skip("TestGetDeviceEntropyShouldWorkOk do not work if Usb device is not connected")
+		return
+	}
+	require.NoError(t, device.Disconnect())
+	msg, err := device.Wipe()
+	require.NoError(t, err)
+	_, err = deviceWallet.DecodeSuccessMsg(msg)
+	require.NoError(t, err)
+	msg, err = device.GenerateMnemonic(24, false)
+	require.NoError(t, err)
+	_, err = deviceWallet.DecodeSuccessMsg(msg)
+	require.NoError(t, err)
+	bytesAmounts := [...]uint32{13, 985, 100000, 1024}
+	generators := [...]func(entropyBytes uint32) ([][64]byte, error){
+		deviceWallet.MessageDeviceGetRawEntropy,
+		deviceWallet.MessageDeviceGetMixedEntropy,
+	}
+
+	for gIdx := range generators {
+		for bytesAmountsIdx := range bytesAmounts {
+			outFile := fmt.Sprint(os.TempDir(), "/", os.Getpid())
+			// NOTE(denisacostaq@gmail.com): When
+			err = device.SaveDeviceEntropyInFile(
+				outFile, bytesAmounts[bytesAmountsIdx], generators[gIdx])
+			// NOTE(denisacostaq@gmail.com): Assert
+			require.NoError(t, err)
+			fileInfo, err := os.Stat(outFile)
+			require.NoError(t, err)
+			require.Equal(t, int64(bytesAmounts[bytesAmountsIdx]), fileInfo.Size())
+		}
+	}
+}
+
 func TestGetAddressEmulator(t *testing.T) {
 	device := deviceWallet.NewDevice(deviceWallet.DeviceTypeEmulator)
 	require.NotNil(t, device)
+	if err := device.Connect(); err != nil {
+		log.Error(err)
+	}
 	if !device.Connected() {
 		t.Skip("TestGetAddressEmulator do not work if emulator is not running")
 		return
 	}
+	require.NoError(t, device.Disconnect())
 
 	err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
 	require.NoError(t, err)

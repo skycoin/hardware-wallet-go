@@ -10,36 +10,9 @@
   version = "v1.1.1"
 
 [[projects]]
-  digest = "1:4f273b18dc6d0f8632ef9881736b6d16cb748ace9ad7bc3a495eca3735bef68a"
+  digest = "1:48092bf6632f55839850666c33469f546f6d45fdbd59a66759ec12e84d853dc2"
   name = "github.com/gogo/protobuf"
-  packages = [
-    "gogoproto",
-    "plugin/compare",
-    "plugin/defaultcheck",
-    "plugin/description",
-    "plugin/embedcheck",
-    "plugin/enumstringer",
-    "plugin/equal",
-    "plugin/face",
-    "plugin/gostring",
-    "plugin/marshalto",
-    "plugin/oneofcheck",
-    "plugin/populate",
-    "plugin/size",
-    "plugin/stringer",
-    "plugin/testgen",
-    "plugin/union",
-    "plugin/unmarshal",
-    "proto",
-    "protoc-gen-gofast",
-    "protoc-gen-gogo/descriptor",
-    "protoc-gen-gogo/generator",
-    "protoc-gen-gogo/generator/internal/remap",
-    "protoc-gen-gogo/grpc",
-    "protoc-gen-gogo/plugin",
-    "vanity",
-    "vanity/command",
-  ]
+  packages = ["proto"]
   pruneopts = "UT"
   revision = "ba06b47c162d49f2af050fb4c75bcbc86a159d5c"
   version = "v1.2.1"
@@ -93,6 +66,16 @@
   version = "v1.4.1"
 
 [[projects]]
+  digest = "1:ec7e836da96f6206b40ed8afb39c936364ee1a983284db0007999f32f1bfece6"
+  name = "github.com/skycoin/hardware-wallet-protob"
+  packages = [
+    "go",
+    "go/google/protobuf",
+  ]
+  pruneopts = "UT"
+  revision = "521ecbcc7aba367b8e347fcc3fce12c942c59eba"
+
+[[projects]]
   digest = "1:cda151c59579fb3fe777cc9334e328cb72bd11088ea473ec0af5dc6b87540d1f"
   name = "github.com/skycoin/skycoin"
   packages = [
@@ -142,18 +125,18 @@
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
   pruneopts = "UT"
-  revision = "8e1b8d32e692162a446e97250c5d34f5a52efed6"
+  revision = "88737f569e3a9c7ab309cdc09a07fe7fc87233c3"
 
 [[projects]]
   branch = "master"
-  digest = "1:913c195027e7f4a5773d571e6a56af3a1dd66c06447ba8e2dd9ffa4dfcab47d3"
+  digest = "1:32a91fdcb8f4ae0b2376129fe0091963fa1bbf42d4c1826ad41f7b6410f385c0"
   name = "golang.org/x/sys"
   packages = [
     "unix",
     "windows",
   ]
   pruneopts = "UT"
-  revision = "81d4e9dc473e5e8c933f2aaeba2a3d81efb9aed2"
+  revision = "12500544f89f9420afe9529ba8940bf72d294972"
 
 [solve-meta]
   analyzer-name = "dep"
@@ -161,7 +144,7 @@
   input-imports = [
     "github.com/davecgh/go-spew/spew",
     "github.com/gogo/protobuf/proto",
-    "github.com/gogo/protobuf/protoc-gen-gofast",
+    "github.com/skycoin/hardware-wallet-protob/go",
     "github.com/skycoin/skycoin/src/cipher",
     "github.com/skycoin/skycoin/src/util/logging",
     "github.com/stretchr/testify/mock",

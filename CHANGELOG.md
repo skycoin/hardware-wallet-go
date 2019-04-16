@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 
+- Add a progress bar, currently used in get entropy messages only.
+- Add a `getRawEntropy` and `getMixedEntropy` to get entropy from the physical device.
 - Use `protobuf` file definitions from a [`git submodule`](http://github.com/skycoin/hardware-wallet-protob.git).
 - Mnemonic and recovery functions support `--wordCount` argument for seed sizes of `24` and `12` (default) .
 - Add `-deviceType` flag and `DEVICE_TYPE` env var to set devicetype, options are `USB` or `EMULATOR`.
@@ -19,6 +21,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Sign Skycoin transactions using `transactionSign` command.
 - Add `SimulateButtonPress` function to simulate emulator button press.
 - Define the device language through `-language` flag of `applySettings` command. Only `english` supported.
+- Only connect to `USB` devices announcing Skycoin vendor and product through HID.
 
 ### Fixed
 
@@ -27,7 +30,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Changed
 
-- Change project structure to follow standard project layout
+- Change project structure to follow standard project layout.
+- Replace `hardware-wallet-protob` submodule with a dep dependency.
 
 ### Removed
 
