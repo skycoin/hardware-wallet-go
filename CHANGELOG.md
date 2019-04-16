@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Sign Skycoin transactions using `transactionSign` command.
 - Add `SimulateButtonPress` function to simulate emulator button press.
 - Define the device language through `-language` flag of `applySettings` command. Only `english` supported.
-- Replace `hw-protob` submodule with a dep dependency.
+- Only connect to `USB` devices announcing Skycoin vendor and product through HID.
 
 ### Fixed
 
@@ -30,8 +30,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Changed
 
-- Opening an `USB` device apply a filter for vendor and product.
-- Change project structure to follow standard project layout
+- Change project structure to follow standard project layout.
+- Replace `hardware-wallet-protob` submodule with a dep dependency.
 
 ### Removed
 
