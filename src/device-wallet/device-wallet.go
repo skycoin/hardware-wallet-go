@@ -7,6 +7,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/skycoin/hardware-wallet-go/src/device-wallet/usb"
+
 	"github.com/skycoin/skycoin/src/util/logging"
 
 	messages "github.com/skycoin/hardware-wallet-protob/go"
@@ -130,6 +132,23 @@ func (d *Device) Disconnect() error {
 		return errors.New("device is not connected")
 	}
 	return d.dev.Close()
+}
+
+// GetUsbInfo returns information from the attached usb
+func (d *Device) GetUsbInfo() ([]usb.Info, error) {
+	if d.Driver.DeviceType() == DeviceTypeUSB {
+		if err := d.Connect(); err != nil {
+			return nil, err
+		}
+		if err := d.Disconnect(); err != nil {
+			return nil, err
+		}
+	}
+	devInfos, err := d.Driver.GetDeviceInfos()
+	if err != nil {
+		return nil, err
+	}
+	return devInfos, nil
 }
 
 // AddressGen Ask the device to generate an address

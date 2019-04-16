@@ -28,10 +28,6 @@
   go-tests = true
   unused-packages = true
 
-[[constraint]]
-  name = "github.com/gogo/protobuf"
-  version = "1.2.0"
-
 
 [[constraint]]
   name = "github.com/skycoin/skycoin"
