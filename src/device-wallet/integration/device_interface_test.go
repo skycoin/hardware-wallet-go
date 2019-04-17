@@ -851,9 +851,11 @@ func TestMsgApplySettingsUnsupportedLanguage(t *testing.T) {
 	// NOTE(denisacostaq@gmail.com): Giving
 	device := testHelperGetDeviceWithBestEffort("TestMsgApplySettingsUnsupportedLanguage", t)
 	require.NotNil(t, device)
-	err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
-	require.NoError(t, err)
-	_, err = device.Wipe()
+	if device.Driver.DeviceType() == deviceWallet.DeviceTypeEmulator {
+		err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
+		require.NoError(t, err)
+	}
+	_, err := device.Wipe()
 	require.NoError(t, err)
 
 	// NOTE(denisacostaq@gmail.com): When
@@ -863,6 +865,14 @@ func TestMsgApplySettingsUnsupportedLanguage(t *testing.T) {
 
 	// NOTE(denisacostaq@gmail.com): Assert
 	require.NoError(t, err)
+	require.Equal(t, messages.MessageType_MessageType_ButtonRequest, messages.MessageType(resp.Kind))
+	for resp.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
+		resp, err = device.ButtonAck()
+		if err != nil {
+			log.Error(err)
+			return
+		}
+	}
 	require.Equal(t, messages.MessageType_MessageType_Failure, messages.MessageType(resp.Kind))
 }
 
