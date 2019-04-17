@@ -66,14 +66,11 @@
   version = "v1.4.1"
 
 [[projects]]
-  digest = "1:ec7e836da96f6206b40ed8afb39c936364ee1a983284db0007999f32f1bfece6"
+  digest = "1:eb1b93f8764dee90d516c3f33e752f4a7574f95952e06aedcd13feff364e8813"
   name = "github.com/skycoin/hardware-wallet-protob"
-  packages = [
-    "go",
-    "go/google/protobuf",
-  ]
+  packages = ["go"]
   pruneopts = "UT"
-  revision = "521ecbcc7aba367b8e347fcc3fce12c942c59eba"
+  revision = "af1e50e95799dd3b37b05a8c28722a20ac1a15e4"
 
 [[projects]]
   digest = "1:cda151c59579fb3fe777cc9334e328cb72bd11088ea473ec0af5dc6b87540d1f"
@@ -125,7 +122,7 @@
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
   pruneopts = "UT"
-  revision = "88737f569e3a9c7ab309cdc09a07fe7fc87233c3"
+  revision = "f416ebab96af27ca70b6e5c23d6a0747530da626"
 
 [[projects]]
   branch = "master"
