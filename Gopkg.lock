@@ -10,36 +10,9 @@
   version = "v1.1.1"
 
 [[projects]]
-  digest = "1:4f273b18dc6d0f8632ef9881736b6d16cb748ace9ad7bc3a495eca3735bef68a"
+  digest = "1:48092bf6632f55839850666c33469f546f6d45fdbd59a66759ec12e84d853dc2"
   name = "github.com/gogo/protobuf"
-  packages = [
-    "gogoproto",
-    "plugin/compare",
-    "plugin/defaultcheck",
-    "plugin/description",
-    "plugin/embedcheck",
-    "plugin/enumstringer",
-    "plugin/equal",
-    "plugin/face",
-    "plugin/gostring",
-    "plugin/marshalto",
-    "plugin/oneofcheck",
-    "plugin/populate",
-    "plugin/size",
-    "plugin/stringer",
-    "plugin/testgen",
-    "plugin/union",
-    "plugin/unmarshal",
-    "proto",
-    "protoc-gen-gofast",
-    "protoc-gen-gogo/descriptor",
-    "protoc-gen-gogo/generator",
-    "protoc-gen-gogo/generator/internal/remap",
-    "protoc-gen-gogo/grpc",
-    "protoc-gen-gogo/plugin",
-    "vanity",
-    "vanity/command",
-  ]
+  packages = ["proto"]
   pruneopts = "UT"
   revision = "ba06b47c162d49f2af050fb4c75bcbc86a159d5c"
   version = "v1.2.1"
@@ -93,11 +66,14 @@
   version = "v1.4.1"
 
 [[projects]]
-  digest = "1:eb1b93f8764dee90d516c3f33e752f4a7574f95952e06aedcd13feff364e8813"
+  digest = "1:e56b461c5c6c04e0683f17d9fd6aa71dfee26e839ddad63d822524a542b70044"
   name = "github.com/skycoin/hardware-wallet-protob"
-  packages = ["go"]
+  packages = [
+    "go",
+    "go/google/protobuf",
+  ]
   pruneopts = "UT"
-  revision = "af1e50e95799dd3b37b05a8c28722a20ac1a15e4"
+  revision = "5a85b72b2efade943f2ef0ca149a2a76dcf052af"
 
 [[projects]]
   digest = "1:cda151c59579fb3fe777cc9334e328cb72bd11088ea473ec0af5dc6b87540d1f"
@@ -168,7 +144,6 @@
   input-imports = [
     "github.com/davecgh/go-spew/spew",
     "github.com/gogo/protobuf/proto",
-    "github.com/gogo/protobuf/protoc-gen-gofast",
     "github.com/skycoin/hardware-wallet-protob/go",
     "github.com/skycoin/skycoin/src/cipher",
     "github.com/skycoin/skycoin/src/util/logging",
