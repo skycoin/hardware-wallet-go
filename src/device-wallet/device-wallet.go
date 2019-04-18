@@ -42,11 +42,12 @@ const (
 // Devicer provides api for the hw wallet functions
 type Devicer interface {
 	AddressGen(addressN, startIndex int, confirmAddress bool) (wire.Message, error)
-	ApplySettings(usePassphrase bool, label string, language string) (wire.Message, error)
+	ApplySettings(usePassphrase *bool, label string, language string) (wire.Message, error)
 	Backup() (wire.Message, error)
 	Cancel() (wire.Message, error)
 	CheckMessageSignature(message, signature, address string) (wire.Message, error)
-	ChangePin() (wire.Message, error)
+	ChangePin(removePin *bool) (wire.Message, error)
+	Connected() bool
 	Available() bool
 	FirmwareUpload(payload []byte, hash [32]byte) error
 	GetFeatures() (wire.Message, error)
