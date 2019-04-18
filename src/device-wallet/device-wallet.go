@@ -47,7 +47,7 @@ type Devicer interface {
 	Cancel() (wire.Message, error)
 	CheckMessageSignature(message, signature, address string) (wire.Message, error)
 	ChangePin() (wire.Message, error)
-	Connected() bool
+	Available() bool
 	FirmwareUpload(payload []byte, hash [32]byte) error
 	GetFeatures() (wire.Message, error)
 	GenerateMnemonic(wordCount uint32, usePassphrase bool) (wire.Message, error)
@@ -447,10 +447,14 @@ func (d *Device) ChangePin(removePin *bool) (wire.Message, error) {
 	return msg, nil
 }
 
-// Connected check if a device is connected
+// Connected checks if we can communicate with a connected skycoin wallet
 func (d *Device) Connected() bool {
 	if d.dev == nil {
-		return false
+		if err := d.Connect(); err != nil {
+			log.Error(err)
+			return false
+		}
+		defer d.dev.Close()
 	}
 	chunks, err := MessageConnected()
 	if err != nil {
@@ -469,6 +473,21 @@ func (d *Device) Connected() bool {
 		return false
 	}
 	return msg.Kind == uint16(messages.MessageType_MessageType_Success)
+}
+
+// Available checks if a skycoin wallet is connected to the system
+func (d *Device) Available() bool {
+	infos, _, err := getUsbInfo()
+	if err != nil {
+		log.Error(err)
+		return false
+	}
+
+	if len(infos) <= 0 {
+		return false
+	}
+
+	return true
 }
 
 // FirmwareUpload Updates device's firmware

@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Add `SimulateButtonPress` function to simulate emulator button press.
 - Define the device language through `-language` flag of `applySettings` command. Only `english` supported.
 - Only connect to `USB` devices announcing Skycoin vendor and product through HID.
+- Add `Available` function to check if a skycoin wallet is connected to the system.
 
 ### Fixed
 
