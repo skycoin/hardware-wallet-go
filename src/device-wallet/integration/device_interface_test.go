@@ -764,3 +764,131 @@ func TestShouldHaveARequirePinAfterGenerateMnemonic(t *testing.T) {
 	require.NoError(t, proto.Unmarshal(msg.Data, features))
 	require.False(t, *features.PinProtection)
 }
+
+func TestMsgApplySettingsLabelGetFeaturesSuccess(t *testing.T) {
+	// NOTE(denisacostaq@gmail.com): Giving
+	device := testHelperGetDeviceWithBestEffort("TestMsgApplySettingsLabelGetFeaturesSuccess", t)
+	require.NotNil(t, device)
+	err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
+	require.NoError(t, err)
+	_, err = device.Wipe()
+	require.NoError(t, err)
+
+	// NOTE(denisacostaq@gmail.com): When
+	var label = "my custom device label"
+	usePassphrase := false
+	resp, err := device.ApplySettings(&usePassphrase, label, "")
+	require.NoError(t, err)
+	for resp.Kind != uint16(messages.MessageType_MessageType_Failure) && resp.Kind != uint16(messages.MessageType_MessageType_Success) {
+		require.Equal(t, messages.MessageType_MessageType_ButtonRequest, messages.MessageType(resp.Kind))
+		resp, err = device.ButtonAck()
+		require.NoError(t, err)
+	}
+
+	// NOTE(denisacostaq@gmail.com): Assert
+	resp, err = device.GetFeatures()
+	require.NoError(t, err)
+	require.Equal(t, messages.MessageType_MessageType_Features, messages.MessageType(resp.Kind))
+	features := &messages.Features{}
+	err = proto.Unmarshal(resp.Data, features)
+	require.NoError(t, err)
+	require.NotNil(t, features.Label)
+	require.Equal(t, label, *features.Label)
+}
+
+func TestMsgApplySettingsLabelShouldNotBeReset(t *testing.T) {
+	// NOTE(denisacostaq@gmail.com): Giving
+	device := testHelperGetDeviceWithBestEffort("TestMsgApplySettingsLabelShouldNotBeReset", t)
+	require.NotNil(t, device)
+	err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
+	require.NoError(t, err)
+	_, err = device.Wipe()
+	require.NoError(t, err)
+
+	// NOTE(denisacostaq@gmail.com): When
+	var label = "my custom device label"
+	usePassphrase := false
+	resp, err := device.ApplySettings(&usePassphrase, label, "")
+	require.NoError(t, err)
+	for resp.Kind != uint16(messages.MessageType_MessageType_Failure) && resp.Kind != uint16(messages.MessageType_MessageType_Success) {
+		require.Equal(t, messages.MessageType_MessageType_ButtonRequest, messages.MessageType(resp.Kind))
+		resp, err = device.ButtonAck()
+		require.NoError(t, err)
+	}
+	resp, err = device.GetFeatures()
+	require.NoError(t, err)
+	require.Equal(t, messages.MessageType_MessageType_Features, messages.MessageType(resp.Kind))
+	features := &messages.Features{}
+	err = proto.Unmarshal(resp.Data, features)
+	require.NoError(t, err)
+	require.NotNil(t, features.Label)
+	require.Equal(t, label, *features.Label)
+	require.NotNil(t, features.PassphraseProtection)
+	require.Equal(t, false, *features.PassphraseProtection)
+
+	// NOTE(denisacostaq@gmail.com): Assert
+	usePassphrase = true
+	resp, err = device.ApplySettings(&usePassphrase, "", "")
+	require.NoError(t, err)
+	for resp.Kind != uint16(messages.MessageType_MessageType_Failure) && resp.Kind != uint16(messages.MessageType_MessageType_Success) {
+		require.Equal(t, messages.MessageType_MessageType_ButtonRequest, messages.MessageType(resp.Kind))
+		resp, err = device.ButtonAck()
+		require.NoError(t, err)
+	}
+	resp, err = device.GetFeatures()
+	require.NoError(t, err)
+	require.Equal(t, messages.MessageType_MessageType_Features, messages.MessageType(resp.Kind))
+	features = &messages.Features{}
+	err = proto.Unmarshal(resp.Data, features)
+	require.NoError(t, err)
+	require.NotNil(t, features.Label)
+	require.Equal(t, label, *features.Label)
+	require.NotNil(t, features.PassphraseProtection)
+	require.Equal(t, true, *features.PassphraseProtection)
+}
+
+func TestMsgApplySettingsUnsupportedLanguage(t *testing.T) {
+	// NOTE(denisacostaq@gmail.com): Giving
+	device := testHelperGetDeviceWithBestEffort("TestMsgApplySettingsUnsupportedLanguage", t)
+	require.NotNil(t, device)
+	if device.Driver.DeviceType() == deviceWallet.DeviceTypeEmulator {
+		err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
+		require.NoError(t, err)
+	}
+	_, err := device.Wipe()
+	require.NoError(t, err)
+
+	// NOTE(denisacostaq@gmail.com): When
+	var language = "chinese"
+	usePassphrase := false
+	resp, err := device.ApplySettings(&usePassphrase, "", language)
+
+	// NOTE(denisacostaq@gmail.com): Assert
+	require.NoError(t, err)
+	require.Equal(t, messages.MessageType_MessageType_ButtonRequest, messages.MessageType(resp.Kind))
+	for resp.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
+		resp, err = device.ButtonAck()
+		if err != nil {
+			log.Error(err)
+			return
+		}
+	}
+	require.Equal(t, messages.MessageType_MessageType_Failure, messages.MessageType(resp.Kind))
+}
+
+func TestMsgApplySettingsNoSettingsFailure(t *testing.T) {
+	// NOTE(denisacostaq@gmail.com): Giving
+	device := testHelperGetDeviceWithBestEffort("TestMsgApplySettingsNoSettingsFailure", t)
+	require.NotNil(t, device)
+	err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
+	require.NoError(t, err)
+	_, err = device.Wipe()
+	require.NoError(t, err)
+
+	// NOTE(denisacostaq@gmail.com): When
+	resp, err := device.ApplySettings(nil, "", "")
+
+	// NOTE(denisacostaq@gmail.com): Assert
+	require.NoError(t, err)
+	require.Equal(t, messages.MessageType_MessageType_Failure, messages.MessageType(resp.Kind))
+}
