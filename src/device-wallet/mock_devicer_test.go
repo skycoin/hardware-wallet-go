@@ -53,6 +53,20 @@ func (_m *MockDevicer) ApplySettings(usePassphrase bool, label string, language 
 	return r0, r1
 }
 
+// Available provides a mock function with given fields:
+func (_m *MockDevicer) Available() bool {
+	ret := _m.Called()
+
+	var r0 bool
+	if rf, ok := ret.Get(0).(func() bool); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	return r0
+}
+
 // Backup provides a mock function with given fields:
 func (_m *MockDevicer) Backup() (wire.Message, error) {
 	ret := _m.Called()
@@ -156,20 +170,6 @@ func (_m *MockDevicer) CheckMessageSignature(message string, signature string, a
 	}
 
 	return r0, r1
-}
-
-// Connected provides a mock function with given fields:
-func (_m *MockDevicer) Connected() bool {
-	ret := _m.Called()
-
-	var r0 bool
-	if rf, ok := ret.Get(0).(func() bool); ok {
-		r0 = rf()
-	} else {
-		r0 = ret.Get(0).(bool)
-	}
-
-	return r0
 }
 
 // FirmwareUpload provides a mock function with given fields: payload, hash
