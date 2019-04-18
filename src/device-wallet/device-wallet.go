@@ -451,11 +451,7 @@ func (d *Device) ChangePin(removePin *bool) (wire.Message, error) {
 // Connected checks if we can communicate with a connected skycoin wallet
 func (d *Device) Connected() bool {
 	if d.dev == nil {
-		if err := d.Connect(); err != nil {
-			log.Error(err)
-			return false
-		}
-		defer d.dev.Close()
+		return false
 	}
 	chunks, err := MessageConnected()
 	if err != nil {

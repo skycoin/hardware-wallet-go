@@ -57,7 +57,7 @@ func (suite *devicerSuit) TestGenerateMnemonic() {
 	spew.Dump(msg)
 }
 
-func (suite *devicerSuit) TestDevicerInterfaceImplemented() {
+func (suite *devicerSuit) TestInterfacesImplemented() {
  	var _ Devicer = (*Device)(nil)
  	var _ DeviceDriver = (*Driver)(nil)
 }
