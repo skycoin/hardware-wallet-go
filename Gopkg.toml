@@ -35,4 +35,8 @@
 
 [[constraint]]
   name = "github.com/skycoin/hardware-wallet-protob"
-  revision = "5a85b72b2efade943f2ef0ca149a2a76dcf052af"
+  revision = "3ca36319c37b0d3092c93ced4fb5f3cab2a436b4"
+
+[[constraint]]
+  name = "github.com/gogo/protobuf"
+  version = "1.2.1"

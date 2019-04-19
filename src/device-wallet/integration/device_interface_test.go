@@ -3,6 +3,7 @@ package integration
 import (
 	"fmt"
 	"os"
+	"runtime"
 	"testing"
 
 	"github.com/gogo/protobuf/proto"
@@ -10,7 +11,7 @@ import (
 
 	"github.com/skycoin/skycoin/src/util/logging"
 
-	messages "github.com/skycoin/hardware-wallet-protob/go"
+	"github.com/skycoin/hardware-wallet-protob/go"
 
 	deviceWallet "github.com/skycoin/hardware-wallet-go/src/device-wallet"
 	"github.com/skycoin/hardware-wallet-go/src/device-wallet/wire"
@@ -40,7 +41,8 @@ func TestDevice(t *testing.T) {
 	// var inputWord string
 	// var err error
 
-	if device.Driver.DeviceType() == deviceWallet.DeviceTypeEmulator {
+	if device.Driver.DeviceType() == deviceWallet.DeviceTypeEmulator &&
+		runtime.GOOS != "darwin" { // autopress doesnt work on macos
 		err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
 		require.NoError(t, err)
 	}
@@ -198,10 +200,12 @@ func TestGetAddressEmulator(t *testing.T) {
 	}
 	require.NoError(t, device.Disconnect())
 
-	err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
-	require.NoError(t, err)
+	if runtime.GOOS != "darwin" { // autopress doesnt work on macos
+		err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
+		require.NoError(t, err)
+	}
 
-	_, err = device.Wipe()
+	_, err := device.Wipe()
 	require.NoError(t, err)
 
 	_, err = device.SetMnemonic("cloud flower upset remain green metal below cup stem infant art thank")
@@ -222,7 +226,8 @@ func TransactionToDevice(t *testing.T, deviceType deviceWallet.DeviceType, trans
 		t.Fatalf("invalid device type: %s", deviceType)
 	}
 
-	if device.Driver.DeviceType() == deviceWallet.DeviceTypeEmulator {
+	if device.Driver.DeviceType() == deviceWallet.DeviceTypeEmulator &&
+		runtime.GOOS != "darwin" { // autopress doesnt work on macos
 		err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
 		require.NoError(t, err)
 	}
@@ -264,7 +269,8 @@ func TestTransactions(t *testing.T) {
 	device := testHelperGetDeviceWithBestEffort("TestTransactions", t)
 	require.NotNil(t, device)
 
-	if device.Driver.DeviceType() == deviceWallet.DeviceTypeEmulator {
+	if device.Driver.DeviceType() == deviceWallet.DeviceTypeEmulator &&
+		runtime.GOOS != "darwin" { // autopress doesnt work on macos
 		err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
 		require.NoError(t, err)
 	}
@@ -640,9 +646,14 @@ func TestNotInitializedFromFactory(t *testing.T) {
 	// NOTE(denisacostaq@gmail.com): Giving
 	device := testHelperGetDeviceWithBestEffort("TestNotInitializedFromFactory", t)
 	require.NotNil(t, device)
-	err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
-	require.NoError(t, err)
-	_, err = device.Wipe()
+
+	if device.Driver.DeviceType() == deviceWallet.DeviceTypeEmulator &&
+		runtime.GOOS != "darwin" { // autopress doesnt work on macos
+		err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
+		require.NoError(t, err)
+	}
+
+	_, err := device.Wipe()
 	require.NoError(t, err)
 
 	// NOTE(denisacostaq@gmail.com): When
@@ -661,9 +672,14 @@ func TestGenerateMnemonicOk(t *testing.T) {
 	// NOTE(denisacostaq@gmail.com): Giving
 	device := testHelperGetDeviceWithBestEffort("TestGenerateMnemonicOk", t)
 	require.NotNil(t, device)
-	err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
-	require.NoError(t, err)
-	_, err = device.Wipe()
+
+	if device.Driver.DeviceType() == deviceWallet.DeviceTypeEmulator &&
+		runtime.GOOS != "darwin" { // autopress doesnt work on macos
+		err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
+		require.NoError(t, err)
+	}
+
+	_, err := device.Wipe()
 	require.NoError(t, err)
 
 	// NOTE(denisacostaq@gmail.com): When
@@ -680,9 +696,14 @@ func TestSet12WordsMnemonicOk(t *testing.T) {
 	// NOTE(denisacostaq@gmail.com): Giving
 	device := testHelperGetDeviceWithBestEffort("TestSet12WordsMnemonicOk", t)
 	require.NotNil(t, device)
-	err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
-	require.NoError(t, err)
-	_, err = device.Wipe()
+
+	if device.Driver.DeviceType() == deviceWallet.DeviceTypeEmulator &&
+		runtime.GOOS != "darwin" { // autopress doesnt work on macos
+		err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
+		require.NoError(t, err)
+	}
+
+	_, err := device.Wipe()
 	require.NoError(t, err)
 
 	// NOTE(denisacostaq@gmail.com): When
@@ -700,9 +721,14 @@ func TestSet24WordsMnemonicOk(t *testing.T) {
 	// NOTE(denisacostaq@gmail.com): Giving
 	device := testHelperGetDeviceWithBestEffort("TestSet24WordsMnemonicOk", t)
 	require.NotNil(t, device)
-	err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
-	require.NoError(t, err)
-	_, err = device.Wipe()
+
+	if device.Driver.DeviceType() == deviceWallet.DeviceTypeEmulator &&
+		runtime.GOOS != "darwin" { // autopress doesnt work on macos
+		err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
+		require.NoError(t, err)
+	}
+
+	_, err := device.Wipe()
 	require.NoError(t, err)
 
 	// NOTE(denisacostaq@gmail.com): When
@@ -721,9 +747,14 @@ func TestShouldHaveARequireBackupAfterGenerateMnemonic(t *testing.T) {
 	// NOTE(denisacostaq@gmail.com): Giving
 	device := testHelperGetDeviceWithBestEffort("TestShouldHaveARequireBackupAfterGenerateMnemonic", t)
 	require.NotNil(t, device)
-	err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
-	require.NoError(t, err)
-	_, err = device.Wipe()
+
+	if device.Driver.DeviceType() == deviceWallet.DeviceTypeEmulator &&
+		runtime.GOOS != "darwin" { // autopress doesnt work on macos
+		err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
+		require.NoError(t, err)
+	}
+
+	_, err := device.Wipe()
 	require.NoError(t, err)
 
 	// NOTE(denisacostaq@gmail.com): When
@@ -745,9 +776,14 @@ func TestShouldHaveARequirePinAfterGenerateMnemonic(t *testing.T) {
 	// NOTE(denisacostaq@gmail.com): Giving
 	device := testHelperGetDeviceWithBestEffort("TestShouldHaveARequirePinAfterGenerateMnemonic", t)
 	require.NotNil(t, device)
-	err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
-	require.NoError(t, err)
-	_, err = device.Wipe()
+
+	if device.Driver.DeviceType() == deviceWallet.DeviceTypeEmulator &&
+		runtime.GOOS != "darwin" { // autopress doesnt work on macos
+		err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
+		require.NoError(t, err)
+	}
+
+	_, err := device.Wipe()
 	require.NoError(t, err)
 
 	// NOTE(denisacostaq@gmail.com): When
@@ -769,9 +805,13 @@ func TestMsgApplySettingsLabelGetFeaturesSuccess(t *testing.T) {
 	// NOTE(denisacostaq@gmail.com): Giving
 	device := testHelperGetDeviceWithBestEffort("TestMsgApplySettingsLabelGetFeaturesSuccess", t)
 	require.NotNil(t, device)
-	err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
-	require.NoError(t, err)
-	_, err = device.Wipe()
+
+	if device.Driver.DeviceType() == deviceWallet.DeviceTypeEmulator &&
+		runtime.GOOS != "darwin" { // autopress doesnt work on macos
+		err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
+		require.NoError(t, err)
+	}
+	_, err := device.Wipe()
 	require.NoError(t, err)
 
 	// NOTE(denisacostaq@gmail.com): When
@@ -800,9 +840,13 @@ func TestMsgApplySettingsLabelShouldNotBeReset(t *testing.T) {
 	// NOTE(denisacostaq@gmail.com): Giving
 	device := testHelperGetDeviceWithBestEffort("TestMsgApplySettingsLabelShouldNotBeReset", t)
 	require.NotNil(t, device)
-	err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
-	require.NoError(t, err)
-	_, err = device.Wipe()
+
+	if device.Driver.DeviceType() == deviceWallet.DeviceTypeEmulator &&
+		runtime.GOOS != "darwin" { // autopress doesnt work on macos
+		err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
+		require.NoError(t, err)
+	}
+	_, err := device.Wipe()
 	require.NoError(t, err)
 
 	// NOTE(denisacostaq@gmail.com): When
@@ -851,7 +895,9 @@ func TestMsgApplySettingsUnsupportedLanguage(t *testing.T) {
 	// NOTE(denisacostaq@gmail.com): Giving
 	device := testHelperGetDeviceWithBestEffort("TestMsgApplySettingsUnsupportedLanguage", t)
 	require.NotNil(t, device)
-	if device.Driver.DeviceType() == deviceWallet.DeviceTypeEmulator {
+
+	if device.Driver.DeviceType() == deviceWallet.DeviceTypeEmulator &&
+		runtime.GOOS != "darwin" { // autopress doesnt work on macos
 		err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
 		require.NoError(t, err)
 	}
@@ -880,9 +926,15 @@ func TestMsgApplySettingsNoSettingsFailure(t *testing.T) {
 	// NOTE(denisacostaq@gmail.com): Giving
 	device := testHelperGetDeviceWithBestEffort("TestMsgApplySettingsNoSettingsFailure", t)
 	require.NotNil(t, device)
-	err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
-	require.NoError(t, err)
-	_, err = device.Wipe()
+
+
+	if device.Driver.DeviceType() == deviceWallet.DeviceTypeEmulator &&
+		runtime.GOOS != "darwin" { // autopress doesnt work on macos
+		err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
+		require.NoError(t, err)
+	}
+
+	_, err := device.Wipe()
 	require.NoError(t, err)
 
 	// NOTE(denisacostaq@gmail.com): When
