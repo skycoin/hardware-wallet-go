@@ -11,7 +11,7 @@ import (
 
 	"github.com/skycoin/skycoin/src/util/logging"
 
-	"github.com/skycoin/hardware-wallet-protob/go"
+	messages "github.com/skycoin/hardware-wallet-protob/go"
 
 	deviceWallet "github.com/skycoin/hardware-wallet-go/src/device-wallet"
 	"github.com/skycoin/hardware-wallet-go/src/device-wallet/wire"
@@ -926,7 +926,6 @@ func TestMsgApplySettingsNoSettingsFailure(t *testing.T) {
 	// NOTE(denisacostaq@gmail.com): Giving
 	device := testHelperGetDeviceWithBestEffort("TestMsgApplySettingsNoSettingsFailure", t)
 	require.NotNil(t, device)
-
 
 	if device.Driver.DeviceType() == deviceWallet.DeviceTypeEmulator &&
 		runtime.GOOS != "darwin" { // autopress doesnt work on macos
