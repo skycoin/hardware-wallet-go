@@ -13,13 +13,14 @@ env:
 before_install:
   - source ./ci-scripts/install-$TRAVIS_OS_NAME.sh
 install:
-  - make proto
   - if [[ ! -d $GOPATH/src/github.com/skycoin/hardware-wallet-go ]]; then mkdir -p $GOPATH/src/github.com/skycoin; ln -s $TRAVIS_BUILD_DIR $GOPATH/src/github.com/skycoin/hardware-wallet-go; fi
   - go get github.com/vektra/mockery/.../
   - cd $GOPATH/src/github.com/skycoin/hardware-wallet-go
   - make mocks
   - make install-linters
+  - make lint
   - go get -t ./...
+
 before_script:
   # Install go dep
   - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
@@ -44,8 +45,8 @@ before_script:
     fi
   - echo "PATH=$PATH";
   - echo "PIP=$PIP";
+
 script:
-  - make lint
   - make -C tmp/hardware-wallet clean
   - make -C tmp/hardware-wallet/tiny-firmware/protob install-protoc
   - make -C tmp/hardware-wallet/tiny-firmware/protob/nanopb/vendor/nanopb/generator/proto
@@ -64,8 +65,10 @@ script:
   # Test that dependencies can be updated
   - make clean
   - make dep
+
 after_script:
   - kill -s KILL $(pgrep emulator)
+
 notifications:
   # https://github.com/kvld/travisci-telegram TravisCI Telegram Bot integration
   webhooks: https://fathomless-fjord-24024.herokuapp.com/notify
