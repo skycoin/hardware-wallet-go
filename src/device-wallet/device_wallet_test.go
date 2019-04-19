@@ -58,6 +58,6 @@ func (suite *devicerSuit) TestGenerateMnemonic() {
 }
 
 func (suite *devicerSuit) TestInterfacesImplemented() {
- 	var _ Devicer = (*Device)(nil)
- 	var _ DeviceDriver = (*Driver)(nil)
+	var _ Devicer = (*Device)(nil)
+	var _ DeviceDriver = (*Driver)(nil)
 }

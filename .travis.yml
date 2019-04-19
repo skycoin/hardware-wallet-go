@@ -45,6 +45,7 @@ before_script:
   - echo "PATH=$PATH";
   - echo "PIP=$PIP";
 script:
+  - make lint
   - make -C tmp/hardware-wallet clean
   - make -C tmp/hardware-wallet/tiny-firmware/protob install-protoc
   - make -C tmp/hardware-wallet/tiny-firmware/protob/nanopb/vendor/nanopb/generator/proto
