@@ -58,7 +58,6 @@ script:
     make -C ./tmp/hardware-wallet run-emulator & true ;
     fi
   # Run self-tests
-  - make lint
   - ps aux | grep emulator
   - make test
   # Test that dependencies can be updated
