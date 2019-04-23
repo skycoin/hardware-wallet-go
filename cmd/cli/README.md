@@ -100,6 +100,10 @@ GLOBAL OPTIONS:
 
 All commands accept `--deviceType` option. Supported values are `USB` and `EMULATOR`.
 
+### Internal entropy
+
+There are two kinds of internal entropy, [`getRawEntropy`](#get-raw-entropy) and `getRawEntropy`(#get-mixed-entropy). The difference between this two are that raw entropy comes from a random buffer function that uses a peripheral device under the hood, in the other hand the mixed entropy comes from a salted entropy source as described in [this FAQ](https://github.com/skycoin/hardware-wallet/blob/develop/FAQ.md#random-source).
+
 ### Apply settings
 
 Configure device with settings such as: using passphrase, configuring label, setting device language
@@ -546,7 +550,7 @@ $ skycoin-hw-cli transactionSign --inputHash a885343cc57aedaab56ad88d860f2bd4362
 
 ### Get raw entropy
 
-Ask the device to get internally generated raw entropy.
+Ask the device to get internally generated [raw entropy](#internal-entropy).
 
 ```
 OPTIONS:
@@ -572,7 +576,7 @@ A real example about how to use this feature can be checked at the [TRNG validat
 
 ### Get mixed entropy
 
-Ask the device to get internally generated mixed entropy.
+Ask the device to get internally generated [mixed entropy](#internal-entropy).
 
 ```
 OPTIONS:
