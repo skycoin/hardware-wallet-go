@@ -42,6 +42,7 @@ Skycoin Hardware wallet command line interface
     - [Ask the device Features](#device-features)
     - [Ask the device to cancel the ongoing procedure](#device-cancel)
     - [Ask the device to sign a transaction using the provided information](#transaction-sign)
+    - [Ask the device to get internal war entropy](#get-raw-entropy)
 
 <!-- /MarkdownTOC -->
 
@@ -541,3 +542,29 @@ $ skycoin-hw-cli transactionSign --inputHash a885343cc57aedaab56ad88d860f2bd4362
 [zC8GAQGQBfwk7vtTxVoRG7iMperHNuyYPs] [1000000] [1] []
 ```
 </details>
+
+### Get raw entropy
+
+Ask the device to get internally generated entropy.
+
+```
+OPTIONS:
+        --entropyBytes value  Total number of how many bytes of raw entropy to read. (default: 1048576)
+        --outFile value       File path to write out the raw entropy buffers, a "-" set the file to stdout. (default: "-")
+        --deviceType value    Device type to send instructions to, hardware wallet (USB) or emulator. [$DEVICE_TYPE]
+```
+
+```bash
+$ skycoin-hw-cli getRawEntropy --outFile - --entropyBytes 1048576
+```
+
+<details>
+ <summary>View Output</summary>
+
+```
+INFO [skycoin-hw-cli]: Getting raw entropy from device
+[23 239 184 152 31 15 62 85 216 241 180 64 251 108 122 204 241 116 35 96 112 154 122 162 53 243 178 209 28 43 99 174 79]
+```
+</details>
+
+A real example about how to use this feature can be checked at the [TRNG validation](https://github.com/skycoin/hardware-wallet/tree/8edc2a28027875f464b68348c44fb188efb4dfbb#validate-the-trng) (please get noticed that the firmware should be build with this feature enabled trough `ENABLE_GETENTROPY`). The tool is use specifically [from here](https://github.com/skycoin/hardware-wallet/blob/8edc2a28027875f464b68348c44fb188efb4dfbb/trng-test/Makefile#L7-L8).
