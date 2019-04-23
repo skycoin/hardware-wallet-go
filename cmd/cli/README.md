@@ -42,7 +42,7 @@ Skycoin Hardware wallet command line interface
     - [Ask the device Features](#device-features)
     - [Ask the device to cancel the ongoing procedure](#device-cancel)
     - [Ask the device to sign a transaction using the provided information](#transaction-sign)
-    - [Ask the device to get internal war entropy](#get-raw-entropy)
+    - [Ask the device to get internal raw entropy](#get-raw-entropy)
 
 <!-- /MarkdownTOC -->
 
