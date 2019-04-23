@@ -70,25 +70,26 @@ VERSION:
    1.7.0
 
 COMMANDS:
-
-     applySettings            Apply settings.
-     setMnemonic              Configure the device with a mnemonic.
-     features                 Ask the device Features.
-     generateMnemonic         Ask the device to generate a mnemonic and configure itself with it.
-     addressGen               Generate skycoin addresses using the firmware
-     firmwareUpdate           Update device's firmware.
-     signMessage              Ask the device to sign a message using the secret key at given index.
-     checkMessageSignature    Check a message signature matches the given address.
-     setPinCode               Configure a PIN code on a device.
-     wipe                     Ask the device to wipe clean all the configuration it contains.
-     backup                   Ask the device to perform the seed backup procedure.
-     recovery                 Ask the device to perform the seed recovery procedure.
-     cancel                   Ask the device to cancel the ongoing procedure.
+     applySettings          Apply settings.
+     setMnemonic            Configure the device with a mnemonic.
+     features               Ask the device Features.
+     generateMnemonic       Ask the device to generate a mnemonic and configure itself with it.
+     addressGen             Generate skycoin addresses using the firmware
+     firmwareUpdate         Update device's firmware.
+     signMessage            Ask the device to sign a message using the secret key at given index.
+     checkMessageSignature  Check a message signature matches the given address.
+     setPinCode             Configure a PIN code on a device.
+     removePinCode          Remove a PIN code on a device.
+     wipe                   Ask the device to wipe clean all the configuration it contains.
+     backup                 Ask the device to perform the seed backup procedure.
+     recovery               Ask the device to perform the seed recovery procedure.
+     cancel                 Ask the device to cancel the ongoing procedure.
      transactionSign        Ask the device to sign a transaction using the provided information.
-     sandbox                  Sandbox.
-     help, h                  Shows a list of commands or help for one command
-
-
+     sandbox                Sandbox.
+     getRawEntropy          Get device raw internal entropy and write it down to a file
+     getMixedEntropy        Get device internal mixed entropy and write it down to a file
+     getUsbDetails          Ask host usb about details for the hardware wallet
+     help, h                Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
    --help, -h     show help
