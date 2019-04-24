@@ -43,7 +43,11 @@ Skycoin Hardware wallet command line interface
     - [Ask the device to cancel the ongoing procedure](#device-cancel)
     - [Ask the device to sign a transaction using the provided information](#transaction-sign)
     - [Ask the device to get internal raw entropy](#get-raw-entropy)
+       - [Examples](#examples-ask-the-device-to-get-internal-raw-entropy)
+        - [Text output](#text-output-ask-the-device-to-get-internal-raw-entropy)
     - [Ask the device to get internal mixed entropy](#get-mixed-entropy)
+      - [Examples](#examples-ask-the-device-to-get-internal-mixed-entropy)
+        - [Text output](#text-output-ask-the-device-to-get-internal-mixed-entropy)
 
 <!-- /MarkdownTOC -->
 
@@ -102,7 +106,9 @@ All commands accept `--deviceType` option. Supported values are `USB` and `EMULA
 
 ### Internal entropy
 
-There are two kinds of internal entropy, [`getRawEntropy`](#get-raw-entropy) and `getRawEntropy`(#get-mixed-entropy). The difference between this two are that raw entropy comes from a random buffer function that uses a peripheral device under the hood, in the other hand the mixed entropy comes from a salted entropy source as described in [this FAQ](https://github.com/skycoin/hardware-wallet/blob/develop/FAQ.md#random-source).
+There are two kinds of internal entropy, [`getRawEntropy`](#get-raw-entropy) and `getMixedEntropy`(#get-mixed-entropy). The difference between this two are that raw entropy comes from a random buffer function that uses a peripheral device under the hood, in the other hand the mixed entropy comes from a salted entropy source as described in [this FAQ](https://github.com/skycoin/hardware-wallet/blob/develop/FAQ.md#random-source).
+
+
 ### Apply settings
 
 Configure device with settings such as: using passphrase, configuring label, setting device language
@@ -501,8 +507,14 @@ FwPatch: 0
 FwVendor: 
 FwVendorKeys: 
 UnfinishedBackup: false
+FirmwareFeatures: 0
 ```
 </details>
+
+- `FirmwareFeatures` is interpreted as a bits slice as follows
+  * bit `0` (i.e. mask `0x1`) is active if user confirmation required prior to returning internal entropy
+  * bit `1` (i.e. mask `0x2`) set if support for sending internal entropy back to the peer is enabled in firmware.
+  * bit `2` (i.e. mask `0x4`) set if device is the emulator.
 
 ### Device cancel
 
