@@ -38,6 +38,8 @@ const (
 	ButtonBoth
 )
 
+var connLock sync.Mutex
+
 //go:generate mockery -name Devicer -case underscore -inpkg -testonly
 
 // Devicer provides api for the hw wallet functions
@@ -72,7 +74,6 @@ type Device struct {
 	// dev latest device connection instance
 	// during an ongoing operation the device instance cannot be requested before closing the previous instance
 	// keeping the connection instance in the struct helps with closing and opening of the connection
-	sync.RWMutex
 	dev io.ReadWriteCloser
 
 	simulateButtonPress bool
@@ -102,7 +103,6 @@ func NewDevice(deviceType DeviceType) (device *Device) {
 	case DeviceTypeUSB, DeviceTypeEmulator:
 		device = &Device{
 			&Driver{deviceType},
-			sync.RWMutex{},
 			nil,
 			false,
 			ButtonType(-1),
@@ -116,21 +116,21 @@ func NewDevice(deviceType DeviceType) (device *Device) {
 // Connect makes a connection to the connected device
 func (d *Device) Connect() error {
 	// close any existing connections
-	d.RLock()
+	connLock.Lock()
 	if d.dev != nil {
 		d.dev.Close()
 		d.dev = nil
 	}
-	d.RUnlock()
+	connLock.Unlock()
 
 	dev, err := d.Driver.GetDevice()
 	if err != nil {
 		return err
 	}
 
-	d.Lock()
+	connLock.Lock()
 	d.dev = dev
-	d.Unlock()
+	connLock.Unlock()
 	return nil
 }
 
