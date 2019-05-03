@@ -1,10 +1,11 @@
 package devicewallet
 
 import (
-	messages "github.com/skycoin/hardware-wallet-protob/go"
-	"github.com/stretchr/testify/suite"
 	"math/rand"
 	"testing"
+
+	messages "github.com/skycoin/hardware-wallet-protob/go"
+	"github.com/stretchr/testify/suite"
 )
 
 type bitEncodedFlagsSuit struct {

@@ -19,10 +19,10 @@ type BitEncodedFlags interface {
 
 // FirmwareFeatures handle the features in firmware as a BitEncodedFlags implementation
 type FirmwareFeatures struct {
-	flags uint64
+	flags                    uint64
 	RequireGetEntropyConfirm bool
-	IsGetEntropyEnabled bool
-	IsEmulator bool
+	IsGetEntropyEnabled      bool
+	IsEmulator               bool
 	FirmwareFeaturesRdpLevel uint8
 }
 
@@ -72,7 +72,7 @@ func (ff FirmwareFeatures) String() string {
 }
 
 func bitStatusInByte(data, bitPos uint8) bool {
-	return (data & (uint8)(1 << bitPos)) != 0
+	return (data & (uint8)(1<<bitPos)) != 0
 }
 
 func setBitInByte(data *uint8, val bool, bitPos uint8) {
