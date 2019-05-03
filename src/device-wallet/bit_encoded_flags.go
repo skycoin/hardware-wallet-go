@@ -47,6 +47,14 @@ func (ff *FirmwareFeatures) Unmarshal() error {
 	return nil
 }
 
+func (ff FirmwareFeatures) String() string {
+	b, err := json.Marshal(ff)
+	if err != nil {
+		return "error rendering FirmwareFeatures " + err.Error()
+	}
+	return string(b)
+}
+
 func bitStatusInByte(data, bitPos uint8) bool {
 	return (data & (uint8)(1 << bitPos)) != 0
 }
