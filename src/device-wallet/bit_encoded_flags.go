@@ -30,8 +30,8 @@ func (ff *FirmwareFeatures) Marshal() (uint64, error) {
 	setBitInByte(&bs[7], ff.RequireGetEntropyConfirm, 0)
 	setBitInByte(&bs[7], ff.IsGetEntropyEnabled, 1)
 	setBitInByte(&bs[7], ff.IsEmulator, 2)
-	setBitInByte(&bs[7], ff.FirmwareFeaturesRdpLevel == 1, 3)
-	setBitInByte(&bs[7], ff.FirmwareFeaturesRdpLevel == 2, 4)
+	setBitInByte(&bs[7], ff.FirmwareFeaturesRdpLevel == 1 || ff.FirmwareFeaturesRdpLevel == 3, 3)
+	setBitInByte(&bs[7], ff.FirmwareFeaturesRdpLevel == 2 || ff.FirmwareFeaturesRdpLevel == 3, 4)
 	ff.flags = binary.BigEndian.Uint64(bs)
 	return ff.flags, nil
 }
