@@ -117,6 +117,7 @@ func NewDevice(deviceType DeviceType) (device *Device) {
 func (d *Device) Connect() error {
 	// close any existing connections
 	connLock.Lock()
+	defer connLock.Unlock()
 	if d.dev != nil {
 		d.dev.Close()
 		d.dev = nil
@@ -128,7 +129,6 @@ func (d *Device) Connect() error {
 	}
 
 	d.dev = dev
-	connLock.Unlock()
 	return nil
 }
 
