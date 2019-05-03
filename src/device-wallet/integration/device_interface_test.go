@@ -946,7 +946,7 @@ func TestMsgApplySettingsNoSettingsFailure(t *testing.T) {
 
 func TestMsgFeaturesFirmwareFeaturesCheckRdpLevel(t *testing.T) {
 	// NOTE: Giving
-	device := testHelperGetDeviceWithBestEffort("TestMsgApplySettingsNoSettingsFailure", t)
+	device := testHelperGetDeviceWithBestEffort("TestMsgFeaturesFirmwareFeaturesCheckRdpLevel", t)
 	require.NotNil(t, device)
 
 	if device.Driver.DeviceType() == deviceWallet.DeviceTypeEmulator &&
@@ -963,11 +963,11 @@ func TestMsgFeaturesFirmwareFeaturesCheckRdpLevel(t *testing.T) {
 
 	// NOTE: Assert
 	require.NoError(t, err)
+	require.Equal(t, messages.MessageType_MessageType_Features, messages.MessageType(resp.Kind))
 	features := &messages.Features{}
 	err = proto.Unmarshal(resp.Data, features)
 	require.NoError(t, err)
 	ff := deviceWallet.NewFirmwareFeatures(uint64(*(features.FirmwareFeatures)))
 	require.NoError(t, ff.Unmarshal())
 	require.False(t, ff.HasRdpMemProtectEnabled())
-	require.Equal(t, messages.MessageType_MessageType_Failure, messages.MessageType(resp.Kind))
 }
