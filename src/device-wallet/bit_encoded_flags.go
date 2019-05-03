@@ -8,6 +8,7 @@ import (
 type BitEncodedFlags interface {
 	Marshal() (uint64, error)
 	Unmarshal() error
+	HasRdpMemProtectEnabled() bool
 }
 
 type FirmwareFeatures struct {
@@ -15,8 +16,6 @@ type FirmwareFeatures struct {
 	RequireGetEntropyConfirm bool
 	IsGetEntropyEnabled bool
 	IsEmulator bool
-	FirmwareFeaturesRdpDebugDisabled uint8
-	FirmwareFeaturesRdpMemProtect uint8
 	FirmwareFeaturesRdpLevel uint8
 }
 
@@ -45,6 +44,10 @@ func (ff *FirmwareFeatures) Unmarshal() error {
 	setBitInByte(&ff.FirmwareFeaturesRdpLevel, bitStatusInByte(bs[7], 3), 0)
 	setBitInByte(&ff.FirmwareFeaturesRdpLevel, bitStatusInByte(bs[7], 4), 1)
 	return nil
+}
+
+func (ff FirmwareFeatures) HasRdpMemProtectEnabled() bool {
+	return ff.FirmwareFeaturesRdpLevel == 2
 }
 
 func (ff FirmwareFeatures) String() string {
