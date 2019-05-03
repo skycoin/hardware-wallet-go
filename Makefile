@@ -4,6 +4,13 @@
 .PHONY: dep mocks
 .PHONY: clean lint check format
 
+UNAME_S ?= $(shell uname -s)
+VERSION_RAW  =$(shell ./ci-scripts/version.sh)
+VERSION_MAJOR=$(shell echo $(VERSION_RAW) | tr -d v | cut -d. -f1)
+VERSION_MINOR=$(shell echo $(VERSION_RAW) | cut -d. -f2)
+VERSION_PATCH=$(shell echo $(VERSION_RAW) | cut -d. -f3)
+FULL_VERSION =$(VERSION_MAJOR).$(VERSION_MINOR).$(VERSION_PATCH)
+
 all: build
 
 build:
@@ -43,3 +50,6 @@ format: ## Formats the code. Must have goimports installed (use make install-lin
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+
+release: build
+	cp $(GOPATH)/bin/skycoin-hw-cli skycoin-hw-cli-$(UNAME_S)-v$(VERSION_RAW)
