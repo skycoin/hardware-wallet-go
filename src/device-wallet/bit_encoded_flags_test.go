@@ -1,6 +1,7 @@
 package devicewallet
 
 import (
+	messages "github.com/skycoin/hardware-wallet-protob/go"
 	"github.com/stretchr/testify/suite"
 	"math/rand"
 	"testing"
@@ -26,4 +27,13 @@ func (suite *bitEncodedFlagsSuit) TestOperationsAreReversible() {
 		suite.NoError(e)
 		suite.Equal(flags, f)
 	}
+}
+
+func (suite *bitEncodedFlagsSuit) TestShouldHaveRdpEnabled() {
+	// NOTE: Giving
+	ff := NewFirmwareFeatures(uint64(messages.FirmwareFeatures_FirmwareFeatures_RdpMemProtect))
+	// NOTE: When
+	ff.Unmarshal()
+	// NOTE: Assert
+	suite.True(ff.HasRdpMemProtectEnabled())
 }
