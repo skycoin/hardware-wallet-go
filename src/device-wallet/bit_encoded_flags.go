@@ -5,12 +5,19 @@ import (
 	"encoding/json"
 )
 
+// BitEncodedFlags allow you to work with bit field encoded in integer in a high level
 type BitEncodedFlags interface {
+	// Marshal encode the fields to a uint64
 	Marshal() (uint64, error)
+
+	// decode fields
 	Unmarshal() error
+
+	// return tru if the RDP is enabled
 	HasRdpMemProtectEnabled() bool
 }
 
+// FirmwareFeatures handle the features in firmware as a BitEncodedFlags implementation
 type FirmwareFeatures struct {
 	flags uint64
 	RequireGetEntropyConfirm bool
@@ -19,10 +26,13 @@ type FirmwareFeatures struct {
 	FirmwareFeaturesRdpLevel uint8
 }
 
+// NewFirmwareFeatures return a new BitEncodedFlags initialized with the internal fields
 func NewFirmwareFeatures(flags uint64) BitEncodedFlags {
 	return &FirmwareFeatures{flags: flags}
 }
 
+// Marshal encode the FirmwareFeatures internal field in a uint64 value
+// return this number and keeps an internal copy
 func (ff *FirmwareFeatures) Marshal() (uint64, error) {
 	ff.flags = 0
 	bs := make([]byte, 8)
@@ -35,6 +45,7 @@ func (ff *FirmwareFeatures) Marshal() (uint64, error) {
 	return ff.flags, nil
 }
 
+// Unmarshal fill all the struct fields based on the encoded info in the flags field
 func (ff *FirmwareFeatures) Unmarshal() error {
 	bs := make([]byte, 8)
 	binary.BigEndian.PutUint64(bs, ff.flags)
@@ -46,10 +57,12 @@ func (ff *FirmwareFeatures) Unmarshal() error {
 	return nil
 }
 
+// HasRdpMemProtectEnabled return true if rdp == true
 func (ff FirmwareFeatures) HasRdpMemProtectEnabled() bool {
 	return ff.FirmwareFeaturesRdpLevel == 2
 }
 
+// String allow pretty print in cli applications
 func (ff FirmwareFeatures) String() string {
 	b, err := json.Marshal(ff)
 	if err != nil {
