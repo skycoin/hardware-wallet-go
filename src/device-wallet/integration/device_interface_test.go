@@ -943,3 +943,31 @@ func TestMsgApplySettingsNoSettingsFailure(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, messages.MessageType_MessageType_Failure, messages.MessageType(resp.Kind))
 }
+
+func TestMsgFeaturesFirmwareFeaturesCheckRdpLevel(t *testing.T) {
+	// NOTE(denisacostaq@gmail.com): Giving
+	device := testHelperGetDeviceWithBestEffort("TestMsgApplySettingsNoSettingsFailure", t)
+	require.NotNil(t, device)
+
+	if device.Driver.DeviceType() == deviceWallet.DeviceTypeEmulator &&
+		runtime.GOOS != "darwin" { // autopress doesnt work on macos
+		err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
+		require.NoError(t, err)
+	}
+
+	_, err := device.Wipe()
+	require.NoError(t, err)
+
+	// NOTE(denisacostaq@gmail.com): When
+	resp, err := device.GetFeatures()
+
+	// NOTE(denisacostaq@gmail.com): Assert
+	require.NoError(t, err)
+	features := &messages.Features{}
+	err = proto.Unmarshal(resp.Data, features)
+	require.NoError(t, err)
+	ff := deviceWallet.NewFirmwareFeatures(uint64(*(features.FirmwareFeatures)))
+	require.NoError(t, ff.Unmarshal())
+	require.False(t, ff.HasRdpMemProtectEnabled())
+	require.Equal(t, messages.MessageType_MessageType_Failure, messages.MessageType(resp.Kind))
+}
