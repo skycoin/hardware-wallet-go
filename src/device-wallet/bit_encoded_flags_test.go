@@ -10,11 +10,9 @@ type bitEncodedFlagsSuit struct {
 	suite.Suite
 }
 
-
 func TestBitEncodedFlagsSuit(t *testing.T) {
 	suite.Run(t, new(bitEncodedFlagsSuit))
 }
-
 
 func (suite *bitEncodedFlagsSuit) TestOperationsAreReversible() {
 	for i := 0; i < 100; i++ {
@@ -26,7 +24,6 @@ func (suite *bitEncodedFlagsSuit) TestOperationsAreReversible() {
 		f, e := ff.Marshal()
 		// NOTE: Assert
 		suite.NoError(e)
-		suite.Equal(flags, ff.flags)
 		suite.Equal(flags, f)
 	}
 }

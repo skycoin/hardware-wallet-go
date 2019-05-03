@@ -20,7 +20,7 @@ type FirmwareFeatures struct {
 	FirmwareFeaturesRdpLevel uint8
 }
 
-func NewFirmwareFeatures(flags uint64) *FirmwareFeatures {
+func NewFirmwareFeatures(flags uint64) BitEncodedFlags {
 	return &FirmwareFeatures{flags: flags}
 }
 
