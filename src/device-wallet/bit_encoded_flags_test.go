@@ -37,3 +37,12 @@ func (suite *bitEncodedFlagsSuit) TestShouldHaveRdpEnabled() {
 	// NOTE: Assert
 	suite.True(ff.HasRdpMemProtectEnabled())
 }
+
+func (suite *bitEncodedFlagsSuit) TestShouldHaveNtRdpEnabled() {
+	// NOTE: Giving
+	ff := NewFirmwareFeatures(uint64(messages.FirmwareFeatures_FirmwareFeatures_RdpDebugDisabled))
+	// NOTE: When
+	ff.Unmarshal()
+	// NOTE: Assert
+	suite.False(ff.HasRdpMemProtectEnabled())
+}
