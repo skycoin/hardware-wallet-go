@@ -121,14 +121,12 @@ func (d *Device) Connect() error {
 		d.dev.Close()
 		d.dev = nil
 	}
-	connLock.Unlock()
 
 	dev, err := d.Driver.GetDevice()
 	if err != nil {
 		return err
 	}
 
-	connLock.Lock()
 	d.dev = dev
 	connLock.Unlock()
 	return nil
