@@ -6,7 +6,7 @@ import (
 )
 
 type BitEncodedFlags interface {
-	Marshal(v interface{}) (uint64, error)
+	Marshal() (uint64, error)
 	Unmarshal() error
 }
 
@@ -24,7 +24,7 @@ func NewFirmwareFeatures(flags uint64) *FirmwareFeatures {
 	return &FirmwareFeatures{flags: flags}
 }
 
-func (ff FirmwareFeatures) Marshal(v interface{}) (uint64, error) {
+func (ff *FirmwareFeatures) Marshal() (uint64, error) {
 	bs := make([]byte, 8)
 	setBitInByte(&bs[7], ff.RequireGetEntropyConfirm, 0)
 	setBitInByte(&bs[7], ff.IsGetEntropyEnabled, 1)
