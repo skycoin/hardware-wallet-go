@@ -149,7 +149,7 @@ func TestGetAddressUsb(t *testing.T) {
 }
 
 func TestGetDeviceEntropyShouldWorkOk(t *testing.T) {
-	// NOTE(denisacostaq@gmail.com): Giving
+	// NOTE: Giving
 	device := deviceWallet.NewDevice(deviceWallet.DeviceTypeUSB)
 	if err := device.Connect(); err != nil {
 		log.Errorln(err)
@@ -176,10 +176,10 @@ func TestGetDeviceEntropyShouldWorkOk(t *testing.T) {
 	for gIdx := range generators {
 		for bytesAmountsIdx := range bytesAmounts {
 			outFile := fmt.Sprint(os.TempDir(), "/", os.Getpid())
-			// NOTE(denisacostaq@gmail.com): When
+			// NOTE: When
 			err = device.SaveDeviceEntropyInFile(
 				outFile, bytesAmounts[bytesAmountsIdx], generators[gIdx])
-			// NOTE(denisacostaq@gmail.com): Assert
+			// NOTE: Assert
 			require.NoError(t, err)
 			fileInfo, err := os.Stat(outFile)
 			require.NoError(t, err)
@@ -643,7 +643,7 @@ func TestTransactions(t *testing.T) {
 }
 
 func TestNotInitializedFromFactory(t *testing.T) {
-	// NOTE(denisacostaq@gmail.com): Giving
+	// NOTE: Giving
 	device := testHelperGetDeviceWithBestEffort("TestNotInitializedFromFactory", t)
 	require.NotNil(t, device)
 
@@ -656,10 +656,10 @@ func TestNotInitializedFromFactory(t *testing.T) {
 	_, err := device.Wipe()
 	require.NoError(t, err)
 
-	// NOTE(denisacostaq@gmail.com): When
+	// NOTE: When
 	msg, err := device.GetFeatures()
 
-	// NOTE(denisacostaq@gmail.com): Assert
+	// NOTE: Assert
 	require.NoError(t, err)
 	features := &messages.Features{}
 	err = proto.Unmarshal(msg.Data, features)
@@ -669,7 +669,7 @@ func TestNotInitializedFromFactory(t *testing.T) {
 }
 
 func TestGenerateMnemonicOk(t *testing.T) {
-	// NOTE(denisacostaq@gmail.com): Giving
+	// NOTE: Giving
 	device := testHelperGetDeviceWithBestEffort("TestGenerateMnemonicOk", t)
 	require.NotNil(t, device)
 
@@ -682,10 +682,10 @@ func TestGenerateMnemonicOk(t *testing.T) {
 	_, err := device.Wipe()
 	require.NoError(t, err)
 
-	// NOTE(denisacostaq@gmail.com): When
+	// NOTE: When
 	msg, err := device.GenerateMnemonic(24, false)
 
-	// NOTE(denisacostaq@gmail.com): Assert
+	// NOTE: Assert
 	require.NoError(t, err)
 	success := &messages.Success{}
 	err = proto.Unmarshal(msg.Data, success)
@@ -693,7 +693,7 @@ func TestGenerateMnemonicOk(t *testing.T) {
 }
 
 func TestSet12WordsMnemonicOk(t *testing.T) {
-	// NOTE(denisacostaq@gmail.com): Giving
+	// NOTE: Giving
 	device := testHelperGetDeviceWithBestEffort("TestSet12WordsMnemonicOk", t)
 	require.NotNil(t, device)
 
@@ -706,11 +706,11 @@ func TestSet12WordsMnemonicOk(t *testing.T) {
 	_, err := device.Wipe()
 	require.NoError(t, err)
 
-	// NOTE(denisacostaq@gmail.com): When
+	// NOTE: When
 	seed := "below pear clinic physical stage trust team wrist crystal insect valley pride"
 	msg, err := device.SetMnemonic(seed)
 
-	// NOTE(denisacostaq@gmail.com): Assert
+	// NOTE: Assert
 	require.NoError(t, err)
 	success := &messages.Success{}
 	err = proto.Unmarshal(msg.Data, success)
@@ -718,7 +718,7 @@ func TestSet12WordsMnemonicOk(t *testing.T) {
 }
 
 func TestSet24WordsMnemonicOk(t *testing.T) {
-	// NOTE(denisacostaq@gmail.com): Giving
+	// NOTE: Giving
 	device := testHelperGetDeviceWithBestEffort("TestSet24WordsMnemonicOk", t)
 	require.NotNil(t, device)
 
@@ -731,12 +731,12 @@ func TestSet24WordsMnemonicOk(t *testing.T) {
 	_, err := device.Wipe()
 	require.NoError(t, err)
 
-	// NOTE(denisacostaq@gmail.com): When
+	// NOTE: When
 	seed := "flash priority hotel stuff hole picnic vessel genre clean eager diesel " +
 		"shaft casual ugly ostrich awkward mechanic split siege round hold crew canal decade"
 	msg, err := device.SetMnemonic(seed)
 
-	// NOTE(denisacostaq@gmail.com): Assert
+	// NOTE: Assert
 	require.NoError(t, err)
 	success := &messages.Success{}
 	err = proto.Unmarshal(msg.Data, success)
@@ -744,7 +744,7 @@ func TestSet24WordsMnemonicOk(t *testing.T) {
 }
 
 func TestShouldHaveARequireBackupAfterGenerateMnemonic(t *testing.T) {
-	// NOTE(denisacostaq@gmail.com): Giving
+	// NOTE: Giving
 	device := testHelperGetDeviceWithBestEffort("TestShouldHaveARequireBackupAfterGenerateMnemonic", t)
 	require.NotNil(t, device)
 
@@ -757,14 +757,14 @@ func TestShouldHaveARequireBackupAfterGenerateMnemonic(t *testing.T) {
 	_, err := device.Wipe()
 	require.NoError(t, err)
 
-	// NOTE(denisacostaq@gmail.com): When
+	// NOTE: When
 	msg, err := device.GenerateMnemonic(24, false)
 	require.NoError(t, err)
 	success := &messages.Success{}
 	err = proto.Unmarshal(msg.Data, success)
 	require.NoError(t, err)
 
-	// NOTE(denisacostaq@gmail.com): Assert
+	// NOTE: Assert
 	msg, err = device.GetFeatures()
 	require.NoError(t, err)
 	features := &messages.Features{}
@@ -773,7 +773,7 @@ func TestShouldHaveARequireBackupAfterGenerateMnemonic(t *testing.T) {
 }
 
 func TestShouldHaveARequirePinAfterGenerateMnemonic(t *testing.T) {
-	// NOTE(denisacostaq@gmail.com): Giving
+	// NOTE: Giving
 	device := testHelperGetDeviceWithBestEffort("TestShouldHaveARequirePinAfterGenerateMnemonic", t)
 	require.NotNil(t, device)
 
@@ -786,14 +786,14 @@ func TestShouldHaveARequirePinAfterGenerateMnemonic(t *testing.T) {
 	_, err := device.Wipe()
 	require.NoError(t, err)
 
-	// NOTE(denisacostaq@gmail.com): When
+	// NOTE: When
 	msg, err := device.GenerateMnemonic(24, false)
 	require.NoError(t, err)
 	success := &messages.Success{}
 	err = proto.Unmarshal(msg.Data, success)
 	require.NoError(t, err)
 
-	// NOTE(denisacostaq@gmail.com): Assert
+	// NOTE: Assert
 	msg, err = device.GetFeatures()
 	require.NoError(t, err)
 	features := &messages.Features{}
@@ -802,7 +802,7 @@ func TestShouldHaveARequirePinAfterGenerateMnemonic(t *testing.T) {
 }
 
 func TestMsgApplySettingsLabelGetFeaturesSuccess(t *testing.T) {
-	// NOTE(denisacostaq@gmail.com): Giving
+	// NOTE: Giving
 	device := testHelperGetDeviceWithBestEffort("TestMsgApplySettingsLabelGetFeaturesSuccess", t)
 	require.NotNil(t, device)
 
@@ -814,7 +814,7 @@ func TestMsgApplySettingsLabelGetFeaturesSuccess(t *testing.T) {
 	_, err := device.Wipe()
 	require.NoError(t, err)
 
-	// NOTE(denisacostaq@gmail.com): When
+	// NOTE: When
 	var label = "my custom device label"
 	usePassphrase := false
 	resp, err := device.ApplySettings(&usePassphrase, label, "")
@@ -825,7 +825,7 @@ func TestMsgApplySettingsLabelGetFeaturesSuccess(t *testing.T) {
 		require.NoError(t, err)
 	}
 
-	// NOTE(denisacostaq@gmail.com): Assert
+	// NOTE: Assert
 	resp, err = device.GetFeatures()
 	require.NoError(t, err)
 	require.Equal(t, messages.MessageType_MessageType_Features, messages.MessageType(resp.Kind))
@@ -837,7 +837,7 @@ func TestMsgApplySettingsLabelGetFeaturesSuccess(t *testing.T) {
 }
 
 func TestMsgApplySettingsLabelShouldNotBeReset(t *testing.T) {
-	// NOTE(denisacostaq@gmail.com): Giving
+	// NOTE: Giving
 	device := testHelperGetDeviceWithBestEffort("TestMsgApplySettingsLabelShouldNotBeReset", t)
 	require.NotNil(t, device)
 
@@ -849,7 +849,7 @@ func TestMsgApplySettingsLabelShouldNotBeReset(t *testing.T) {
 	_, err := device.Wipe()
 	require.NoError(t, err)
 
-	// NOTE(denisacostaq@gmail.com): When
+	// NOTE: When
 	var label = "my custom device label"
 	usePassphrase := false
 	resp, err := device.ApplySettings(&usePassphrase, label, "")
@@ -870,7 +870,7 @@ func TestMsgApplySettingsLabelShouldNotBeReset(t *testing.T) {
 	require.NotNil(t, features.PassphraseProtection)
 	require.Equal(t, false, *features.PassphraseProtection)
 
-	// NOTE(denisacostaq@gmail.com): Assert
+	// NOTE: Assert
 	usePassphrase = true
 	resp, err = device.ApplySettings(&usePassphrase, "", "")
 	require.NoError(t, err)
@@ -892,7 +892,7 @@ func TestMsgApplySettingsLabelShouldNotBeReset(t *testing.T) {
 }
 
 func TestMsgApplySettingsUnsupportedLanguage(t *testing.T) {
-	// NOTE(denisacostaq@gmail.com): Giving
+	// NOTE: Giving
 	device := testHelperGetDeviceWithBestEffort("TestMsgApplySettingsUnsupportedLanguage", t)
 	require.NotNil(t, device)
 
@@ -904,12 +904,12 @@ func TestMsgApplySettingsUnsupportedLanguage(t *testing.T) {
 	_, err := device.Wipe()
 	require.NoError(t, err)
 
-	// NOTE(denisacostaq@gmail.com): When
+	// NOTE: When
 	var language = "chinese"
 	usePassphrase := false
 	resp, err := device.ApplySettings(&usePassphrase, "", language)
 
-	// NOTE(denisacostaq@gmail.com): Assert
+	// NOTE: Assert
 	require.NoError(t, err)
 	require.Equal(t, messages.MessageType_MessageType_ButtonRequest, messages.MessageType(resp.Kind))
 	for resp.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
@@ -923,7 +923,7 @@ func TestMsgApplySettingsUnsupportedLanguage(t *testing.T) {
 }
 
 func TestMsgApplySettingsNoSettingsFailure(t *testing.T) {
-	// NOTE(denisacostaq@gmail.com): Giving
+	// NOTE: Giving
 	device := testHelperGetDeviceWithBestEffort("TestMsgApplySettingsNoSettingsFailure", t)
 	require.NotNil(t, device)
 
@@ -936,10 +936,38 @@ func TestMsgApplySettingsNoSettingsFailure(t *testing.T) {
 	_, err := device.Wipe()
 	require.NoError(t, err)
 
-	// NOTE(denisacostaq@gmail.com): When
+	// NOTE: When
 	resp, err := device.ApplySettings(nil, "", "")
 
-	// NOTE(denisacostaq@gmail.com): Assert
+	// NOTE: Assert
 	require.NoError(t, err)
 	require.Equal(t, messages.MessageType_MessageType_Failure, messages.MessageType(resp.Kind))
+}
+
+func TestMsgFeaturesFirmwareFeaturesCheckRdpLevel(t *testing.T) {
+	// NOTE: Giving
+	device := testHelperGetDeviceWithBestEffort("TestMsgFeaturesFirmwareFeaturesCheckRdpLevel", t)
+	require.NotNil(t, device)
+
+	if device.Driver.DeviceType() == deviceWallet.DeviceTypeEmulator &&
+		runtime.GOOS != "darwin" { // autopress doesnt work on macos
+		err := device.SetAutoPressButton(true, deviceWallet.ButtonRight)
+		require.NoError(t, err)
+	}
+
+	_, err := device.Wipe()
+	require.NoError(t, err)
+
+	// NOTE: When
+	resp, err := device.GetFeatures()
+
+	// NOTE: Assert
+	require.NoError(t, err)
+	require.Equal(t, messages.MessageType_MessageType_Features, messages.MessageType(resp.Kind))
+	features := &messages.Features{}
+	err = proto.Unmarshal(resp.Data, features)
+	require.NoError(t, err)
+	ff := deviceWallet.NewFirmwareFeatures(uint64(*(features.FirmwareFeatures)))
+	require.NoError(t, ff.Unmarshal())
+	require.False(t, ff.HasRdpMemProtectEnabled())
 }
