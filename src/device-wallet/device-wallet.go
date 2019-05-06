@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/skycoin/hardware-wallet-go/src/device-wallet/usb"
@@ -36,6 +37,8 @@ const (
 	// ButtonBoth press both buttons
 	ButtonBoth
 )
+
+var connLock sync.Mutex
 
 //go:generate mockery -name Devicer -case underscore -inpkg -testonly
 
@@ -113,6 +116,8 @@ func NewDevice(deviceType DeviceType) (device *Device) {
 // Connect makes a connection to the connected device
 func (d *Device) Connect() error {
 	// close any existing connections
+	connLock.Lock()
+	defer connLock.Unlock()
 	if d.dev != nil {
 		d.dev.Close()
 		d.dev = nil
