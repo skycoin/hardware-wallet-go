@@ -25,7 +25,7 @@ func InitHIDAPI() (*HIDAPI, error) {
 func (b *HIDAPI) Enumerate(vendorID uint16, productID uint16) ([]Info, error) {
 	var infos []Info
 
-	for _, dev := range usbhid.HidEnumerate(vendorID, productID) { // enumerate all devices matching the given vendor and product
+	for _, dev := range usbhid.HidEnumerate(vendorID, productID) { // enumerate all devices
 		if b.match(&dev) {
 			infos = append(infos, Info{
 				Path:      b.identify(&dev),
@@ -64,8 +64,8 @@ func (b *HIDAPI) Connect(path string) (Device, error) {
 func (b *HIDAPI) match(d *usbhid.HidDeviceInfo) bool {
 	vid := d.VendorID
 	pid := d.ProductID
-	trezor1 := vid == vendorT1 && (pid == productT1Firmware || pid == productT1Bootloader)
-	trezor2 := vid == vendorT2 && (pid == productT2Firmware || pid == productT2Bootloader)
+	trezor1 := vid == VendorT1 && (pid == ProductT1Firmware)
+	trezor2 := vid == VendorT2 && (pid == ProductT2Firmware || pid == ProductT2Bootloader)
 	return (trezor1 || trezor2) && (d.Interface == hidIfaceNum || d.UsagePage == hidUsagePage)
 }
 
@@ -126,7 +126,7 @@ func (d *HID) readWrite(buf []byte, read bool) (int, error) {
 	}
 
 	if err != nil && err.Error() == unknownErrorMessage {
-		return 0, disconnectError
+		return 0, errDisconnect
 	}
 	return w, err
 }

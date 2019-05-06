@@ -2,6 +2,7 @@ package usb
 
 import (
 	"encoding/hex"
+	"log"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -29,7 +30,7 @@ func InitWebUSB() (*WebUSB, error) {
 	if err != nil {
 		return nil, err
 	}
-	usbhid.Set_Debug(usb, usbhid.LOG_LEVEL_NONE)
+	usbhid.Set_Debug(usb, int(usbhid.LOG_LEVEL_NONE))
 
 	return &WebUSB{
 		usb: usb,
@@ -102,26 +103,12 @@ func (b *WebUSB) Connect(path string) (Device, error) {
 	}
 	defer usbhid.Free_Device_List(list, 1) // unlink devices
 
-	// There is a bug in either Trezor T or libusb that makes
-	// device appear twice with the same path
-
-	// We try both and return the first that works
-
-	mydevs := make([]usbhid.Device, 0)
 	for _, dev := range list {
 		if b.match(dev) && b.identify(dev) == path {
-			mydevs = append(mydevs, dev)
+			return b.connect(dev)
 		}
 	}
-
-	err = ErrNotFound
-	for _, dev := range mydevs {
-		res, err := b.connect(dev)
-		if err == nil {
-			return res, nil
-		}
-	}
-	return nil, err
+	return nil, ErrNotFound
 }
 
 func (b *WebUSB) connect(dev usbhid.Device) (*WUD, error) {
@@ -134,12 +121,14 @@ func (b *WebUSB) connect(dev usbhid.Device) (*WUD, error) {
 		// don't abort if reset fails
 		// usbhid.Close(d)
 		// return nil, err
+		log.Printf("Warning: error at device reset: %s", err)
 	}
 	err = usbhid.Set_Configuration(d, webConfigNum)
 	if err != nil {
 		// don't abort if set configuration fails
 		// usbhid.Close(d)
 		// return nil, err
+		log.Printf("Warning: error at configuration set: %s", err)
 	}
 	err = usbhid.Claim_Interface(d, webIfaceNum)
 	if err != nil {
@@ -157,13 +146,13 @@ func (b *WebUSB) match(dev usbhid.Device) bool {
 	if err != nil {
 		return false
 	}
+
 	vid := dd.IdVendor
 	pid := dd.IdProduct
-	trezor1 := vid == vendorT1 && (pid == productT1Firmware || pid == productT1Bootloader)
-	trezor2 := vid == vendorT2 && (pid == productT2Firmware || pid == productT2Bootloader)
-	if !trezor1 && !trezor2 {
+	if !b.matchVidPid(vid, pid) {
 		return false
 	}
+
 	c, err := usbhid.Get_Active_Config_Descriptor(dev)
 	if err != nil {
 		return false
@@ -171,6 +160,12 @@ func (b *WebUSB) match(dev usbhid.Device) bool {
 	return (c.BNumInterfaces > webIfaceNum &&
 		c.Interface[webIfaceNum].Num_altsetting > webAltSetting &&
 		c.Interface[webIfaceNum].Altsetting[webAltSetting].BInterfaceClass == usbhid.CLASS_VENDOR_SPEC)
+}
+
+func (b *WebUSB) matchVidPid(vid uint16, pid uint16) bool {
+	trezor1 := vid == VendorT1 && (pid == ProductT1Firmware)
+	trezor2 := vid == VendorT2 && (pid == ProductT2Firmware || pid == ProductT2Bootloader)
+	return trezor1 || trezor2
 }
 
 func (b *WebUSB) identify(dev usbhid.Device) string {
@@ -195,6 +190,8 @@ type WUD struct {
 func (d *WUD) Close() error {
 	atomic.StoreInt32(&d.closed, 1)
 
+	d.finishReadQueue()
+
 	d.transferMutex.Lock()
 	usbhid.Close(d.dev)
 	d.transferMutex.Unlock()
@@ -202,11 +199,22 @@ func (d *WUD) Close() error {
 	return nil
 }
 
+func (d *WUD) finishReadQueue() {
+	d.transferMutex.Lock()
+	var err error
+	var buf [64]byte
+
+	for err == nil {
+		_, err = usbhid.Interrupt_Transfer(d.dev, webEpIn, buf[:], 50)
+	}
+	d.transferMutex.Unlock()
+}
+
 func (d *WUD) readWrite(buf []byte, endpoint uint8) (int, error) {
 	for {
 		closed := (atomic.LoadInt32(&d.closed)) == 1
 		if closed {
-			return 0, closedDeviceError
+			return 0, errClosedDevice
 		}
 
 		d.transferMutex.Lock()
@@ -221,12 +229,12 @@ func (d *WUD) readWrite(buf []byte, endpoint uint8) (int, error) {
 		}
 
 		if err != nil {
-			if err.Error() == usbhid.Error_Name(usbhid.ERROR_IO) ||
-				err.Error() == usbhid.Error_Name(usbhid.ERROR_NO_DEVICE) {
-				return 0, disconnectError
+			if err.Error() == usbhid.Error_Name(int(usbhid.ERROR_IO)) ||
+				err.Error() == usbhid.Error_Name(int(usbhid.ERROR_NO_DEVICE)) {
+				return 0, errDisconnect
 			}
 
-			if err.Error() != usbhid.Error_Name(usbhid.ERROR_TIMEOUT) {
+			if err.Error() != usbhid.Error_Name(int(usbhid.ERROR_TIMEOUT)) {
 				return 0, err
 			}
 		}
