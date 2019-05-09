@@ -75,11 +75,11 @@ func MessageCheckMessageSignature(message, signature, address string) ([][64]byt
 }
 
 // MessageAddressGen prepare MessageAddressGen request
-func MessageAddressGen(addressN, startIndex int, confirmAddress bool) ([][64]byte, error) {
+func MessageAddressGen(addressN, startIndex uint32, confirmAddress bool) ([][64]byte, error) {
 	skycoinAddress := &messages.SkycoinAddress{
-		AddressN:       proto.Uint32(uint32(addressN)),
+		AddressN:       proto.Uint32(addressN),
 		ConfirmAddress: proto.Bool(confirmAddress),
-		StartIndex:     proto.Uint32(uint32(startIndex)),
+		StartIndex:     proto.Uint32(startIndex),
 	}
 
 	data, err := proto.Marshal(skycoinAddress)

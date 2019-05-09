@@ -3,10 +3,10 @@ package devicewallet
 import (
 	"errors"
 	"fmt"
-	"io"
 	"os"
-	"sync"
 	"time"
+
+	"github.com/davecgh/go-spew/spew"
 
 	"github.com/skycoin/hardware-wallet-go/src/device-wallet/usb"
 
@@ -18,7 +18,7 @@ import (
 )
 
 var (
-	log = logging.MustGetLogger("device-wallet")
+	log = logging.MustGetLogger("skywallet")
 )
 
 const (
@@ -38,13 +38,26 @@ const (
 	ButtonBoth
 )
 
-var connLock sync.Mutex
+var (
+	// ErrAddressNZero is returned if addressN is 0
+	ErrAddressNZero = errors.New("addresses to generate should be greater than 0")
+	// ErrUsePassPhraseNil is returned if usePassphrase is nil
+	ErrUsePassPhraseNil = errors.New("usePassphrase cannot be nil")
+	// ErrRemovePinNil is returned if removePin is nil
+	ErrRemovePinNil = errors.New("removePin cannot be nil")
+	// ErrDeviceTypeEmulator is returned if device type is emulator
+	ErrDeviceTypeEmulator = errors.New("device type cannot be emulator")
+	// ErrInvalidWordCount is returned if word count is not valid mnemonic word length
+	ErrInvalidWordCount = errors.New("word count must be 12 or 24")
+	// ErrNoDeviceConnected is returned if no device is connected to the system
+	ErrNoDeviceConnected = errors.New("no device connected")
+)
 
 //go:generate mockery -name Devicer -case underscore -inpkg -testonly
 
 // Devicer provides api for the hw wallet functions
 type Devicer interface {
-	AddressGen(addressN, startIndex int, confirmAddress bool) (wire.Message, error)
+	AddressGen(addressN, startIndex uint32, confirmAddress bool) (wire.Message, error)
 	ApplySettings(usePassphrase *bool, label string, language string) (wire.Message, error)
 	Backup() (wire.Message, error)
 	Cancel() (wire.Message, error)
@@ -65,6 +78,7 @@ type Devicer interface {
 	PassphraseAck(passphrase string) (wire.Message, error)
 	ButtonAck() (wire.Message, error)
 	SetAutoPressButton(simulateButtonPress bool, simulateButtonType ButtonType) error
+	Close()
 }
 
 // Device provides hardware wallet functions
@@ -74,7 +88,7 @@ type Device struct {
 	// dev latest device connection instance
 	// during an ongoing operation the device instance cannot be requested before closing the previous instance
 	// keeping the connection instance in the struct helps with closing and opening of the connection
-	dev io.ReadWriteCloser
+	dev usb.Device
 
 	simulateButtonPress bool
 	simulateButtonType  ButtonType
@@ -98,28 +112,31 @@ func DeviceTypeFromString(deviceType string) DeviceType {
 }
 
 // NewDevice returns a new device instance
-func NewDevice(deviceType DeviceType) (device *Device) {
-	switch deviceType {
-	case DeviceTypeUSB, DeviceTypeEmulator:
-		device = &Device{
-			&Driver{deviceType},
-			nil,
-			false,
-			ButtonType(-1),
-		}
-	default:
-		device = nil
+func NewDevice(deviceType DeviceType) *Device {
+	driver, err := NewDriver(deviceType)
+	if err != nil {
+		log.Fatalf("failed to create driver: %s", err)
 	}
-	return device
+
+	return &Device{
+		driver,
+		nil,
+		false,
+		ButtonType(-1),
+	}
+}
+
+// Close closes the usb bus
+// Device should be closed before shutdown to avoid running out of open file descriptors
+func (d *Device) Close() {
+	d.Driver.Close()
 }
 
 // Connect makes a connection to the connected device
 func (d *Device) Connect() error {
 	// close any existing connections
-	connLock.Lock()
-	defer connLock.Unlock()
 	if d.dev != nil {
-		d.dev.Close()
+		d.dev.Close(false)
 		d.dev = nil
 	}
 
@@ -137,7 +154,7 @@ func (d *Device) Disconnect() error {
 	if !d.Connected() {
 		return errors.New("device is not connected")
 	}
-	return d.dev.Close()
+	return d.dev.Close(false)
 }
 
 // GetUsbInfo returns information from the attached usb
@@ -158,11 +175,15 @@ func (d *Device) GetUsbInfo() ([]usb.Info, error) {
 }
 
 // AddressGen Ask the device to generate an address
-func (d *Device) AddressGen(addressN, startIndex int, confirmAddress bool) (wire.Message, error) {
+func (d *Device) AddressGen(addressN, startIndex uint32, confirmAddress bool) (wire.Message, error) {
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
-	defer d.dev.Close()
+	defer d.dev.Close(false)
+
+	if addressN == 0 {
+		return wire.Message{}, ErrAddressNZero
+	}
 
 	chunks, err := MessageAddressGen(addressN, startIndex, confirmAddress)
 	if err != nil {
@@ -206,11 +227,12 @@ func (d *Device) SaveDeviceEntropyInFile(outFile string, entropyBytes uint32, ge
 						return &messages.Entropy{}, err
 					}
 				}
-				msg = wire.Message{}
-				if _, err = msg.ReadFrom(d.dev); err != nil {
-					return &messages.Entropy{}, err
+
+				msg, err := wire.ReadFrom(d.dev)
+				if err != nil {
+					return nil, err
 				}
-				return processGetEntropyResponse(msg)
+				return processGetEntropyResponse(*msg)
 			}
 			var msgStr string
 			msgStr, err = DecodeFailMsg(msg)
@@ -338,7 +360,12 @@ func (d *Device) ApplySettings(usePassphrase *bool, label string, language strin
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
-	defer d.dev.Close()
+	defer d.dev.Close(false)
+
+	if usePassphrase == nil {
+		return wire.Message{}, ErrUsePassPhraseNil
+	}
+
 	chunks, err := MessageApplySettings(usePassphrase, label, language)
 	if err != nil {
 		return wire.Message{}, err
@@ -352,21 +379,13 @@ func (d *Device) Backup() (wire.Message, error) {
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
-	defer d.dev.Close()
-	var msg wire.Message
-
-	var chunks [][64]byte
-	err := Initialize(d.dev)
+	defer d.dev.Close(false)
+	chunks, err := MessageBackup()
 	if err != nil {
 		return wire.Message{}, err
 	}
 
-	chunks, err = MessageBackup()
-	if err != nil {
-		return wire.Message{}, err
-	}
-
-	msg, err = d.Driver.SendToDevice(d.dev, chunks)
+	msg, err := d.Driver.SendToDevice(d.dev, chunks)
 	if err != nil {
 		return wire.Message{}, err
 	}
@@ -386,7 +405,7 @@ func (d *Device) Cancel() (wire.Message, error) {
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
-	defer d.dev.Close()
+	defer d.dev.Close(false)
 	chunks, err := MessageCancel()
 	if err != nil {
 		return wire.Message{}, err
@@ -400,7 +419,7 @@ func (d *Device) CheckMessageSignature(message, signature, address string) (wire
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
-	defer d.dev.Close()
+	defer d.dev.Close(false)
 
 	// Send CheckMessageSignature
 	chunks, err := MessageCheckMessageSignature(message, signature, address)
@@ -431,7 +450,12 @@ func (d *Device) ChangePin(removePin *bool) (wire.Message, error) {
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
-	defer d.dev.Close()
+	defer d.dev.Close(false)
+
+	if removePin == nil {
+		return wire.Message{}, ErrRemovePinNil
+	}
+
 	chunks, err := MessageChangePin(removePin)
 	if err != nil {
 		return wire.Message{}, err
@@ -469,8 +493,8 @@ func (d *Device) Connected() bool {
 			return false
 		}
 	}
-	var msg wire.Message
-	_, err = msg.ReadFrom(d.dev)
+
+	msg, err := wire.ReadFrom(d.dev)
 	if err != nil {
 		return false
 	}
@@ -479,7 +503,7 @@ func (d *Device) Connected() bool {
 
 // Available checks if a skycoin wallet is connected to the system
 func (d *Device) Available() bool {
-	infos, _, err := getUsbInfo()
+	infos, err := d.Driver.GetDeviceInfos()
 	if err != nil {
 		log.Error(err)
 		return false
@@ -495,12 +519,12 @@ func (d *Device) Available() bool {
 // FirmwareUpload Updates device's firmware
 func (d *Device) FirmwareUpload(payload []byte, hash [32]byte) error {
 	if d.Driver.DeviceType() != DeviceTypeUSB {
-		return errors.New("wrong device type")
+		return ErrDeviceTypeEmulator
 	}
 	if err := d.Connect(); err != nil {
 		return err
 	}
-	defer d.dev.Close()
+	defer d.dev.Close(false)
 
 	if err := Initialize(d.dev); err != nil {
 		return err
@@ -566,7 +590,6 @@ func (d *Device) FirmwareUpload(payload []byte, hash [32]byte) error {
 		default:
 			return errors.New("unknown response")
 		}
-		return nil
 	case uint16(messages.MessageType_MessageType_Failure):
 		msg, err := DecodeFailMsg(erasemsg)
 		if err != nil {
@@ -584,7 +607,7 @@ func (d *Device) GetFeatures() (wire.Message, error) {
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
-	defer d.dev.Close()
+	defer d.dev.Close(false)
 	chunks, err := MessageGetFeatures()
 	if err != nil {
 		return wire.Message{}, err
@@ -598,7 +621,12 @@ func (d *Device) GenerateMnemonic(wordCount uint32, usePassphrase bool) (wire.Me
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
-	defer d.dev.Close()
+	defer d.dev.Close(false)
+
+	if wordCount != 12 && wordCount != 24 {
+		return wire.Message{}, ErrInvalidWordCount
+	}
+
 	generateMnemonicChunks, err := MessageGenerateMnemonic(wordCount, usePassphrase)
 	if err != nil {
 		return wire.Message{}, err
@@ -616,7 +644,7 @@ func (d *Device) GenerateMnemonic(wordCount uint32, usePassphrase bool) (wire.Me
 		if err != nil {
 			return wire.Message{}, err
 		}
-		msg, err = d.Driver.SendToDevice(d.dev, chunks)
+		_, err = d.Driver.SendToDevice(d.dev, chunks)
 		if err != nil {
 			return wire.Message{}, err
 		}
@@ -634,18 +662,21 @@ func (d *Device) Recovery(wordCount uint32, usePassphrase, dryRun bool) (wire.Me
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
-	defer d.dev.Close()
-	var msg wire.Message
+	defer d.dev.Close(false)
 	var chunks [][64]byte
+
+	if wordCount != 12 && wordCount != 24 {
+		return wire.Message{}, ErrInvalidWordCount
+	}
 
 	log.Printf("Using passphrase %t\n", usePassphrase)
 	chunks, err := MessageRecovery(wordCount, usePassphrase, dryRun)
 	if err != nil {
 		return wire.Message{}, err
 	}
-	msg, err = d.Driver.SendToDevice(d.dev, chunks)
+	msg, err := d.Driver.SendToDevice(d.dev, chunks)
 	if err != nil {
-		return msg, err
+		return wire.Message{}, err
 	}
 	log.Printf("Recovery device response kind is: %d\n", msg.Kind)
 
@@ -664,7 +695,7 @@ func (d *Device) SetMnemonic(mnemonic string) (wire.Message, error) {
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
-	defer d.dev.Close()
+	defer d.dev.Close(false)
 
 	// Send SetMnemonic
 	chunks, err := MessageSetMnemonic(mnemonic)
@@ -691,13 +722,26 @@ func (d *Device) SignMessage(addressIndex int, message string) (wire.Message, er
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
-	defer d.dev.Close()
+	defer d.dev.Close(false)
 
 	chunks, err := MessageSignMessage(addressIndex, message)
 	if err != nil {
 		return wire.Message{}, err
 	}
-	return d.Driver.SendToDevice(d.dev, chunks)
+
+	msg, err := d.Driver.SendToDevice(d.dev, chunks)
+	if err != nil {
+		return wire.Message{}, err
+	}
+
+	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
+		msg, err = d.ButtonAck()
+		if err != nil {
+			return wire.Message{}, err
+		}
+	}
+
+	return msg, err
 }
 
 // TransactionSign Ask the device to sign a transaction using the given information.
@@ -705,7 +749,7 @@ func (d *Device) TransactionSign(inputs []*messages.SkycoinTransactionInput, out
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
-	defer d.dev.Close()
+	defer d.dev.Close(false)
 	chunks, err := MessageTransactionSign(inputs, outputs)
 	if err != nil {
 		return wire.Message{}, err
@@ -718,21 +762,15 @@ func (d *Device) Wipe() (wire.Message, error) {
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
-	defer d.dev.Close()
+	defer d.dev.Close(false)
 	var chunks [][64]byte
 
-	err := Initialize(d.dev)
+	chunks, err := MessageWipe()
 	if err != nil {
 		return wire.Message{}, err
 	}
 
-	chunks, err = MessageWipe()
-	if err != nil {
-		return wire.Message{}, err
-	}
-
-	var msg wire.Message
-	msg, err = d.Driver.SendToDevice(d.dev, chunks)
+	msg, err := d.Driver.SendToDevice(d.dev, chunks)
 	if err != nil {
 		return wire.Message{}, err
 	}
@@ -751,31 +789,30 @@ func (d *Device) Wipe() (wire.Message, error) {
 // ButtonAck when the device is waiting for the user to press a button
 // the PC need to acknowledge, showing it knows we are waiting for a user action
 func (d *Device) ButtonAck() (wire.Message, error) {
-	var msg wire.Message
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
-	defer d.dev.Close()
+	defer d.dev.Close(false)
 
 	// Send ButtonAck
 	chunks, err := MessageButtonAck()
 	if err != nil {
-		return msg, err
+		return wire.Message{}, err
 	}
 	err = sendToDeviceNoAnswer(d.dev, chunks)
 	if err != nil {
-		return msg, err
+		return wire.Message{}, err
 	}
 
 	// simulate button press
 	if d.simulateButtonPress {
 		if err := d.SimulateButtonPress(); err != nil {
-			return msg, err
+			return wire.Message{}, err
 		}
 	}
 
-	_, err = msg.ReadFrom(d.dev)
-	return msg, err
+	msg, err := wire.ReadFrom(d.dev)
+	return *msg, err
 }
 
 // PassphraseAck send this message when the device is waiting for the user to input a passphrase
@@ -783,7 +820,7 @@ func (d *Device) PassphraseAck(passphrase string) (wire.Message, error) {
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
-	defer d.dev.Close()
+	defer d.dev.Close(false)
 	chunks, err := MessagePassphraseAck(passphrase)
 	if err != nil {
 		return wire.Message{}, err
@@ -796,11 +833,13 @@ func (d *Device) WordAck(word string) (wire.Message, error) {
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
-	defer d.dev.Close()
+	defer d.dev.Close(false)
 	chunks, err := MessageWordAck(word)
 	if err != nil {
 		return wire.Message{}, err
 	}
+
+	spew.Dump()
 	msg, err := d.Driver.SendToDevice(d.dev, chunks)
 	if err != nil {
 		return wire.Message{}, err
@@ -815,13 +854,13 @@ func (d *Device) PinMatrixAck(p string) (wire.Message, error) {
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
-	defer d.dev.Close()
+	defer d.dev.Close(false)
 
 	log.Printf("Setting pin: %s\n", p)
 
 	chunks, err := MessagePinMatrixAck(p)
 	if err != nil {
-		return wire.Message{}, nil
+		return wire.Message{}, err
 	}
 	return d.Driver.SendToDevice(d.dev, chunks)
 }

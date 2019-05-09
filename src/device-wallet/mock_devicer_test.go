@@ -12,18 +12,18 @@ type MockDevicer struct {
 }
 
 // AddressGen provides a mock function with given fields: addressN, startIndex, confirmAddress
-func (_m *MockDevicer) AddressGen(addressN int, startIndex int, confirmAddress bool) (wire.Message, error) {
+func (_m *MockDevicer) AddressGen(addressN uint32, startIndex uint32, confirmAddress bool) (wire.Message, error) {
 	ret := _m.Called(addressN, startIndex, confirmAddress)
 
 	var r0 wire.Message
-	if rf, ok := ret.Get(0).(func(int, int, bool) wire.Message); ok {
+	if rf, ok := ret.Get(0).(func(uint32, uint32, bool) wire.Message); ok {
 		r0 = rf(addressN, startIndex, confirmAddress)
 	} else {
 		r0 = ret.Get(0).(wire.Message)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(int, int, bool) error); ok {
+	if rf, ok := ret.Get(1).(func(uint32, uint32, bool) error); ok {
 		r1 = rf(addressN, startIndex, confirmAddress)
 	} else {
 		r1 = ret.Error(1)
@@ -170,6 +170,11 @@ func (_m *MockDevicer) CheckMessageSignature(message string, signature string, a
 	}
 
 	return r0, r1
+}
+
+// Close provides a mock function with given fields:
+func (_m *MockDevicer) Close() {
+	_m.Called()
 }
 
 // Connected provides a mock function with given fields:

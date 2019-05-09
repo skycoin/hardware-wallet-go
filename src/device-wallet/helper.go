@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"net"
+	"runtime"
 	"time"
 
 	"github.com/gogo/protobuf/proto"
@@ -46,22 +46,72 @@ const (
 
 	// SkycoinHwProductID from https://github.com/skycoin/hardware-wallet/blob/50000f674c56c0cc18eec30d55978b73ed279b2e/tiny-firmware/bootloader/usb.c#L58
 	SkycoinHwProductID = 0x0001
+
+	// EmulatorPort is the emulator udp port
+	EmulatorPort = 21324
 )
 
 //go:generate mockery -name DeviceDriver -case underscore -inpkg -testonly
 
 // DeviceDriver is the api for hardware wallet communication
 type DeviceDriver interface {
-	SendToDevice(dev io.ReadWriteCloser, chunks [][64]byte) (wire.Message, error)
-	SendToDeviceNoAnswer(dev io.ReadWriteCloser, chunks [][64]byte) error
-	GetDevice() (io.ReadWriteCloser, error)
+	SendToDevice(dev usb.Device, chunks [][64]byte) (wire.Message, error)
+	SendToDeviceNoAnswer(dev usb.Device, chunks [][64]byte) error
+	GetDevice() (usb.Device, error)
 	GetDeviceInfos() ([]usb.Info, error)
 	DeviceType() DeviceType
+	Close()
 }
 
 // Driver represents a particular device (USB / Emulator)
 type Driver struct {
 	deviceType DeviceType
+	bus        usb.Bus
+}
+
+func initUsb() []usb.Bus {
+	w, err := usb.InitLibUSB(!usb.HIDUse, allowCancel(), detachKernelDriver())
+	if err != nil {
+		log.Fatalf("libusb: %s", err)
+	}
+
+	if !usb.HIDUse {
+		return []usb.Bus{w}
+	}
+
+	h, err := usb.InitHIDAPI()
+	if err != nil {
+		log.Fatalf("hidapi: %s", err)
+	}
+	return []usb.Bus{w, h}
+}
+
+// NewDriver create a new device driver
+func NewDriver(deviceType DeviceType) (*Driver, error) {
+	switch deviceType {
+	case DeviceTypeUSB:
+		return &Driver{
+			deviceType: deviceType,
+			bus:        usb.Init(initUsb()...),
+		}, nil
+	case DeviceTypeEmulator:
+		udpBus, err := usb.InitUDP([]int{EmulatorPort})
+		if err != nil {
+			return nil, err
+		}
+
+		return &Driver{
+			deviceType: deviceType,
+			bus:        usb.Init(udpBus),
+		}, nil
+	}
+
+	return nil, fmt.Errorf("invalid device %s", deviceType)
+}
+
+// Close closes the bus
+func (drv *Driver) Close() {
+	drv.bus.Close()
 }
 
 // DeviceType return driver device type
@@ -70,80 +120,38 @@ func (drv *Driver) DeviceType() DeviceType {
 }
 
 // SendToDeviceNoAnswer sends msg to device and doesnt return response
-func (drv *Driver) SendToDeviceNoAnswer(dev io.ReadWriteCloser, chunks [][64]byte) error {
+func (drv *Driver) SendToDeviceNoAnswer(dev usb.Device, chunks [][64]byte) error {
 	return sendToDeviceNoAnswer(dev, chunks)
 }
 
 // SendToDevice sends msg to device and returns response
-func (drv *Driver) SendToDevice(dev io.ReadWriteCloser, chunks [][64]byte) (wire.Message, error) {
+func (drv *Driver) SendToDevice(dev usb.Device, chunks [][64]byte) (wire.Message, error) {
 	return sendToDevice(dev, chunks)
 }
 
 // GetDevice returns a device instance
-func (drv *Driver) GetDevice() (io.ReadWriteCloser, error) {
-	var dev io.ReadWriteCloser
-	var err error
-	switch drv.DeviceType() {
-	case DeviceTypeEmulator:
-		dev, err = getEmulatorDevice()
-	case DeviceTypeUSB:
-		dev, err = getUsbDevice()
+func (drv *Driver) GetDevice() (usb.Device, error) {
+	var vendorID, productID uint16
+
+	if drv.deviceType == DeviceTypeUSB {
+		vendorID = SkycoinVendorID
+		productID = SkycoinHwProductID
+	} else if drv.deviceType != DeviceTypeEmulator {
+		return nil, fmt.Errorf("invalid device type: %s", drv.deviceType)
 	}
 
-	if dev == nil && err == nil {
-		err = errors.New("No device connected")
-	}
-	return dev, err
-}
-
-// GetDeviceInfos returns information from the attached usb
-func (drv *Driver) GetDeviceInfos() ([]usb.Info, error) {
-	if drv.DeviceType() == DeviceTypeUSB {
-		infos, _, err := getUsbInfo()
-		if err != nil {
-			return nil, err
-		}
-		return infos, nil
-	}
-	return nil, errors.New("reading device info make sense for physical devices only")
-}
-
-func sendToDeviceNoAnswer(dev io.ReadWriteCloser, chunks [][64]byte) error {
-	for _, element := range chunks {
-		_, err := dev.Write(element[:])
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func sendToDevice(dev io.ReadWriteCloser, chunks [][64]byte) (wire.Message, error) {
-	var msg wire.Message
-	for _, element := range chunks {
-		_, err := dev.Write(element[:])
-		if err != nil {
-			return msg, err
-		}
-	}
-	_, err := msg.ReadFrom(dev)
-	return msg, err
-}
-
-// getEmulatorDevice returns a emulator device connection instance
-func getEmulatorDevice() (net.Conn, error) {
-	return net.Dial("udp", "127.0.0.1:21324")
-}
-
-// getUsbDevice returns a usb device connection instance
-func getUsbDevice() (usb.Device, error) {
-	infos, b, err := getUsbInfo()
+	infos, err := drv.bus.Enumerate(vendorID, productID)
 	if len(infos) <= 0 {
+		return nil, ErrNoDeviceConnected
+	}
+
+	if err != nil {
 		return nil, err
 	}
+
 	tries := 0
 	for tries < 3 {
-		dev, err := b.Connect(infos[0].Path)
+		dev, err := drv.bus.Connect(infos[0].Path)
 		if err != nil {
 			log.Print(err.Error())
 			tries++
@@ -155,28 +163,42 @@ func getUsbDevice() (usb.Device, error) {
 	return nil, err
 }
 
-// getUsbInfo returns usb connections info and the usb interface initialized
-func getUsbInfo() ([]usb.Info, *usb.USB, error) {
-	w, err := usb.InitWebUSB()
-	if err != nil {
-		log.Printf("webusb: %s", err)
-		return nil, nil, err
-	}
-	defer w.Close()
+// GetDeviceInfos returns information from the attached usb
+func (drv *Driver) GetDeviceInfos() ([]usb.Info, error) {
+	if drv.DeviceType() == DeviceTypeUSB {
+		infos, err := drv.bus.Enumerate(SkycoinVendorID, SkycoinHwProductID)
+		if err != nil {
+			return nil, err
+		}
 
-	h, err := usb.InitHIDAPI()
-	if err != nil {
-		log.Printf("hidapi: %s", err)
-		return nil, nil, err
+		return infos, nil
 	}
-	b := usb.Init(w, h)
+	return nil, errors.New("reading device info make sense for physical devices only")
+}
 
-	var infos []usb.Info
-	infos, err = b.Enumerate(SkycoinVendorID, SkycoinHwProductID)
-	if len(infos) <= 0 {
-		return nil, nil, err
+func sendToDeviceNoAnswer(dev usb.Device, chunks [][64]byte) error {
+	for _, element := range chunks {
+		_, err := dev.Write(element[:])
+		if err != nil {
+			return err
+		}
 	}
-	return infos, b, nil
+	return nil
+}
+
+func sendToDevice(dev usb.Device, chunks [][64]byte) (wire.Message, error) {
+	for _, element := range chunks {
+		_, err := dev.Write(element[:])
+		if err != nil {
+			return wire.Message{}, err
+		}
+	}
+
+	msg, err := wire.ReadFrom(dev)
+	if err != nil {
+		return wire.Message{}, err
+	}
+	return *msg, err
 }
 
 func binaryWrite(message io.Writer, data interface{}) {
@@ -211,7 +233,7 @@ func makeSkyWalletMessage(data []byte, msgID messages.MessageType) [][64]byte {
 }
 
 // Initialize send an init request to the device
-func Initialize(dev io.ReadWriteCloser) error {
+func Initialize(dev usb.Device) error {
 	var chunks [][64]byte
 
 	chunks, err := MessageInitialize()
@@ -263,8 +285,6 @@ func DecodeFailMsg(msg wire.Message) (string, error) {
 
 // DecodeResponseSkycoinAddress convert byte data into list of addresses, meant to be used after DevicePinMatrixAck
 func DecodeResponseSkycoinAddress(msg wire.Message) ([]string, error) {
-	log.Printf("%x\n", msg.Data)
-
 	if msg.Kind == uint16(messages.MessageType_MessageType_ResponseSkycoinAddress) {
 		responseSkycoinAddress := &messages.ResponseSkycoinAddress{}
 		err := proto.Unmarshal(msg.Data, responseSkycoinAddress)
@@ -315,4 +335,14 @@ func DecodeResponseEntropyMessage(msg wire.Message) (*messages.Entropy, error) {
 		return responseEntropyMessage, nil
 	}
 	return nil, fmt.Errorf("calling DecodeResponseEntropyMessage with wrong message type: %s", messages.MessageType(msg.Kind))
+}
+
+// Does OS allow sync canceling via our custom libusb patches?
+func allowCancel() bool {
+	return runtime.GOOS != "freebsd"
+}
+
+// Does OS detach kernel driver in libusb?
+func detachKernelDriver() bool {
+	return runtime.GOOS == "linux"
 }
