@@ -1,4 +1,4 @@
-package devicewallet
+package skwallet
 
 import (
 	"encoding/binary"

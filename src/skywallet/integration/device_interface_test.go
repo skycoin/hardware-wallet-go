@@ -13,8 +13,8 @@ import (
 
 	messages "github.com/skycoin/hardware-wallet-protob/go"
 
-	deviceWallet "github.com/skycoin/hardware-wallet-go/src/device-wallet"
-	"github.com/skycoin/hardware-wallet-go/src/device-wallet/wire"
+	deviceWallet "github.com/skycoin/hardware-wallet-go/src/skywallet"
+	"github.com/skycoin/hardware-wallet-go/src/skywallet/wire"
 )
 
 var (

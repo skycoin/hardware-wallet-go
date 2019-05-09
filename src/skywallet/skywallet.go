@@ -1,4 +1,4 @@
-package devicewallet
+package skwallet
 
 import (
 	"errors"
@@ -8,13 +8,13 @@ import (
 
 	"github.com/davecgh/go-spew/spew"
 
-	"github.com/skycoin/hardware-wallet-go/src/device-wallet/usb"
+	"github.com/skycoin/hardware-wallet-go/src/skywallet/usb"
 
 	"github.com/skycoin/skycoin/src/util/logging"
 
 	messages "github.com/skycoin/hardware-wallet-protob/go"
 
-	"github.com/skycoin/hardware-wallet-go/src/device-wallet/wire"
+	"github.com/skycoin/hardware-wallet-go/src/skywallet/wire"
 )
 
 var (
