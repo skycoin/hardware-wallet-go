@@ -64,21 +64,21 @@ var (
 	ErrMalformedMessage = errors.New("malformed wire format")
 )
 
-func (m *Message) ReadFrom(r io.Reader) (int64, error) {
+func ReadFrom(r io.Reader) (*Message, error) {
 	var (
 		rep  [packetLen]byte
 		read = 0 // number of read bytes
 	)
 	n, err := r.Read(rep[:])
 	if err != nil {
-		return int64(read), err
+		return nil, err
 	}
 
 	// skip all the previous messages in the bus
 	for rep[0] != repMarker || rep[1] != repMagic || rep[2] != repMagic {
 		n, err = r.Read(rep[:])
 		if err != nil {
-			return int64(read), err
+			return nil, err
 		}
 	}
 	read += n
@@ -94,18 +94,18 @@ func (m *Message) ReadFrom(r io.Reader) (int64, error) {
 	for uint32(len(data)) < size {
 		n, err := r.Read(rep[:])
 		if err != nil {
-			return int64(read), err
+			return nil, err
 		}
 		if rep[0] != repMarker {
-			return int64(read), ErrMalformedMessage
+			return nil, ErrMalformedMessage
 		}
 		read += n
 		data = append(data, rep[1:]...) // read data after marker
 	}
 	data = data[:size]
 
-	m.Kind = kind
-	m.Data = data
-
-	return int64(read), nil
+	return &Message{
+		Kind: kind,
+		Data: data,
+	}, nil
 }

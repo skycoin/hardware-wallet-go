@@ -1,3 +1,5 @@
+// +build darwin,!ios,cgo windows,cgo
+
 package usb
 
 import (
@@ -5,14 +7,17 @@ import (
 	"encoding/hex"
 	"errors"
 	"strings"
+	"sync"
+	"sync/atomic"
 
-	"github.com/skycoin/hardware-wallet-go/src/device-wallet/usb/usbhid"
+	lowlevel "github.com/skycoin/hardware-wallet-go/src/usb/lowlevel/hidapi"
 )
 
 const (
 	hidapiPrefix = "hid"
-	hidIfaceNum  = 0
 	hidUsagePage = 0xFF00
+	hidTimeout   = 50
+	HIDUse       = true
 )
 
 type HIDAPI struct {
@@ -22,15 +27,18 @@ func InitHIDAPI() (*HIDAPI, error) {
 	return &HIDAPI{}, nil
 }
 
-func (b *HIDAPI) Enumerate(vendorID uint16, productID uint16) ([]Info, error) {
+func (b *HIDAPI) Enumerate(vendorID, productID uint16) ([]Info, error) {
 	var infos []Info
 
-	for _, dev := range usbhid.HidEnumerate(vendorID, productID) { // enumerate all devices
+	devs := lowlevel.HidEnumerate(vendorID, productID)
+
+	for _, dev := range devs { // enumerate all devices
 		if b.match(&dev) {
 			infos = append(infos, Info{
 				Path:      b.identify(&dev),
 				VendorID:  int(dev.VendorID),
 				ProductID: int(dev.ProductID),
+				Type:      TypeT1Hid,
 			})
 		}
 	}
@@ -42,13 +50,15 @@ func (b *HIDAPI) Has(path string) bool {
 }
 
 func (b *HIDAPI) Connect(path string) (Device, error) {
-	for _, dev := range usbhid.HidEnumerate(0, 0) { // enumerate all devices
+	devs := lowlevel.HidEnumerate(0, 0)
+
+	for _, dev := range devs { // enumerate all devices
 		if b.match(&dev) && b.identify(&dev) == path {
 			d, err := dev.Open()
 			if err != nil {
 				return nil, err
 			}
-			prepend, err := detectPrepend(d)
+			prepend, err := b.detectPrepend(d)
 			if err != nil {
 				return nil, err
 			}
@@ -61,27 +71,42 @@ func (b *HIDAPI) Connect(path string) (Device, error) {
 	return nil, ErrNotFound
 }
 
-func (b *HIDAPI) match(d *usbhid.HidDeviceInfo) bool {
+func (b *HIDAPI) match(d *lowlevel.HidDeviceInfo) bool {
 	vid := d.VendorID
 	pid := d.ProductID
-	trezor1 := vid == VendorT1 && (pid == ProductT1Firmware)
-	trezor2 := vid == VendorT2 && (pid == ProductT2Firmware || pid == ProductT2Bootloader)
-	return (trezor1 || trezor2) && (d.Interface == hidIfaceNum || d.UsagePage == hidUsagePage)
+	wallet1 := vid == VendorT1 && (pid == ProductT1Firmware)
+	wallet2 := vid == VendorT2 && (pid == ProductT2Firmware || pid == ProductT2Bootloader)
+	return (wallet1 || wallet2) && (d.Interface == int(normalIface.number) || d.UsagePage == hidUsagePage)
 }
 
-func (b *HIDAPI) identify(dev *usbhid.HidDeviceInfo) string {
+func (b *HIDAPI) identify(dev *lowlevel.HidDeviceInfo) string {
 	path := []byte(dev.Path)
 	digest := sha256.Sum256(path)
 	return hidapiPrefix + hex.EncodeToString(digest[:])
 }
 
-type HID struct {
-	dev     *usbhid.HidDevice
-	prepend bool // on windows, see detectPrepend
+func (b *HIDAPI) Close() {
+	// nothing
 }
 
-func (d *HID) Close() error {
-	return d.dev.Close()
+type HID struct {
+	dev     *lowlevel.HidDevice
+	prepend bool // on windows, see detectPrepend
+
+	closed        int32 // atomic
+	transferMutex sync.Mutex
+	// closing cannot happen while read/write is hapenning,
+	// otherwise it segfaults on windows
+}
+
+func (d *HID) Close(disconnected bool) error {
+	atomic.StoreInt32(&d.closed, 1)
+
+	d.transferMutex.Lock()
+	err := d.dev.Close()
+	d.transferMutex.Unlock()
+
+	return err
 }
 
 var unknownErrorMessage = "hidapi: unknown failure"
@@ -91,7 +116,7 @@ var unknownErrorMessage = "hidapi: unknown failure"
 // or a newer one that is on id 0.
 // The older one does not need prepending, the newer one does
 // This makes difference only on windows
-func detectPrepend(dev *usbhid.HidDevice) (bool, error) {
+func (b *HIDAPI) detectPrepend(dev *lowlevel.HidDevice) (bool, error) {
 	buf := []byte{63}
 	for i := 0; i < 63; i++ {
 		buf = append(buf, 0xff)
@@ -112,23 +137,47 @@ func detectPrepend(dev *usbhid.HidDevice) (bool, error) {
 		return false, nil
 	}
 
-	return false, errors.New("Unknown HID version")
+	return false, errors.New("unknown HID version")
 }
 
 func (d *HID) readWrite(buf []byte, read bool) (int, error) {
-	var w int
-	var err error
+	for {
+		closed := (atomic.LoadInt32(&d.closed)) == 1
+		if closed {
+			return 0, ErrClosedDevice
+		}
 
-	if read {
-		w, err = d.dev.Read(buf)
-	} else {
-		w, err = d.dev.Write(buf, d.prepend)
-	}
+		d.transferMutex.Lock()
 
-	if err != nil && err.Error() == unknownErrorMessage {
-		return 0, errDisconnect
+		var w int
+		var err error
+
+		if read {
+			w, err = d.dev.Read(buf, hidTimeout)
+		} else {
+			w, err = d.dev.Write(buf, d.prepend)
+		}
+
+		d.transferMutex.Unlock()
+
+		if err == nil {
+			// sometimes, empty report is read, skip it
+			if w > 0 {
+				return w, err
+			}
+			if !read {
+				return 0, errors.New("HID - empty write")
+			}
+
+		} else {
+			if err.Error() == unknownErrorMessage {
+				return 0, ErrDisconnect
+			}
+			return 0, err
+		}
+
+		// continue the for cycle
 	}
-	return w, err
 }
 
 func (d *HID) Write(buf []byte) (int, error) {

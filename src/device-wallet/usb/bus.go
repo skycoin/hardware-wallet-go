@@ -2,8 +2,13 @@ package usb
 
 import (
 	"errors"
-	"fmt"
 	"io"
+
+	"github.com/skycoin/skycoin/src/util/logging"
+)
+
+var (
+	log = logging.MustGetLogger("walletusb")
 )
 
 const (
@@ -16,17 +21,32 @@ const (
 )
 
 var (
-	ErrNotFound = fmt.Errorf("device not found")
+	ErrNotFound     = errors.New("device not found")
+	ErrDisconnect   = errors.New("device disconnected during action")
+	ErrClosedDevice = errors.New("closed device")
+)
+
+type DeviceType int
+
+const (
+	TypeT1Hid        DeviceType = 0
+	TypeT1Webusb     DeviceType = 1
+	TypeT1WebusbBoot DeviceType = 2
+	TypeT2           DeviceType = 3
+	TypeT2Boot       DeviceType = 4
+	TypeEmulator     DeviceType = 5
 )
 
 type Info struct {
 	Path      string
 	VendorID  int
 	ProductID int
+	Type      DeviceType
 }
 
 type Device interface {
-	io.ReadWriteCloser
+	io.ReadWriter
+	Close(disconnected bool) error
 }
 
 type Bus interface {
@@ -34,9 +54,10 @@ type Bus interface {
 	// - If the vendor id is set to 0 then any vendor matches.
 	// - If the product id is set to 0 then any product matches.
 	// - If the vendor and product id are both 0, all devices are returned.
-	Enumerate(vendorID uint16, productID uint16) ([]Info, error)
+	Enumerate(vendorID, productID uint16) ([]Info, error)
 	Connect(path string) (Device, error)
 	Has(path string) bool
+	Close() // called on program exit
 }
 
 type USB struct {
@@ -49,7 +70,16 @@ func Init(buses ...Bus) *USB {
 	}
 }
 
-func (b *USB) Enumerate(vendorID uint16, productID uint16) ([]Info, error) {
+func (b *USB) Has(path string) bool {
+	for _, b := range b.buses {
+		if b.Has(path) {
+			return true
+		}
+	}
+	return false
+}
+
+func (b *USB) Enumerate(vendorID, productID uint16) ([]Info, error) {
 	var infos []Info
 
 	for _, b := range b.buses {
@@ -71,5 +101,8 @@ func (b *USB) Connect(path string) (Device, error) {
 	return nil, ErrNotFound
 }
 
-var errDisconnect = errors.New("Device disconnected during action")
-var errClosedDevice = errors.New("Closed device")
+func (b *USB) Close() {
+	for _, b := range b.buses {
+		b.Close()
+	}
+}
