@@ -4,6 +4,8 @@
 .PHONY: dep mocks
 .PHONY: clean lint check format
 
+GOPATH  ?= $(HOME)/go
+
 all: build
 
 build:
