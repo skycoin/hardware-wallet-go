@@ -584,7 +584,7 @@ func TestSetMnemonic(t *testing.T) {
 			name: "setMnemonic 24",
 			args: []string{"setMnemonic", "--mnemonic",
 				"dress fee animal silly multiply demand casino gold pipe matrix latin badge umbrella orbit safe cover glove one dash chicken play obey employ post"},
-			expectedOutput: "cloud flower upset remain green metal below cup stem infant art thank",
+			expectedOutput: "dress fee animal silly multiply demand casino gold pipe matrix latin badge umbrella orbit safe cover glove one dash chicken play obey employ post",
 		},
 
 		{
