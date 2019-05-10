@@ -88,3 +88,4 @@ deploy:
   on:
     repo: skycoin/hardware-wallet-go
     tags: true
+    
