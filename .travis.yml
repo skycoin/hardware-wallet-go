@@ -63,7 +63,7 @@ script:
   # Run self-tests
   - ps aux | grep emulator
   - make test_unit
-  - make integration-test-emulator
+  - make test-integration-emulator
   # Test that dependencies can be updated
   - make clean
   - make dep

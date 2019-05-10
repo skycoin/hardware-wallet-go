@@ -6,8 +6,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/davecgh/go-spew/spew"
-
 	"github.com/skycoin/hardware-wallet-go/src/skywallet/usb"
 
 	"github.com/skycoin/skycoin/src/util/logging"
@@ -839,7 +837,6 @@ func (d *Device) WordAck(word string) (wire.Message, error) {
 		return wire.Message{}, err
 	}
 
-	spew.Dump()
 	msg, err := d.Driver.SendToDevice(d.dev, chunks)
 	if err != nil {
 		return wire.Message{}, err
