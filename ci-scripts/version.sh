@@ -2,14 +2,10 @@
 version=$(git describe --tags --exact-match HEAD 2> /dev/null)
 if [ $? -ne 0 ]
 then
-    version=$(git rev-parse --short HEAD  2> /dev/null)
+    version=$(cat ./VERSION 2> /dev/null)
     if [ $? -ne 0 ]
     then
-        version=$(cat ./VERSION 2> /dev/null)
-        if [ $? -ne 0 ]
-        then
-            version='unknow'
-        fi
+        version='v0.0.0'
     fi
 fi
 echo $version
