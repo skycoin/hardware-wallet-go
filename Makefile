@@ -39,7 +39,7 @@ install-linters: ## Install linters
 	go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
 
 check-version:
-	test "$(shell cat ./VERSION)" == "$(shell ./ci-scripts/version.sh)"
+	test "$(shell cat ./VERSION)" = "$(shell ./ci-scripts/version.sh)"
 
 check: lint test ## Perform self-tests
 
