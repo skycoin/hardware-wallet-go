@@ -48,6 +48,7 @@ before_script:
   - echo "PIP=$PIP";
 
 script:
+  - make check-version
   - make -C tmp/hardware-wallet clean
   - make -C tmp/hardware-wallet/tiny-firmware/protob install-protoc
   - make -C tmp/hardware-wallet/tiny-firmware/protob/nanopb/vendor/nanopb/generator/proto
@@ -88,4 +89,4 @@ deploy:
   on:
     repo: skycoin/hardware-wallet-go
     tags: true
-    
+

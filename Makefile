@@ -38,6 +38,9 @@ install-linters: ## Install linters
 	# However, they suggest `curl ... | bash` which we should not do
 	go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
 
+check-version:
+	test "$(shell cat ./VERSION)" == "$(shell ./ci-scripts/version.sh)"
+
 check: lint test ## Perform self-tests
 
 lint: ## Run linters. Use make install-linters first.
