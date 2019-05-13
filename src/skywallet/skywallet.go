@@ -10,7 +10,7 @@ import (
 
 	"github.com/skycoin/skycoin/src/util/logging"
 
-	messages "github.com/skycoin/hardware-wallet-protob/go"
+	"github.com/skycoin/hardware-wallet-protob/go"
 
 	"github.com/skycoin/hardware-wallet-go/src/skywallet/wire"
 )
@@ -135,7 +135,6 @@ func (d *Device) Connect() error {
 	// close any existing connections
 	if d.dev != nil {
 		d.dev.Close(false)
-		d.dev = nil
 	}
 
 	dev, err := d.Driver.GetDevice()
@@ -183,12 +182,32 @@ func (d *Device) AddressGen(addressN, startIndex uint32, confirmAddress bool) (w
 		return wire.Message{}, ErrAddressNZero
 	}
 
-	chunks, err := MessageAddressGen(addressN, startIndex, confirmAddress)
+	addressGenChunks, err := MessageAddressGen(addressN, startIndex, confirmAddress)
 	if err != nil {
 		return wire.Message{}, err
 	}
 
-	return d.Driver.SendToDevice(d.dev, chunks)
+	msg, err := d.Driver.SendToDevice(d.dev, addressGenChunks)
+	if err != nil {
+		return msg, err
+	}
+
+	if msg.Kind == uint16(messages.MessageType_MessageType_EntropyRequest) {
+		chunks, err := MessageEntropyAck(entropyBufferSize)
+		if err != nil {
+			return wire.Message{}, err
+		}
+		_, err = d.Driver.SendToDevice(d.dev, chunks)
+		if err != nil {
+			return wire.Message{}, err
+		}
+		msg, err = d.Driver.SendToDevice(d.dev, addressGenChunks)
+		if err != nil {
+			return msg, err
+		}
+	}
+
+	return msg, nil
 }
 
 // SaveDeviceEntropyInFile Ask the device to generate entropy and save it in a file
@@ -210,6 +229,7 @@ func (d *Device) SaveDeviceEntropyInFile(outFile string, entropyBytes uint32, ge
 			if err != nil {
 				return &messages.Entropy{}, err
 			}
+
 			if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
 				// Send ButtonAck
 				chunks, err := MessageButtonAck()
@@ -364,12 +384,32 @@ func (d *Device) ApplySettings(usePassphrase *bool, label string, language strin
 		return wire.Message{}, ErrUsePassPhraseNil
 	}
 
-	chunks, err := MessageApplySettings(usePassphrase, label, language)
+	applySettingsChunks, err := MessageApplySettings(usePassphrase, label, language)
 	if err != nil {
 		return wire.Message{}, err
 	}
 
-	return d.Driver.SendToDevice(d.dev, chunks)
+	msg, err := d.Driver.SendToDevice(d.dev, applySettingsChunks)
+	if err != nil {
+		return msg, err
+	}
+
+	if msg.Kind == uint16(messages.MessageType_MessageType_EntropyRequest) {
+		chunks, err := MessageEntropyAck(entropyBufferSize)
+		if err != nil {
+			return wire.Message{}, err
+		}
+		_, err = d.Driver.SendToDevice(d.dev, chunks)
+		if err != nil {
+			return wire.Message{}, err
+		}
+		msg, err = d.Driver.SendToDevice(d.dev, applySettingsChunks)
+		if err != nil {
+			return msg, err
+		}
+	}
+
+	return msg, nil
 }
 
 // Backup ask the device to perform the seed backup
@@ -378,24 +418,36 @@ func (d *Device) Backup() (wire.Message, error) {
 		return wire.Message{}, err
 	}
 	defer d.dev.Close(false)
-	chunks, err := MessageBackup()
+
+	backupChunks, err := MessageBackup()
 	if err != nil {
 		return wire.Message{}, err
 	}
 
-	msg, err := d.Driver.SendToDevice(d.dev, chunks)
+	msg, err := d.Driver.SendToDevice(d.dev, backupChunks)
 	if err != nil {
 		return wire.Message{}, err
 	}
 
-	for msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		msg, err = d.ButtonAck()
+	switch msg.Kind {
+	case uint16(messages.MessageType_MessageType_ButtonRequest):
+		return d.ButtonAck()
+	case uint16(messages.MessageType_MessageType_EntropyRequest):
+		chunks, err := MessageEntropyAck(entropyBufferSize)
 		if err != nil {
 			return wire.Message{}, err
 		}
+		_, err = d.Driver.SendToDevice(d.dev, chunks)
+		if err != nil {
+			return wire.Message{}, err
+		}
+		msg, err = d.Driver.SendToDevice(d.dev, backupChunks)
+		if err != nil {
+			return msg, err
+		}
 	}
 
-	return msg, nil
+	return msg, err
 }
 
 // Cancel sends a Cancel request
@@ -404,12 +456,33 @@ func (d *Device) Cancel() (wire.Message, error) {
 		return wire.Message{}, err
 	}
 	defer d.dev.Close(false)
-	chunks, err := MessageCancel()
+
+	cancelChunks, err := MessageCancel()
 	if err != nil {
 		return wire.Message{}, err
 	}
 
-	return d.Driver.SendToDevice(d.dev, chunks)
+	msg, err := d.Driver.SendToDevice(d.dev, cancelChunks)
+	if err != nil {
+		return msg, err
+	}
+
+	if msg.Kind == uint16(messages.MessageType_MessageType_EntropyRequest) {
+		chunks, err := MessageEntropyAck(entropyBufferSize)
+		if err != nil {
+			return wire.Message{}, err
+		}
+		_, err = d.Driver.SendToDevice(d.dev, chunks)
+		if err != nil {
+			return wire.Message{}, err
+		}
+		msg, err = d.Driver.SendToDevice(d.dev, cancelChunks)
+		if err != nil {
+			return msg, err
+		}
+	}
+
+	return msg, nil
 }
 
 // CheckMessageSignature Check a message signature matches the given address.
@@ -420,12 +493,32 @@ func (d *Device) CheckMessageSignature(message, signature, address string) (wire
 	defer d.dev.Close(false)
 
 	// Send CheckMessageSignature
-	chunks, err := MessageCheckMessageSignature(message, signature, address)
+	checkMessageSignatureChunks, err := MessageCheckMessageSignature(message, signature, address)
 	if err != nil {
 		return wire.Message{}, err
 	}
 
-	return d.Driver.SendToDevice(d.dev, chunks)
+	msg, err := d.Driver.SendToDevice(d.dev, checkMessageSignatureChunks)
+	if err != nil {
+		return msg, err
+	}
+
+	if msg.Kind == uint16(messages.MessageType_MessageType_EntropyRequest) {
+		chunks, err := MessageEntropyAck(entropyBufferSize)
+		if err != nil {
+			return wire.Message{}, err
+		}
+		_, err = d.Driver.SendToDevice(d.dev, chunks)
+		if err != nil {
+			return wire.Message{}, err
+		}
+		msg, err = d.Driver.SendToDevice(d.dev, checkMessageSignatureChunks)
+		if err != nil {
+			return msg, err
+		}
+	}
+
+	return msg, nil
 }
 
 // ChangePin changes device's PIN code
@@ -454,19 +547,26 @@ func (d *Device) ChangePin(removePin *bool) (wire.Message, error) {
 		return wire.Message{}, ErrRemovePinNil
 	}
 
-	chunks, err := MessageChangePin(removePin)
+	changePinChunks, err := MessageChangePin(removePin)
 	if err != nil {
 		return wire.Message{}, err
 	}
 
-	msg, err := d.Driver.SendToDevice(d.dev, chunks)
+	msg, err := d.Driver.SendToDevice(d.dev, changePinChunks)
 	if err != nil {
 		return wire.Message{}, err
 	}
 
-	// Acknowledge that a button has been pressed
-	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		msg, err = d.ButtonAck()
+	if msg.Kind == uint16(messages.MessageType_MessageType_EntropyRequest) {
+		chunks, err := MessageEntropyAck(entropyBufferSize)
+		if err != nil {
+			return wire.Message{}, err
+		}
+		_, err = d.Driver.SendToDevice(d.dev, chunks)
+		if err != nil {
+			return wire.Message{}, err
+		}
+		msg, err = d.Driver.SendToDevice(d.dev, changePinChunks)
 		if err != nil {
 			return msg, err
 		}
@@ -485,6 +585,7 @@ func (d *Device) Connected() bool {
 		log.Error(err)
 		return false
 	}
+
 	for _, element := range chunks {
 		_, err = d.dev.Write(element[:])
 		if err != nil {
@@ -496,7 +597,26 @@ func (d *Device) Connected() bool {
 	if err != nil {
 		return false
 	}
-	return msg.Kind == uint16(messages.MessageType_MessageType_Success)
+
+	// switch msg.Kind {
+	// case uint16(messages.MessageType_MessageType_EntropyRequest):
+	// 	chunks, err := MessageEntropyAck(entropyBufferSize)
+	// 	if err != nil {
+	// 		return false
+	// 	}
+	// 	_, err = d.Driver.SendToDevice(d.dev, chunks)
+	// 	if err != nil {
+	// 		return wire.Message{}, err
+	// 	}
+	// 	msg, err = d.Driver.SendToDevice(d.dev, changePinChunks)
+	// 	if err != nil {
+	// 		return msg, err
+	// 	}
+	// case uint16(messages.MessageType_MessageType_Success):
+	// 	return true
+	// default:
+	// 	return false
+	// }
 }
 
 // Available checks if a skycoin wallet is connected to the system
@@ -606,12 +726,34 @@ func (d *Device) GetFeatures() (wire.Message, error) {
 		return wire.Message{}, err
 	}
 	defer d.dev.Close(false)
-	chunks, err := MessageGetFeatures()
+
+	changePinChunks, err := MessageGetFeatures()
 	if err != nil {
 		return wire.Message{}, err
 	}
 
-	return d.Driver.SendToDevice(d.dev, chunks)
+	msg, err := d.Driver.SendToDevice(d.dev, changePinChunks)
+	if err != nil {
+		return msg, err
+	}
+
+	if msg.Kind == uint16(messages.MessageType_MessageType_EntropyRequest) {
+		chunks, err := MessageEntropyAck(entropyBufferSize)
+		if err != nil {
+			return wire.Message{}, err
+		}
+		_, err = d.Driver.SendToDevice(d.dev, chunks)
+		if err != nil {
+			return wire.Message{}, err
+		}
+
+		msg, err = d.Driver.SendToDevice(d.dev, changePinChunks)
+		if err != nil {
+			return msg, err
+		}
+	}
+
+	return msg, nil
 }
 
 // GenerateMnemonic Ask the device to generate a mnemonic and configure itself with it.
@@ -629,6 +771,7 @@ func (d *Device) GenerateMnemonic(wordCount uint32, usePassphrase bool) (wire.Me
 	if err != nil {
 		return wire.Message{}, err
 	}
+
 	msg, err := d.Driver.SendToDevice(d.dev, generateMnemonicChunks)
 	if err != nil {
 		return msg, err
@@ -661,27 +804,38 @@ func (d *Device) Recovery(wordCount uint32, usePassphrase, dryRun bool) (wire.Me
 		return wire.Message{}, err
 	}
 	defer d.dev.Close(false)
-	var chunks [][64]byte
 
 	if wordCount != 12 && wordCount != 24 {
 		return wire.Message{}, ErrInvalidWordCount
 	}
 
 	log.Printf("Using passphrase %t\n", usePassphrase)
-	chunks, err := MessageRecovery(wordCount, usePassphrase, dryRun)
+	recoveryChunks, err := MessageRecovery(wordCount, usePassphrase, dryRun)
 	if err != nil {
 		return wire.Message{}, err
 	}
-	msg, err := d.Driver.SendToDevice(d.dev, chunks)
+
+	msg, err := d.Driver.SendToDevice(d.dev, recoveryChunks)
 	if err != nil {
 		return wire.Message{}, err
 	}
 	log.Printf("Recovery device response kind is: %d\n", msg.Kind)
 
-	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		msg, err = d.ButtonAck()
+	switch msg.Kind {
+	case uint16(messages.MessageType_MessageType_ButtonRequest):
+		return d.ButtonAck()
+	case uint16(messages.MessageType_MessageType_EntropyRequest):
+		chunks, err := MessageEntropyAck(entropyBufferSize)
 		if err != nil {
 			return wire.Message{}, err
+		}
+		_, err = d.Driver.SendToDevice(d.dev, chunks)
+		if err != nil {
+			return wire.Message{}, err
+		}
+		msg, err = d.Driver.SendToDevice(d.dev, recoveryChunks)
+		if err != nil {
+			return msg, err
 		}
 	}
 
@@ -696,19 +850,30 @@ func (d *Device) SetMnemonic(mnemonic string) (wire.Message, error) {
 	defer d.dev.Close(false)
 
 	// Send SetMnemonic
-	chunks, err := MessageSetMnemonic(mnemonic)
+	setMnemonicChunks, err := MessageSetMnemonic(mnemonic)
 	if err != nil {
 		return wire.Message{}, err
 	}
-	msg, err := d.Driver.SendToDevice(d.dev, chunks)
+	msg, err := d.Driver.SendToDevice(d.dev, setMnemonicChunks)
 	if err != nil {
 		return wire.Message{}, err
 	}
 
-	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		msg, err = d.ButtonAck()
+	switch msg.Kind {
+	case uint16(messages.MessageType_MessageType_ButtonRequest):
+		return d.ButtonAck()
+	case uint16(messages.MessageType_MessageType_EntropyRequest):
+		chunks, err := MessageEntropyAck(entropyBufferSize)
 		if err != nil {
 			return wire.Message{}, err
+		}
+		_, err = d.Driver.SendToDevice(d.dev, chunks)
+		if err != nil {
+			return wire.Message{}, err
+		}
+		msg, err = d.Driver.SendToDevice(d.dev, setMnemonicChunks)
+		if err != nil {
+			return msg, err
 		}
 	}
 
@@ -722,12 +887,12 @@ func (d *Device) SignMessage(addressIndex int, message string) (wire.Message, er
 	}
 	defer d.dev.Close(false)
 
-	chunks, err := MessageSignMessage(addressIndex, message)
+	signMessageChunks, err := MessageSignMessage(addressIndex, message)
 	if err != nil {
 		return wire.Message{}, err
 	}
 
-	msg, err := d.Driver.SendToDevice(d.dev, chunks)
+	msg, err := d.Driver.SendToDevice(d.dev, signMessageChunks)
 	if err != nil {
 		return wire.Message{}, err
 	}
@@ -736,6 +901,24 @@ func (d *Device) SignMessage(addressIndex int, message string) (wire.Message, er
 		msg, err = d.ButtonAck()
 		if err != nil {
 			return wire.Message{}, err
+		}
+	}
+
+	switch msg.Kind {
+	case uint16(messages.MessageType_MessageType_ButtonRequest):
+		return d.ButtonAck()
+	case uint16(messages.MessageType_MessageType_EntropyRequest):
+		chunks, err := MessageEntropyAck(entropyBufferSize)
+		if err != nil {
+			return wire.Message{}, err
+		}
+		_, err = d.Driver.SendToDevice(d.dev, chunks)
+		if err != nil {
+			return wire.Message{}, err
+		}
+		msg, err = d.Driver.SendToDevice(d.dev, signMessageChunks)
+		if err != nil {
+			return msg, err
 		}
 	}
 
@@ -748,11 +931,34 @@ func (d *Device) TransactionSign(inputs []*messages.SkycoinTransactionInput, out
 		return wire.Message{}, err
 	}
 	defer d.dev.Close(false)
-	chunks, err := MessageTransactionSign(inputs, outputs)
+
+	transactionSignChunks, err := MessageTransactionSign(inputs, outputs)
 	if err != nil {
 		return wire.Message{}, err
 	}
-	return d.Driver.SendToDevice(d.dev, chunks)
+
+	msg, err := d.Driver.SendToDevice(d.dev, transactionSignChunks)
+	if err != nil {
+		return wire.Message{}, err
+	}
+
+	if msg.Kind == uint16(messages.MessageType_MessageType_EntropyRequest) {
+		chunks, err := MessageEntropyAck(entropyBufferSize)
+		if err != nil {
+			return wire.Message{}, err
+		}
+		_, err = d.Driver.SendToDevice(d.dev, chunks)
+		if err != nil {
+			return wire.Message{}, err
+		}
+
+		msg, err = d.Driver.SendToDevice(d.dev, transactionSignChunks)
+		if err != nil {
+			return msg, err
+		}
+	}
+
+	return msg, nil
 }
 
 // Wipe wipes out device configuration
@@ -761,23 +967,32 @@ func (d *Device) Wipe() (wire.Message, error) {
 		return wire.Message{}, err
 	}
 	defer d.dev.Close(false)
-	var chunks [][64]byte
 
-	chunks, err := MessageWipe()
+	wipeChunks, err := MessageWipe()
 	if err != nil {
 		return wire.Message{}, err
 	}
 
-	msg, err := d.Driver.SendToDevice(d.dev, chunks)
+	msg, err := d.Driver.SendToDevice(d.dev, wipeChunks)
 	if err != nil {
 		return wire.Message{}, err
 	}
-	log.Printf("Wipe device %d! Answer is: %x\n", msg.Kind, msg.Data)
 
-	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		msg, err = d.ButtonAck()
+	switch msg.Kind {
+	case uint16(messages.MessageType_MessageType_ButtonRequest):
+		return d.ButtonAck()
+	case uint16(messages.MessageType_MessageType_EntropyRequest):
+		chunks, err := MessageEntropyAck(entropyBufferSize)
 		if err != nil {
 			return wire.Message{}, err
+		}
+		_, err = d.Driver.SendToDevice(d.dev, chunks)
+		if err != nil {
+			return wire.Message{}, err
+		}
+		msg, err = d.Driver.SendToDevice(d.dev, wipeChunks)
+		if err != nil {
+			return msg, err
 		}
 	}
 
@@ -793,13 +1008,30 @@ func (d *Device) ButtonAck() (wire.Message, error) {
 	defer d.dev.Close(false)
 
 	// Send ButtonAck
-	chunks, err := MessageButtonAck()
+	buttonChunks, err := MessageButtonAck()
 	if err != nil {
 		return wire.Message{}, err
 	}
-	err = sendToDeviceNoAnswer(d.dev, chunks)
+
+	msg, err := d.Driver.SendToDevice(d.dev, buttonChunks)
 	if err != nil {
 		return wire.Message{}, err
+	}
+
+	if msg.Kind == uint16(messages.MessageType_MessageType_EntropyRequest) {
+		chunks, err := MessageEntropyAck(entropyBufferSize)
+		if err != nil {
+			return wire.Message{}, err
+		}
+		_, err = d.Driver.SendToDevice(d.dev, chunks)
+		if err != nil {
+			return wire.Message{}, err
+		}
+
+		msg, err = d.Driver.SendToDevice(d.dev, buttonChunks)
+		if err != nil {
+			return msg, err
+		}
 	}
 
 	// simulate button press
@@ -809,8 +1041,7 @@ func (d *Device) ButtonAck() (wire.Message, error) {
 		}
 	}
 
-	msg, err := wire.ReadFrom(d.dev)
-	return *msg, err
+	return msg, nil
 }
 
 // PassphraseAck send this message when the device is waiting for the user to input a passphrase
@@ -819,11 +1050,34 @@ func (d *Device) PassphraseAck(passphrase string) (wire.Message, error) {
 		return wire.Message{}, err
 	}
 	defer d.dev.Close(false)
-	chunks, err := MessagePassphraseAck(passphrase)
+
+	passphraseChunks, err := MessagePassphraseAck(passphrase)
 	if err != nil {
 		return wire.Message{}, err
 	}
-	return d.Driver.SendToDevice(d.dev, chunks)
+
+	msg, err := d.Driver.SendToDevice(d.dev, passphraseChunks)
+	if err != nil {
+		return wire.Message{}, err
+	}
+
+	if msg.Kind == uint16(messages.MessageType_MessageType_EntropyRequest) {
+		chunks, err := MessageEntropyAck(entropyBufferSize)
+		if err != nil {
+			return wire.Message{}, err
+		}
+		_, err = d.Driver.SendToDevice(d.dev, chunks)
+		if err != nil {
+			return wire.Message{}, err
+		}
+
+		msg, err = d.Driver.SendToDevice(d.dev, passphraseChunks)
+		if err != nil {
+			return msg, err
+		}
+	}
+
+	return msg, nil
 }
 
 // WordAck send a word to the device during device "recovery procedure"
@@ -832,14 +1086,31 @@ func (d *Device) WordAck(word string) (wire.Message, error) {
 		return wire.Message{}, err
 	}
 	defer d.dev.Close(false)
-	chunks, err := MessageWordAck(word)
+
+	wordAckChunks, err := MessageWordAck(word)
 	if err != nil {
 		return wire.Message{}, err
 	}
 
-	msg, err := d.Driver.SendToDevice(d.dev, chunks)
+	msg, err := d.Driver.SendToDevice(d.dev, wordAckChunks)
 	if err != nil {
 		return wire.Message{}, err
+	}
+
+	if msg.Kind == uint16(messages.MessageType_MessageType_EntropyRequest) {
+		chunks, err := MessageEntropyAck(entropyBufferSize)
+		if err != nil {
+			return wire.Message{}, err
+		}
+		_, err = d.Driver.SendToDevice(d.dev, chunks)
+		if err != nil {
+			return wire.Message{}, err
+		}
+
+		msg, err = d.Driver.SendToDevice(d.dev, wordAckChunks)
+		if err != nil {
+			return msg, err
+		}
 	}
 
 	return msg, nil
@@ -855,11 +1126,33 @@ func (d *Device) PinMatrixAck(p string) (wire.Message, error) {
 
 	log.Printf("Setting pin: %s\n", p)
 
-	chunks, err := MessagePinMatrixAck(p)
+	pinMatrixChunks, err := MessagePinMatrixAck(p)
 	if err != nil {
 		return wire.Message{}, err
 	}
-	return d.Driver.SendToDevice(d.dev, chunks)
+
+	msg, err := d.Driver.SendToDevice(d.dev, pinMatrixChunks)
+	if err != nil {
+		return wire.Message{}, nil
+	}
+
+	if msg.Kind == uint16(messages.MessageType_MessageType_EntropyRequest) {
+		chunks, err := MessageEntropyAck(entropyBufferSize)
+		if err != nil {
+			return wire.Message{}, err
+		}
+		_, err = d.Driver.SendToDevice(d.dev, chunks)
+		if err != nil {
+			return wire.Message{}, err
+		}
+
+		msg, err = d.Driver.SendToDevice(d.dev, pinMatrixChunks)
+		if err != nil {
+			return msg, err
+		}
+	}
+
+	return msg, nil
 }
 
 // SimulateButtonPress simulates a button press on emulator
