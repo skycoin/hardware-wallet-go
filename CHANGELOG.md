@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 
+- Add travis CD instructions for github releases.
 - Add BitEncodedFlags to encode/decode flags from/to a string.
 - Add remove PIN code.
 - Pretty(`json`) print features output.
