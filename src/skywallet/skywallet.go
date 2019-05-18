@@ -10,7 +10,7 @@ import (
 
 	"github.com/skycoin/skycoin/src/util/logging"
 
-	"github.com/skycoin/hardware-wallet-protob/go"
+	messages "github.com/skycoin/hardware-wallet-protob/go"
 
 	"github.com/skycoin/hardware-wallet-go/src/skywallet/wire"
 )
@@ -192,21 +192,6 @@ func (d *Device) AddressGen(addressN, startIndex uint32, confirmAddress bool) (w
 		return msg, err
 	}
 
-	if msg.Kind == uint16(messages.MessageType_MessageType_EntropyRequest) {
-		chunks, err := MessageEntropyAck(entropyBufferSize)
-		if err != nil {
-			return wire.Message{}, err
-		}
-		_, err = d.Driver.SendToDevice(d.dev, chunks)
-		if err != nil {
-			return wire.Message{}, err
-		}
-		msg, err = d.Driver.SendToDevice(d.dev, addressGenChunks)
-		if err != nil {
-			return msg, err
-		}
-	}
-
 	return msg, nil
 }
 
@@ -269,6 +254,7 @@ func (d *Device) SaveDeviceEntropyInFile(outFile string, entropyBytes uint32, ge
 		}
 		return entropy, nil
 	}
+
 	getEntropy := func(bytes uint32) (*messages.Entropy, error) {
 		chunks, err := getEntropyMsgBuilder(bytes)
 		if err != nil {
@@ -280,6 +266,7 @@ func (d *Device) SaveDeviceEntropyInFile(outFile string, entropyBytes uint32, ge
 		}
 		return processGetEntropyResponse(resp)
 	}
+
 	checkProducedFile := func() error {
 		if !usingStdout {
 			fileInfo, err := os.Stat(outFile)
@@ -295,6 +282,7 @@ func (d *Device) SaveDeviceEntropyInFile(outFile string, entropyBytes uint32, ge
 		}
 		return nil
 	}
+
 	if usingStdout {
 		processBytes = func(buf []byte) error {
 			fmt.Print(buf)
@@ -324,6 +312,7 @@ func (d *Device) SaveDeviceEntropyInFile(outFile string, entropyBytes uint32, ge
 			}
 		}()
 		defer file.Close()
+
 		processBytes = func(buf []byte) error {
 			var wroteBytes = 0
 			for wroteBytes < len(buf) {
@@ -340,24 +329,29 @@ func (d *Device) SaveDeviceEntropyInFile(outFile string, entropyBytes uint32, ge
 			return nil
 		}
 	}
+
 	if err := d.Connect(); err != nil {
 		return err
 	}
+
 	defer func() {
 		if err := d.Disconnect(); err != nil {
 			log.Error(err)
 		}
 	}()
+
 	entropy, err := getEntropy(entropyBytes)
 	if err != nil {
 		log.Error(err)
 		return err
 	}
+
 	receivedEntropyBytes = uint32(len(entropy.GetEntropy()))
 	if err := processBytes(entropy.GetEntropy()); err != nil {
 		log.Errorf("error writing file %s.\n %s", outFile, err.Error())
 		return err
 	}
+
 	for receivedEntropyBytes < entropyBytes {
 		entropy, err := getEntropy(entropyBytes - receivedEntropyBytes)
 		if err != nil {
@@ -394,19 +388,8 @@ func (d *Device) ApplySettings(usePassphrase *bool, label string, language strin
 		return msg, err
 	}
 
-	if msg.Kind == uint16(messages.MessageType_MessageType_EntropyRequest) {
-		chunks, err := MessageEntropyAck(entropyBufferSize)
-		if err != nil {
-			return wire.Message{}, err
-		}
-		_, err = d.Driver.SendToDevice(d.dev, chunks)
-		if err != nil {
-			return wire.Message{}, err
-		}
-		msg, err = d.Driver.SendToDevice(d.dev, applySettingsChunks)
-		if err != nil {
-			return msg, err
-		}
+	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
+		return d.ButtonAck()
 	}
 
 	return msg, nil
@@ -429,22 +412,8 @@ func (d *Device) Backup() (wire.Message, error) {
 		return wire.Message{}, err
 	}
 
-	switch msg.Kind {
-	case uint16(messages.MessageType_MessageType_ButtonRequest):
+	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
 		return d.ButtonAck()
-	case uint16(messages.MessageType_MessageType_EntropyRequest):
-		chunks, err := MessageEntropyAck(entropyBufferSize)
-		if err != nil {
-			return wire.Message{}, err
-		}
-		_, err = d.Driver.SendToDevice(d.dev, chunks)
-		if err != nil {
-			return wire.Message{}, err
-		}
-		msg, err = d.Driver.SendToDevice(d.dev, backupChunks)
-		if err != nil {
-			return msg, err
-		}
 	}
 
 	return msg, err
@@ -467,21 +436,6 @@ func (d *Device) Cancel() (wire.Message, error) {
 		return msg, err
 	}
 
-	if msg.Kind == uint16(messages.MessageType_MessageType_EntropyRequest) {
-		chunks, err := MessageEntropyAck(entropyBufferSize)
-		if err != nil {
-			return wire.Message{}, err
-		}
-		_, err = d.Driver.SendToDevice(d.dev, chunks)
-		if err != nil {
-			return wire.Message{}, err
-		}
-		msg, err = d.Driver.SendToDevice(d.dev, cancelChunks)
-		if err != nil {
-			return msg, err
-		}
-	}
-
 	return msg, nil
 }
 
@@ -501,21 +455,6 @@ func (d *Device) CheckMessageSignature(message, signature, address string) (wire
 	msg, err := d.Driver.SendToDevice(d.dev, checkMessageSignatureChunks)
 	if err != nil {
 		return msg, err
-	}
-
-	if msg.Kind == uint16(messages.MessageType_MessageType_EntropyRequest) {
-		chunks, err := MessageEntropyAck(entropyBufferSize)
-		if err != nil {
-			return wire.Message{}, err
-		}
-		_, err = d.Driver.SendToDevice(d.dev, chunks)
-		if err != nil {
-			return wire.Message{}, err
-		}
-		msg, err = d.Driver.SendToDevice(d.dev, checkMessageSignatureChunks)
-		if err != nil {
-			return msg, err
-		}
 	}
 
 	return msg, nil
@@ -557,26 +496,13 @@ func (d *Device) ChangePin(removePin *bool) (wire.Message, error) {
 		return wire.Message{}, err
 	}
 
-	if msg.Kind == uint16(messages.MessageType_MessageType_EntropyRequest) {
-		chunks, err := MessageEntropyAck(entropyBufferSize)
-		if err != nil {
-			return wire.Message{}, err
-		}
-		_, err = d.Driver.SendToDevice(d.dev, chunks)
-		if err != nil {
-			return wire.Message{}, err
-		}
-		msg, err = d.Driver.SendToDevice(d.dev, changePinChunks)
-		if err != nil {
-			return msg, err
-		}
-	}
-
 	return msg, nil
 }
 
 // Connected checks if we can communicate with a connected skycoin wallet
 func (d *Device) Connected() bool {
+	var msg *wire.Message
+	var err error
 	if d.dev == nil {
 		return false
 	}
@@ -593,30 +519,34 @@ func (d *Device) Connected() bool {
 		}
 	}
 
-	msg, err := wire.ReadFrom(d.dev)
+	msg, err = wire.ReadFrom(d.dev)
 	if err != nil {
 		return false
 	}
 
-	// switch msg.Kind {
-	// case uint16(messages.MessageType_MessageType_EntropyRequest):
-	// 	chunks, err := MessageEntropyAck(entropyBufferSize)
-	// 	if err != nil {
-	// 		return false
-	// 	}
-	// 	_, err = d.Driver.SendToDevice(d.dev, chunks)
-	// 	if err != nil {
-	// 		return wire.Message{}, err
-	// 	}
-	// 	msg, err = d.Driver.SendToDevice(d.dev, changePinChunks)
-	// 	if err != nil {
-	// 		return msg, err
-	// 	}
-	// case uint16(messages.MessageType_MessageType_Success):
-	// 	return true
-	// default:
-	// 	return false
-	// }
+	if msg.Kind == uint16(messages.MessageType_MessageType_EntropyRequest) {
+		go func() {
+			entropyChunks, err := MessageEntropyAck(entropyBufferSize)
+			if err != nil {
+				log.Errorf("failed to create entropy ack msg: %v", err)
+				return
+			}
+
+			for _, element := range entropyChunks {
+				_, err := d.dev.Write(element[:])
+				if err != nil {
+					log.Errorf("entropy ack error: %v", err)
+				}
+			}
+		}()
+
+		msg, err = wire.ReadFrom(d.dev)
+		if err != nil {
+			return false
+		}
+	}
+
+	return msg.Kind == uint16(messages.MessageType_MessageType_Success)
 }
 
 // Available checks if a skycoin wallet is connected to the system
@@ -737,20 +667,8 @@ func (d *Device) GetFeatures() (wire.Message, error) {
 		return msg, err
 	}
 
-	if msg.Kind == uint16(messages.MessageType_MessageType_EntropyRequest) {
-		chunks, err := MessageEntropyAck(entropyBufferSize)
-		if err != nil {
-			return wire.Message{}, err
-		}
-		_, err = d.Driver.SendToDevice(d.dev, chunks)
-		if err != nil {
-			return wire.Message{}, err
-		}
-
-		msg, err = d.Driver.SendToDevice(d.dev, changePinChunks)
-		if err != nil {
-			return msg, err
-		}
+	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
+		return d.ButtonAck()
 	}
 
 	return msg, nil
@@ -777,22 +695,8 @@ func (d *Device) GenerateMnemonic(wordCount uint32, usePassphrase bool) (wire.Me
 		return msg, err
 	}
 
-	switch msg.Kind {
-	case uint16(messages.MessageType_MessageType_ButtonRequest):
+	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
 		return d.ButtonAck()
-	case uint16(messages.MessageType_MessageType_EntropyRequest):
-		chunks, err := MessageEntropyAck(entropyBufferSize)
-		if err != nil {
-			return wire.Message{}, err
-		}
-		_, err = d.Driver.SendToDevice(d.dev, chunks)
-		if err != nil {
-			return wire.Message{}, err
-		}
-		msg, err = d.Driver.SendToDevice(d.dev, generateMnemonicChunks)
-		if err != nil {
-			return msg, err
-		}
 	}
 
 	return msg, err
@@ -821,22 +725,8 @@ func (d *Device) Recovery(wordCount uint32, usePassphrase, dryRun bool) (wire.Me
 	}
 	log.Printf("Recovery device response kind is: %d\n", msg.Kind)
 
-	switch msg.Kind {
-	case uint16(messages.MessageType_MessageType_ButtonRequest):
+	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
 		return d.ButtonAck()
-	case uint16(messages.MessageType_MessageType_EntropyRequest):
-		chunks, err := MessageEntropyAck(entropyBufferSize)
-		if err != nil {
-			return wire.Message{}, err
-		}
-		_, err = d.Driver.SendToDevice(d.dev, chunks)
-		if err != nil {
-			return wire.Message{}, err
-		}
-		msg, err = d.Driver.SendToDevice(d.dev, recoveryChunks)
-		if err != nil {
-			return msg, err
-		}
 	}
 
 	return msg, nil
@@ -859,22 +749,8 @@ func (d *Device) SetMnemonic(mnemonic string) (wire.Message, error) {
 		return wire.Message{}, err
 	}
 
-	switch msg.Kind {
-	case uint16(messages.MessageType_MessageType_ButtonRequest):
+	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
 		return d.ButtonAck()
-	case uint16(messages.MessageType_MessageType_EntropyRequest):
-		chunks, err := MessageEntropyAck(entropyBufferSize)
-		if err != nil {
-			return wire.Message{}, err
-		}
-		_, err = d.Driver.SendToDevice(d.dev, chunks)
-		if err != nil {
-			return wire.Message{}, err
-		}
-		msg, err = d.Driver.SendToDevice(d.dev, setMnemonicChunks)
-		if err != nil {
-			return msg, err
-		}
 	}
 
 	return msg, err
@@ -898,28 +774,7 @@ func (d *Device) SignMessage(addressIndex int, message string) (wire.Message, er
 	}
 
 	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		msg, err = d.ButtonAck()
-		if err != nil {
-			return wire.Message{}, err
-		}
-	}
-
-	switch msg.Kind {
-	case uint16(messages.MessageType_MessageType_ButtonRequest):
 		return d.ButtonAck()
-	case uint16(messages.MessageType_MessageType_EntropyRequest):
-		chunks, err := MessageEntropyAck(entropyBufferSize)
-		if err != nil {
-			return wire.Message{}, err
-		}
-		_, err = d.Driver.SendToDevice(d.dev, chunks)
-		if err != nil {
-			return wire.Message{}, err
-		}
-		msg, err = d.Driver.SendToDevice(d.dev, signMessageChunks)
-		if err != nil {
-			return msg, err
-		}
 	}
 
 	return msg, err
@@ -942,22 +797,6 @@ func (d *Device) TransactionSign(inputs []*messages.SkycoinTransactionInput, out
 		return wire.Message{}, err
 	}
 
-	if msg.Kind == uint16(messages.MessageType_MessageType_EntropyRequest) {
-		chunks, err := MessageEntropyAck(entropyBufferSize)
-		if err != nil {
-			return wire.Message{}, err
-		}
-		_, err = d.Driver.SendToDevice(d.dev, chunks)
-		if err != nil {
-			return wire.Message{}, err
-		}
-
-		msg, err = d.Driver.SendToDevice(d.dev, transactionSignChunks)
-		if err != nil {
-			return msg, err
-		}
-	}
-
 	return msg, nil
 }
 
@@ -978,22 +817,8 @@ func (d *Device) Wipe() (wire.Message, error) {
 		return wire.Message{}, err
 	}
 
-	switch msg.Kind {
-	case uint16(messages.MessageType_MessageType_ButtonRequest):
+	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
 		return d.ButtonAck()
-	case uint16(messages.MessageType_MessageType_EntropyRequest):
-		chunks, err := MessageEntropyAck(entropyBufferSize)
-		if err != nil {
-			return wire.Message{}, err
-		}
-		_, err = d.Driver.SendToDevice(d.dev, chunks)
-		if err != nil {
-			return wire.Message{}, err
-		}
-		msg, err = d.Driver.SendToDevice(d.dev, wipeChunks)
-		if err != nil {
-			return msg, err
-		}
 	}
 
 	return msg, err
@@ -1016,22 +841,6 @@ func (d *Device) ButtonAck() (wire.Message, error) {
 	msg, err := d.Driver.SendToDevice(d.dev, buttonChunks)
 	if err != nil {
 		return wire.Message{}, err
-	}
-
-	if msg.Kind == uint16(messages.MessageType_MessageType_EntropyRequest) {
-		chunks, err := MessageEntropyAck(entropyBufferSize)
-		if err != nil {
-			return wire.Message{}, err
-		}
-		_, err = d.Driver.SendToDevice(d.dev, chunks)
-		if err != nil {
-			return wire.Message{}, err
-		}
-
-		msg, err = d.Driver.SendToDevice(d.dev, buttonChunks)
-		if err != nil {
-			return msg, err
-		}
 	}
 
 	// simulate button press
@@ -1061,22 +870,6 @@ func (d *Device) PassphraseAck(passphrase string) (wire.Message, error) {
 		return wire.Message{}, err
 	}
 
-	if msg.Kind == uint16(messages.MessageType_MessageType_EntropyRequest) {
-		chunks, err := MessageEntropyAck(entropyBufferSize)
-		if err != nil {
-			return wire.Message{}, err
-		}
-		_, err = d.Driver.SendToDevice(d.dev, chunks)
-		if err != nil {
-			return wire.Message{}, err
-		}
-
-		msg, err = d.Driver.SendToDevice(d.dev, passphraseChunks)
-		if err != nil {
-			return msg, err
-		}
-	}
-
 	return msg, nil
 }
 
@@ -1095,22 +888,6 @@ func (d *Device) WordAck(word string) (wire.Message, error) {
 	msg, err := d.Driver.SendToDevice(d.dev, wordAckChunks)
 	if err != nil {
 		return wire.Message{}, err
-	}
-
-	if msg.Kind == uint16(messages.MessageType_MessageType_EntropyRequest) {
-		chunks, err := MessageEntropyAck(entropyBufferSize)
-		if err != nil {
-			return wire.Message{}, err
-		}
-		_, err = d.Driver.SendToDevice(d.dev, chunks)
-		if err != nil {
-			return wire.Message{}, err
-		}
-
-		msg, err = d.Driver.SendToDevice(d.dev, wordAckChunks)
-		if err != nil {
-			return msg, err
-		}
 	}
 
 	return msg, nil
@@ -1134,22 +911,6 @@ func (d *Device) PinMatrixAck(p string) (wire.Message, error) {
 	msg, err := d.Driver.SendToDevice(d.dev, pinMatrixChunks)
 	if err != nil {
 		return wire.Message{}, nil
-	}
-
-	if msg.Kind == uint16(messages.MessageType_MessageType_EntropyRequest) {
-		chunks, err := MessageEntropyAck(entropyBufferSize)
-		if err != nil {
-			return wire.Message{}, err
-		}
-		_, err = d.Driver.SendToDevice(d.dev, chunks)
-		if err != nil {
-			return wire.Message{}, err
-		}
-
-		msg, err = d.Driver.SendToDevice(d.dev, pinMatrixChunks)
-		if err != nil {
-			return msg, err
-		}
 	}
 
 	return msg, nil
