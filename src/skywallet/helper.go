@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"runtime"
+	"sync"
 	"time"
 
 	"github.com/gogo/protobuf/proto"
@@ -202,7 +203,11 @@ func sendToDevice(dev usb.Device, chunks [][64]byte) (wire.Message, error) {
 	}
 
 	if msg.Kind == uint16(messages.MessageType_MessageType_EntropyRequest) {
+		var wg sync.WaitGroup
+		wg.Add(1)
+
 		go func() {
+			defer wg.Done()
 			entropyChunks, err := MessageEntropyAck(entropyBufferSize)
 			if err != nil {
 				log.Errorf("failed to create entropy ack msg: %v", err)
@@ -213,6 +218,7 @@ func sendToDevice(dev usb.Device, chunks [][64]byte) (wire.Message, error) {
 				_, err := dev.Write(element[:])
 				if err != nil {
 					log.Errorf("entropy ack error: %v", err)
+					return
 				}
 			}
 		}()
@@ -221,6 +227,7 @@ func sendToDevice(dev usb.Device, chunks [][64]byte) (wire.Message, error) {
 		if err != nil {
 			return wire.Message{}, err
 		}
+		wg.Wait()
 	}
 
 	return *msg, err
