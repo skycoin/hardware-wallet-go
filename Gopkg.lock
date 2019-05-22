@@ -142,7 +142,6 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "github.com/davecgh/go-spew/spew",
     "github.com/gogo/protobuf/proto",
     "github.com/skycoin/hardware-wallet-protob/go",
     "github.com/skycoin/skycoin/src/cipher",

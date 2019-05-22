@@ -22,15 +22,19 @@ dep: ## Ensure package dependencies are up to date
 
 mocks: ## Create all mock files for unit tests
 	echo "Generating mock files"
-	go generate ./src/...
+	mockery -name Devicer -dir ./src/skywallet -case underscore -inpkg -testonly
+	mockery -name DeviceDriver -dir ./src/skywallet -case underscore -inpkg -testonly
 
 test_unit: ## Run unit tests
 	go test -v github.com/skycoin/hardware-wallet-go/src/skywallet
 
-test_integration: ## Run integration tests
-	go test -count=1 -v github.com/skycoin/hardware-wallet-go/src/skywallet/integration
+test-integration-emulator: ## Run emulator integration tests
+	./ci-scripts/integration-test.sh -a -m EMULATOR -n emulator-integration
 
-test: test_unit test_integration ## Run all tests
+test-integration-wallet: ## Run usb integration tests
+	./ci-scripts/integration-test.sh -m USB -n wallet-integration
+
+test: test_unit integration-test-emulator ## Run all tests
 
 install-linters: ## Install linters
 	go get -u github.com/FiloSottile/vendorcheck
