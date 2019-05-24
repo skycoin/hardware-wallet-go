@@ -135,6 +135,7 @@ func (d *Device) Connect() error {
 	// close any existing connections
 	if d.dev != nil {
 		d.dev.Close(false)
+		d.dev = nil
 	}
 
 	dev, err := d.Driver.GetDevice()
@@ -381,10 +382,6 @@ func (d *Device) ApplySettings(usePassphrase *bool, label string, language strin
 	msg, err := d.Driver.SendToDevice(d.dev, applySettingsChunks)
 	if err != nil {
 		return msg, err
-	}
-
-	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		return d.ButtonAck()
 	}
 
 	return msg, nil
