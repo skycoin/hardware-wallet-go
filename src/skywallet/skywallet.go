@@ -10,7 +10,7 @@ import (
 
 	"github.com/skycoin/skycoin/src/util/logging"
 
-	messages "github.com/skycoin/hardware-wallet-protob/go"
+	"github.com/skycoin/hardware-wallet-protob/go"
 
 	"github.com/skycoin/hardware-wallet-go/src/skywallet/wire"
 )
@@ -187,12 +187,7 @@ func (d *Device) AddressGen(addressN, startIndex uint32, confirmAddress bool) (w
 		return wire.Message{}, err
 	}
 
-	msg, err := d.Driver.SendToDevice(d.dev, addressGenChunks)
-	if err != nil {
-		return msg, err
-	}
-
-	return msg, nil
+	return d.Driver.SendToDevice(d.dev, addressGenChunks)
 }
 
 // SaveDeviceEntropyInFile Ask the device to generate entropy and save it in a file
@@ -412,8 +407,11 @@ func (d *Device) Backup() (wire.Message, error) {
 		return wire.Message{}, err
 	}
 
-	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		return d.ButtonAck()
+	for msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
+		msg, err = d.ButtonAck()
+		if err != nil {
+			return wire.Message{}, err
+		}
 	}
 
 	return msg, err
@@ -452,12 +450,7 @@ func (d *Device) CheckMessageSignature(message, signature, address string) (wire
 		return wire.Message{}, err
 	}
 
-	msg, err := d.Driver.SendToDevice(d.dev, checkMessageSignatureChunks)
-	if err != nil {
-		return msg, err
-	}
-
-	return msg, nil
+	return d.Driver.SendToDevice(d.dev, checkMessageSignatureChunks)
 }
 
 // ChangePin changes device's PIN code
@@ -494,6 +487,14 @@ func (d *Device) ChangePin(removePin *bool) (wire.Message, error) {
 	msg, err := d.Driver.SendToDevice(d.dev, changePinChunks)
 	if err != nil {
 		return wire.Message{}, err
+	}
+
+	// Acknowledge that a button has been pressed
+	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
+		msg, err = d.ButtonAck()
+		if err != nil {
+			return msg, err
+		}
 	}
 
 	return msg, nil
@@ -657,12 +658,12 @@ func (d *Device) GetFeatures() (wire.Message, error) {
 	}
 	defer d.dev.Close(false)
 
-	changePinChunks, err := MessageGetFeatures()
+	getFeaturesChunks, err := MessageGetFeatures()
 	if err != nil {
 		return wire.Message{}, err
 	}
 
-	msg, err := d.Driver.SendToDevice(d.dev, changePinChunks)
+	msg, err := d.Driver.SendToDevice(d.dev, getFeaturesChunks)
 	if err != nil {
 		return msg, err
 	}
@@ -792,12 +793,7 @@ func (d *Device) TransactionSign(inputs []*messages.SkycoinTransactionInput, out
 		return wire.Message{}, err
 	}
 
-	msg, err := d.Driver.SendToDevice(d.dev, transactionSignChunks)
-	if err != nil {
-		return wire.Message{}, err
-	}
-
-	return msg, nil
+	return d.Driver.SendToDevice(d.dev, transactionSignChunks)
 }
 
 // Wipe wipes out device configuration
@@ -865,12 +861,7 @@ func (d *Device) PassphraseAck(passphrase string) (wire.Message, error) {
 		return wire.Message{}, err
 	}
 
-	msg, err := d.Driver.SendToDevice(d.dev, passphraseChunks)
-	if err != nil {
-		return wire.Message{}, err
-	}
-
-	return msg, nil
+	return d.Driver.SendToDevice(d.dev, passphraseChunks)
 }
 
 // WordAck send a word to the device during device "recovery procedure"
@@ -885,12 +876,7 @@ func (d *Device) WordAck(word string) (wire.Message, error) {
 		return wire.Message{}, err
 	}
 
-	msg, err := d.Driver.SendToDevice(d.dev, wordAckChunks)
-	if err != nil {
-		return wire.Message{}, err
-	}
-
-	return msg, nil
+	return d.Driver.SendToDevice(d.dev, wordAckChunks)
 }
 
 // PinMatrixAck during PIN code setting use this message to send user input to device
@@ -908,12 +894,7 @@ func (d *Device) PinMatrixAck(p string) (wire.Message, error) {
 		return wire.Message{}, err
 	}
 
-	msg, err := d.Driver.SendToDevice(d.dev, pinMatrixChunks)
-	if err != nil {
-		return wire.Message{}, nil
-	}
-
-	return msg, nil
+	return d.Driver.SendToDevice(d.dev, pinMatrixChunks)
 }
 
 // SimulateButtonPress simulates a button press on emulator
