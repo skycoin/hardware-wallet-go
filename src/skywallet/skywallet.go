@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/skycoin/hardware-wallet-go/src/skywallet/usb"
@@ -379,12 +380,7 @@ func (d *Device) ApplySettings(usePassphrase *bool, label string, language strin
 		return wire.Message{}, err
 	}
 
-	msg, err := d.Driver.SendToDevice(d.dev, applySettingsChunks)
-	if err != nil {
-		return msg, err
-	}
-
-	return msg, nil
+	return d.Driver.SendToDevice(d.dev, applySettingsChunks)
 }
 
 // Backup ask the device to perform the seed backup
@@ -426,12 +422,7 @@ func (d *Device) Cancel() (wire.Message, error) {
 		return wire.Message{}, err
 	}
 
-	msg, err := d.Driver.SendToDevice(d.dev, cancelChunks)
-	if err != nil {
-		return msg, err
-	}
-
-	return msg, nil
+	return d.Driver.SendToDevice(d.dev, cancelChunks)
 }
 
 // CheckMessageSignature Check a message signature matches the given address.
@@ -488,10 +479,7 @@ func (d *Device) ChangePin(removePin *bool) (wire.Message, error) {
 
 	// Acknowledge that a button has been pressed
 	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		msg, err = d.ButtonAck()
-		if err != nil {
-			return msg, err
-		}
+		return d.ButtonAck()
 	}
 
 	return msg, nil
@@ -523,7 +511,11 @@ func (d *Device) Connected() bool {
 	}
 
 	if msg.Kind == uint16(messages.MessageType_MessageType_EntropyRequest) {
+		var wg sync.WaitGroup
+		wg.Add(1)
+
 		go func() {
+			defer wg.Done()
 			entropyChunks, err := MessageEntropyAck(entropyBufferSize)
 			if err != nil {
 				log.Errorf("failed to create entropy ack msg: %v", err)
@@ -542,6 +534,7 @@ func (d *Device) Connected() bool {
 		if err != nil {
 			return false
 		}
+		wg.Wait()
 	}
 
 	return msg.Kind == uint16(messages.MessageType_MessageType_Success)
@@ -660,16 +653,7 @@ func (d *Device) GetFeatures() (wire.Message, error) {
 		return wire.Message{}, err
 	}
 
-	msg, err := d.Driver.SendToDevice(d.dev, getFeaturesChunks)
-	if err != nil {
-		return msg, err
-	}
-
-	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		return d.ButtonAck()
-	}
-
-	return msg, nil
+	return d.Driver.SendToDevice(d.dev, getFeaturesChunks)
 }
 
 // GenerateMnemonic Ask the device to generate a mnemonic and configure itself with it.
@@ -831,7 +815,7 @@ func (d *Device) ButtonAck() (wire.Message, error) {
 		return wire.Message{}, err
 	}
 
-	msg, err := d.Driver.SendToDevice(d.dev, buttonChunks)
+	err = sendToDeviceNoAnswer(d.dev, buttonChunks)
 	if err != nil {
 		return wire.Message{}, err
 	}
@@ -843,7 +827,38 @@ func (d *Device) ButtonAck() (wire.Message, error) {
 		}
 	}
 
-	return msg, nil
+	msg, err := wire.ReadFrom(d.dev)
+	if err != nil {
+		return wire.Message{}, err
+	}
+	if msg.Kind == uint16(messages.MessageType_MessageType_EntropyRequest) {
+		var wg sync.WaitGroup
+		wg.Add(1)
+
+		go func() {
+			defer wg.Done()
+			entropyChunks, err := MessageEntropyAck(entropyBufferSize)
+			if err != nil {
+				log.Errorf("failed to create entropy ack msg: %v", err)
+				return
+			}
+
+			for _, element := range entropyChunks {
+				_, err := d.dev.Write(element[:])
+				if err != nil {
+					log.Errorf("entropy ack error: %v", err)
+				}
+			}
+		}()
+
+		msg, err = wire.ReadFrom(d.dev)
+		if err != nil {
+			return wire.Message{}, err
+		}
+		wg.Wait()
+	}
+
+	return *msg, err
 }
 
 // PassphraseAck send this message when the device is waiting for the user to input a passphrase
