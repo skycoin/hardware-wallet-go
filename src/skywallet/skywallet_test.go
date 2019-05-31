@@ -4,14 +4,14 @@ import (
 	"bytes"
 	"testing"
 
+	messages "github.com/skycoin/hardware-wallet-protob/go"
+
+	"github.com/skycoin/hardware-wallet-go/src/skywallet/wire"
+
 	"github.com/stretchr/testify/require"
 
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
-
-	messages "github.com/skycoin/hardware-wallet-protob/go"
-
-	"github.com/skycoin/hardware-wallet-go/src/skywallet/wire"
 )
 
 type devicerSuit struct {
