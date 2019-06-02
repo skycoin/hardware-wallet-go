@@ -202,7 +202,7 @@ func sendToDevice(dev usb.Device, chunks [][64]byte) (wire.Message, error) {
 		return wire.Message{}, err
 	}
 
-	if msg.Kind == uint16(messages.MessageType_MessageType_EntropyRequest) {
+	for msg.Kind == uint16(messages.MessageType_MessageType_EntropyRequest) {
 		var wg sync.WaitGroup
 		wg.Add(1)
 
