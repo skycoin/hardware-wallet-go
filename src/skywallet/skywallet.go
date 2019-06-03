@@ -473,7 +473,7 @@ func (d *Device) ChangePin(removePin *bool) (wire.Message, error) {
 	}
 	disconnected := false
 	defer func() {
-		if disconnected {
+		if !disconnected {
 			d.dev.Close(disconnected)
 		}
 	}()
@@ -680,7 +680,7 @@ func (d *Device) GenerateMnemonic(wordCount uint32, usePassphrase bool) (wire.Me
 	}
 	disconnected := false
 	defer func() {
-		if disconnected {
+		if !disconnected {
 			d.dev.Close(disconnected)
 		}
 	}()
@@ -714,7 +714,7 @@ func (d *Device) Recovery(wordCount uint32, usePassphrase, dryRun bool) (wire.Me
 	}
 	disconnected := false
 	defer func() {
-		if disconnected {
+		if !disconnected {
 			d.dev.Close(disconnected)
 		}
 	}()
@@ -750,7 +750,7 @@ func (d *Device) SetMnemonic(mnemonic string) (wire.Message, error) {
 	}
 	disconnected := false
 	defer func() {
-		if disconnected {
+		if !disconnected {
 			d.dev.Close(disconnected)
 		}
 	}()
@@ -780,8 +780,8 @@ func (d *Device) SignMessage(addressIndex int, message string) (wire.Message, er
 	}
 	disconnected := false
 	defer func() {
-		if disconnected {
-			d.dev.Close(true)
+		if !disconnected {
+			d.dev.Close(disconnected)
 		}
 	}()
 
@@ -825,7 +825,7 @@ func (d *Device) Wipe() (wire.Message, error) {
 	}
 	disconnected := false
 	defer func() {
-		if disconnected {
+		if !disconnected {
 			d.dev.Close(disconnected)
 		}
 	}()
