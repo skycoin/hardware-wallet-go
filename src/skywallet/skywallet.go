@@ -388,7 +388,16 @@ func (d *Device) Backup() (wire.Message, error) {
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
-	defer d.dev.Close(false)
+
+	// if the device is disconnected in a subsequent call
+	// closing it again here causes a panic so we need to check if it is still connected
+	// TODO: improve this in next release
+	devConnected := true
+	defer func() {
+		if devConnected {
+			d.dev.Close(false)
+		}
+	}()
 
 	backupChunks, err := MessageBackup()
 	if err != nil {
@@ -401,10 +410,8 @@ func (d *Device) Backup() (wire.Message, error) {
 	}
 
 	for msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		msg, err = d.ButtonAck()
-		if err != nil {
-			return wire.Message{}, err
-		}
+		devConnected = false
+		return d.ButtonAck()
 	}
 
 	return msg, err
@@ -461,7 +468,12 @@ func (d *Device) ChangePin(removePin *bool) (wire.Message, error) {
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
-	defer d.dev.Close(false)
+	devConnected := true
+	defer func() {
+		if devConnected {
+			d.dev.Close(false)
+		}
+	}()
 
 	if removePin == nil {
 		return wire.Message{}, ErrRemovePinNil
@@ -479,6 +491,7 @@ func (d *Device) ChangePin(removePin *bool) (wire.Message, error) {
 
 	// Acknowledge that a button has been pressed
 	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
+		devConnected = false
 		return d.ButtonAck()
 	}
 
@@ -560,6 +573,7 @@ func (d *Device) FirmwareUpload(payload []byte, hash [32]byte) error {
 	if d.Driver.DeviceType() != DeviceTypeUSB {
 		return ErrDeviceTypeEmulator
 	}
+
 	if err := d.Connect(); err != nil {
 		return err
 	}
@@ -661,7 +675,12 @@ func (d *Device) GenerateMnemonic(wordCount uint32, usePassphrase bool) (wire.Me
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
-	defer d.dev.Close(false)
+	devConnected := true
+	defer func() {
+		if devConnected {
+			d.dev.Close(false)
+		}
+	}()
 
 	if wordCount != 12 && wordCount != 24 {
 		return wire.Message{}, ErrInvalidWordCount
@@ -678,6 +697,7 @@ func (d *Device) GenerateMnemonic(wordCount uint32, usePassphrase bool) (wire.Me
 	}
 
 	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
+		devConnected = false
 		return d.ButtonAck()
 	}
 
@@ -689,7 +709,12 @@ func (d *Device) Recovery(wordCount uint32, usePassphrase, dryRun bool) (wire.Me
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
-	defer d.dev.Close(false)
+	devConnected := true
+	defer func() {
+		if devConnected {
+			d.dev.Close(false)
+		}
+	}()
 
 	if wordCount != 12 && wordCount != 24 {
 		return wire.Message{}, ErrInvalidWordCount
@@ -708,6 +733,7 @@ func (d *Device) Recovery(wordCount uint32, usePassphrase, dryRun bool) (wire.Me
 	log.Printf("Recovery device response kind is: %d\n", msg.Kind)
 
 	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
+		devConnected = false
 		return d.ButtonAck()
 	}
 
@@ -719,7 +745,12 @@ func (d *Device) SetMnemonic(mnemonic string) (wire.Message, error) {
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
-	defer d.dev.Close(false)
+	devConnected := true
+	defer func() {
+		if devConnected {
+			d.dev.Close(false)
+		}
+	}()
 
 	// Send SetMnemonic
 	setMnemonicChunks, err := MessageSetMnemonic(mnemonic)
@@ -732,6 +763,7 @@ func (d *Device) SetMnemonic(mnemonic string) (wire.Message, error) {
 	}
 
 	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
+		devConnected = false
 		return d.ButtonAck()
 	}
 
@@ -743,7 +775,12 @@ func (d *Device) SignMessage(addressIndex int, message string) (wire.Message, er
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
-	defer d.dev.Close(false)
+	devConnected := true
+	defer func() {
+		if devConnected {
+			d.dev.Close(false)
+		}
+	}()
 
 	signMessageChunks, err := MessageSignMessage(addressIndex, message)
 	if err != nil {
@@ -756,6 +793,7 @@ func (d *Device) SignMessage(addressIndex int, message string) (wire.Message, er
 	}
 
 	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
+		devConnected = false
 		return d.ButtonAck()
 	}
 
@@ -782,7 +820,12 @@ func (d *Device) Wipe() (wire.Message, error) {
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
-	defer d.dev.Close(false)
+	devConnected := true
+	defer func() {
+		if devConnected {
+			d.dev.Close(false)
+		}
+	}()
 
 	wipeChunks, err := MessageWipe()
 	if err != nil {
@@ -795,6 +838,7 @@ func (d *Device) Wipe() (wire.Message, error) {
 	}
 
 	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
+		devConnected = false
 		return d.ButtonAck()
 	}
 
