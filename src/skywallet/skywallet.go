@@ -11,7 +11,7 @@ import (
 
 	"github.com/skycoin/skycoin/src/util/logging"
 
-	messages "github.com/skycoin/hardware-wallet-protob/go"
+	"github.com/skycoin/hardware-wallet-protob/go"
 
 	"github.com/skycoin/hardware-wallet-go/src/skywallet/wire"
 )
@@ -392,10 +392,10 @@ func (d *Device) Backup() (wire.Message, error) {
 	// if the device is disconnected in a subsequent call
 	// closing it again here causes a panic so we need to check if it is still connected
 	// TODO: improve this in next release
-	devConnected := true
+	disconnected := false
 	defer func() {
-		if devConnected {
-			d.dev.Close(false)
+		if !disconnected {
+			d.dev.Close(disconnected)
 		}
 	}()
 
@@ -410,8 +410,11 @@ func (d *Device) Backup() (wire.Message, error) {
 	}
 
 	for msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		devConnected = false
-		return d.ButtonAck()
+		disconnected = true
+		msg, err = d.ButtonAck()
+		if err != nil {
+			return wire.Message{}, err
+		}
 	}
 
 	return msg, err
@@ -468,10 +471,10 @@ func (d *Device) ChangePin(removePin *bool) (wire.Message, error) {
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
-	devConnected := true
+	disconnected := false
 	defer func() {
-		if devConnected {
-			d.dev.Close(false)
+		if disconnected {
+			d.dev.Close(disconnected)
 		}
 	}()
 
@@ -491,7 +494,7 @@ func (d *Device) ChangePin(removePin *bool) (wire.Message, error) {
 
 	// Acknowledge that a button has been pressed
 	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		devConnected = false
+		disconnected = true
 		return d.ButtonAck()
 	}
 
@@ -675,10 +678,10 @@ func (d *Device) GenerateMnemonic(wordCount uint32, usePassphrase bool) (wire.Me
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
-	devConnected := true
+	disconnected := false
 	defer func() {
-		if devConnected {
-			d.dev.Close(false)
+		if disconnected {
+			d.dev.Close(disconnected)
 		}
 	}()
 
@@ -697,7 +700,7 @@ func (d *Device) GenerateMnemonic(wordCount uint32, usePassphrase bool) (wire.Me
 	}
 
 	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		devConnected = false
+		disconnected = true
 		return d.ButtonAck()
 	}
 
@@ -709,10 +712,10 @@ func (d *Device) Recovery(wordCount uint32, usePassphrase, dryRun bool) (wire.Me
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
-	devConnected := true
+	disconnected := false
 	defer func() {
-		if devConnected {
-			d.dev.Close(false)
+		if disconnected {
+			d.dev.Close(disconnected)
 		}
 	}()
 
@@ -733,7 +736,7 @@ func (d *Device) Recovery(wordCount uint32, usePassphrase, dryRun bool) (wire.Me
 	log.Printf("Recovery device response kind is: %d\n", msg.Kind)
 
 	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		devConnected = false
+		disconnected = true
 		return d.ButtonAck()
 	}
 
@@ -745,10 +748,10 @@ func (d *Device) SetMnemonic(mnemonic string) (wire.Message, error) {
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
-	devConnected := true
+	disconnected := false
 	defer func() {
-		if devConnected {
-			d.dev.Close(false)
+		if disconnected {
+			d.dev.Close(disconnected)
 		}
 	}()
 
@@ -763,7 +766,7 @@ func (d *Device) SetMnemonic(mnemonic string) (wire.Message, error) {
 	}
 
 	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		devConnected = false
+		disconnected = true
 		return d.ButtonAck()
 	}
 
@@ -775,10 +778,10 @@ func (d *Device) SignMessage(addressIndex int, message string) (wire.Message, er
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
-	devConnected := true
+	disconnected := false
 	defer func() {
-		if devConnected {
-			d.dev.Close(false)
+		if disconnected {
+			d.dev.Close(true)
 		}
 	}()
 
@@ -793,7 +796,7 @@ func (d *Device) SignMessage(addressIndex int, message string) (wire.Message, er
 	}
 
 	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		devConnected = false
+		disconnected = true
 		return d.ButtonAck()
 	}
 
@@ -820,10 +823,10 @@ func (d *Device) Wipe() (wire.Message, error) {
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
-	devConnected := true
+	disconnected := false
 	defer func() {
-		if devConnected {
-			d.dev.Close(false)
+		if disconnected {
+			d.dev.Close(disconnected)
 		}
 	}()
 
@@ -838,7 +841,7 @@ func (d *Device) Wipe() (wire.Message, error) {
 	}
 
 	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		devConnected = false
+		disconnected = true
 		return d.ButtonAck()
 	}
 
