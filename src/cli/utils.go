@@ -5,16 +5,16 @@ import (
 )
 
 func parseBool(s string) (*bool, error) {
-	var usePassphrase bool
-	switch passphrase {
+	var b bool
+	switch s {
 	case "true":
-		usePassphrase = true
+		b = true
 	case "false":
-		usePassphrase = false
+		b = false
 	case "":
 		return nil, nil
 	default:
 		return nil, errors.New("Invalid boolean argument")
 	}
-	return &usePassphrase, nil
+	return &b, nil
 }
