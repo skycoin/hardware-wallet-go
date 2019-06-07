@@ -242,7 +242,7 @@ func MessageRecovery(wordCount uint32, usePassphrase *bool, dryRun bool) ([][64]
 		DryRun:    proto.Bool(dryRun),
 	}
 	if usePassphrase != nil {
-		recoveryDevice.PassphraseProtection = proto.Bool(usePassphrase)
+		recoveryDevice.PassphraseProtection = proto.Bool(*usePassphrase)
 	}
 	data, err := proto.Marshal(recoveryDevice)
 	if err != nil {
