@@ -5,9 +5,7 @@ import (
 	"sync"
 	"testing"
 
-	messages "github.com/skycoin/hardware-wallet-protob/go"
-
-	"github.com/skycoin/hardware-wallet-go/src/skywallet/usb"
+	"github.com/skycoin/hardware-wallet-protob/go"
 
 	"github.com/skycoin/hardware-wallet-go/src/skywallet/wire"
 
@@ -377,5 +375,5 @@ func (suite *devicerSuit) TestWipe() {
 }
 
 func getMockDevice(mock *MockDeviceDriver) Device {
-	return Device{mock, sync.Mutex{}, make([]usb.Device, 0), false, ButtonType(-1)}
+	return Device{mock, sync.Mutex{}, nil, false, ButtonType(-1)}
 }
