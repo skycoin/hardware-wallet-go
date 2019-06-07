@@ -67,7 +67,7 @@ type Devicer interface {
 	FirmwareUpload(payload []byte, hash [32]byte) error
 	GetFeatures() (wire.Message, error)
 	GenerateMnemonic(wordCount uint32, usePassphrase bool) (wire.Message, error)
-	Recovery(wordCount uint32, usePassphrase, dryRun bool) (wire.Message, error)
+	Recovery(wordCount uint32, usePassphrase *bool, dryRun bool) (wire.Message, error)
 	SetMnemonic(mnemonic string) (wire.Message, error)
 	TransactionSign(inputs []*messages.SkycoinTransactionInput, outputs []*messages.SkycoinTransactionOutput) (wire.Message, error)
 	SignMessage(addressIndex int, message string) (wire.Message, error)
@@ -685,7 +685,7 @@ func (d *Device) GenerateMnemonic(wordCount uint32, usePassphrase bool) (wire.Me
 }
 
 // Recovery ask the device to perform the seed backup
-func (d *Device) Recovery(wordCount uint32, usePassphrase, dryRun bool) (wire.Message, error) {
+func (d *Device) Recovery(wordCount uint32, usePassphrase *bool, dryRun bool) (wire.Message, error) {
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
