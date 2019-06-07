@@ -2,9 +2,12 @@ package skywallet
 
 import (
 	"bytes"
+	"sync"
 	"testing"
 
 	messages "github.com/skycoin/hardware-wallet-protob/go"
+
+	"github.com/skycoin/hardware-wallet-go/src/skywallet/usb"
 
 	"github.com/skycoin/hardware-wallet-go/src/skywallet/wire"
 
@@ -44,7 +47,7 @@ func (suite *devicerSuit) TestAddressGen() {
 	driverMock.On("GetDevice").Return(&testHelperCloseableBuffer{}, nil)
 	driverMock.On("SendToDevice", mock.Anything, mock.Anything).Return(
 		wire.Message{Kind: uint16(messages.MessageType_MessageType_Success), Data: nil}, nil)
-	device := Device{driverMock, nil, false, ButtonType(-1)}
+	device := getMockDevice(driverMock)
 
 	tt := []struct {
 		name       string
@@ -85,7 +88,7 @@ func (suite *devicerSuit) TestApplySettings() {
 	driverMock.On("GetDevice").Return(&testHelperCloseableBuffer{}, nil)
 	driverMock.On("SendToDevice", mock.Anything, mock.Anything).Return(
 		wire.Message{Kind: uint16(messages.MessageType_MessageType_Success), Data: nil}, nil)
-	device := Device{driverMock, nil, false, ButtonType(-1)}
+	device := getMockDevice(driverMock)
 
 	tt := []struct {
 		name          string
@@ -125,7 +128,7 @@ func (suite *devicerSuit) TestBackup() {
 	driverMock.On("GetDevice").Return(&testHelperCloseableBuffer{}, nil)
 	driverMock.On("SendToDevice", mock.Anything, mock.Anything).Return(
 		wire.Message{Kind: uint16(messages.MessageType_MessageType_Success), Data: nil}, nil)
-	device := Device{driverMock, nil, false, ButtonType(-1)}
+	device := getMockDevice(driverMock)
 
 	// NOTE(denisacostaq@gmail.com): When
 	msg, err := device.Backup()
@@ -144,7 +147,7 @@ func (suite *devicerSuit) TestCancel() {
 	driverMock.On("GetDevice").Return(&testHelperCloseableBuffer{}, nil)
 	driverMock.On("SendToDevice", mock.Anything, mock.Anything).Return(
 		wire.Message{Kind: uint16(messages.MessageType_MessageType_Success), Data: nil}, nil)
-	device := Device{driverMock, nil, false, ButtonType(-1)}
+	device := getMockDevice(driverMock)
 
 	// NOTE(denisacostaq@gmail.com): When
 	msg, err := device.Cancel()
@@ -163,7 +166,7 @@ func (suite *devicerSuit) TestCheckMessageSignature() {
 	driverMock.On("GetDevice").Return(&testHelperCloseableBuffer{}, nil)
 	driverMock.On("SendToDevice", mock.Anything, mock.Anything).Return(
 		wire.Message{Kind: uint16(messages.MessageType_MessageType_Success), Data: nil}, nil)
-	device := Device{driverMock, nil, false, ButtonType(-1)}
+	device := getMockDevice(driverMock)
 
 	// NOTE(denisacostaq@gmail.com): When
 	msg, err := device.CheckMessageSignature("", "", "")
@@ -179,7 +182,7 @@ func (suite *devicerSuit) TestCheckMessageSignature() {
 func (suite *devicerSuit) TestFirmwareUpload() {
 	driverMock := &MockDeviceDriver{}
 	driverMock.On("GetDevice").Return(&testHelperCloseableBuffer{}, nil)
-	device := Device{driverMock, nil, false, ButtonType(-1)}
+	device := getMockDevice(driverMock)
 
 	tt := []struct {
 		name       string
@@ -207,7 +210,7 @@ func (suite *devicerSuit) TestGenerateMnemonic() {
 	driverMock.On("GetDevice").Return(&testHelperCloseableBuffer{}, nil)
 	driverMock.On("SendToDevice", mock.Anything, mock.Anything).Return(
 		wire.Message{Kind: uint16(messages.MessageType_MessageType_Success), Data: nil}, nil)
-	device := Device{driverMock, nil, false, ButtonType(-1)}
+	device := getMockDevice(driverMock)
 
 	tt := []struct {
 		name      string
@@ -245,7 +248,7 @@ func (suite *devicerSuit) TestRecovery() {
 	driverMock.On("GetDevice").Return(&testHelperCloseableBuffer{}, nil)
 	driverMock.On("SendToDevice", mock.Anything, mock.Anything).Return(
 		wire.Message{Kind: uint16(messages.MessageType_MessageType_Success), Data: nil}, nil)
-	device := Device{driverMock, nil, false, ButtonType(-1)}
+	device := getMockDevice(driverMock)
 
 	tt := []struct {
 		name          string
@@ -286,7 +289,7 @@ func (suite *devicerSuit) TestSetMnemonic() {
 	driverMock.On("GetDevice").Return(&testHelperCloseableBuffer{}, nil)
 	driverMock.On("SendToDevice", mock.Anything, mock.Anything).Return(
 		wire.Message{Kind: uint16(messages.MessageType_MessageType_Success), Data: nil}, nil)
-	device := Device{driverMock, nil, false, ButtonType(-1)}
+	device := getMockDevice(driverMock)
 
 	// NOTE(denisacostaq@gmail.com): When
 	msg, err := device.SetMnemonic("cloud flower upset remain green metal below cup stem infant art thank")
@@ -304,7 +307,7 @@ func (suite *devicerSuit) TestRemovePinCode() {
 	driverMock.On("GetDevice").Return(&testHelperCloseableBuffer{}, nil)
 	driverMock.On("SendToDevice", mock.Anything, mock.Anything).Return(
 		wire.Message{Kind: uint16(messages.MessageType_MessageType_Success), Data: nil}, nil)
-	device := Device{driverMock, nil, false, ButtonType(-1)}
+	device := getMockDevice(driverMock)
 
 	tt := []struct {
 		name      string
@@ -342,7 +345,7 @@ func (suite *devicerSuit) TestTransactionSign() {
 	driverMock.On("GetDevice").Return(&testHelperCloseableBuffer{}, nil)
 	driverMock.On("SendToDevice", mock.Anything, mock.Anything).Return(
 		wire.Message{Kind: uint16(messages.MessageType_MessageType_Success), Data: nil}, nil)
-	device := Device{driverMock, nil, false, ButtonType(-1)}
+	device := getMockDevice(driverMock)
 
 	// NOTE(denisacostaq@gmail.com): When
 	msg, err := device.TransactionSign(nil, nil)
@@ -361,7 +364,7 @@ func (suite *devicerSuit) TestWipe() {
 	driverMock.On("GetDevice").Return(&testHelperCloseableBuffer{}, nil)
 	driverMock.On("SendToDevice", mock.Anything, mock.Anything).Return(
 		wire.Message{Kind: uint16(messages.MessageType_MessageType_Success), Data: nil}, nil)
-	device := Device{driverMock, nil, false, ButtonType(-1)}
+	device := getMockDevice(driverMock)
 
 	// NOTE(denisacostaq@gmail.com): When
 	msg, err := device.Wipe()
@@ -371,4 +374,8 @@ func (suite *devicerSuit) TestWipe() {
 	driverMock.AssertNumberOfCalls(suite.T(), "SendToDevice", 1)
 	mock.AssertExpectationsForObjects(suite.T(), driverMock)
 	require.Equal(suite.T(), msg.Kind, uint16(messages.MessageType_MessageType_Success))
+}
+
+func getMockDevice(mock *MockDeviceDriver) Device {
+	return Device{mock, sync.Mutex{}, make([]usb.Device, 0), false, ButtonType(-1)}
 }
