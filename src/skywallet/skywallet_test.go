@@ -5,7 +5,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/skycoin/hardware-wallet-protob/go"
+	messages "github.com/skycoin/hardware-wallet-protob/go"
 
 	"github.com/skycoin/hardware-wallet-go/src/skywallet/wire"
 
