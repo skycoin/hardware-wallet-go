@@ -84,10 +84,9 @@ type Devicer interface {
 type Device struct {
 	Driver DeviceDriver
 
-	// dev latest device connection instance
-	// during an ongoing operation the device instance cannot be requested before closing the previous instance
-	// keeping the connection instance in the struct helps with closing and opening of the connection
-	dev usb.Device
+	// add mutex for atomic access to dev connection
+	sync.Mutex
+	activeConnections []usb.Device
 
 	simulateButtonPress bool
 	simulateButtonType  ButtonType
@@ -119,7 +118,8 @@ func NewDevice(deviceType DeviceType) *Device {
 
 	return &Device{
 		driver,
-		nil,
+		sync.Mutex{},
+		make([]usb.Device, 0),
 		false,
 		ButtonType(-1),
 	}
@@ -133,10 +133,12 @@ func (d *Device) Close() {
 
 // Connect makes a connection to the connected device
 func (d *Device) Connect() error {
+	d.Lock()
+	defer d.Unlock()
 	// close any existing connections
-	if d.dev != nil {
-		d.dev.Close(false)
-		d.dev = nil
+	if len(d.activeConnections) != 0 {
+		d.activeConnections[0].Close(false)
+		d.activeConnections = make([]usb.Device, 0)
 	}
 
 	dev, err := d.Driver.GetDevice()
@@ -144,16 +146,22 @@ func (d *Device) Connect() error {
 		return err
 	}
 
-	d.dev = dev
+	d.activeConnections = append(d.activeConnections, dev)
 	return nil
 }
 
 // Disconnect the device
 func (d *Device) Disconnect() error {
-	if !d.Connected() {
-		return errors.New("device is not connected")
+	d.Lock()
+	defer d.Unlock()
+
+	if len(d.activeConnections) != 0 {
+		dev := d.activeConnections[0]
+		d.activeConnections = make([]usb.Device, 0)
+		return dev.Close(false)
 	}
-	return d.dev.Close(false)
+
+	return errors.New("no device connected")
 }
 
 // GetUsbInfo returns information from the attached usb
@@ -178,7 +186,7 @@ func (d *Device) AddressGen(addressN, startIndex uint32, confirmAddress bool) (w
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
-	defer d.dev.Close(false)
+	defer d.Disconnect()
 
 	if addressN == 0 {
 		return wire.Message{}, ErrAddressNZero
@@ -189,7 +197,7 @@ func (d *Device) AddressGen(addressN, startIndex uint32, confirmAddress bool) (w
 		return wire.Message{}, err
 	}
 
-	return d.Driver.SendToDevice(d.dev, addressGenChunks)
+	return d.Driver.SendToDevice(d.activeConnections[0], addressGenChunks)
 }
 
 // SaveDeviceEntropyInFile Ask the device to generate entropy and save it in a file
@@ -218,7 +226,7 @@ func (d *Device) SaveDeviceEntropyInFile(outFile string, entropyBytes uint32, ge
 				if err != nil {
 					return &messages.Entropy{}, err
 				}
-				if err = sendToDeviceNoAnswer(d.dev, chunks); err != nil {
+				if err = sendToDeviceNoAnswer(d.activeConnections[0], chunks); err != nil {
 					return &messages.Entropy{}, err
 				}
 				// simulate button press
@@ -228,7 +236,7 @@ func (d *Device) SaveDeviceEntropyInFile(outFile string, entropyBytes uint32, ge
 					}
 				}
 
-				msg, err := wire.ReadFrom(d.dev)
+				msg, err := wire.ReadFrom(d.activeConnections[0])
 				if err != nil {
 					return nil, err
 				}
@@ -257,7 +265,7 @@ func (d *Device) SaveDeviceEntropyInFile(outFile string, entropyBytes uint32, ge
 		if err != nil {
 			return &messages.Entropy{}, err
 		}
-		resp, err := d.Driver.SendToDevice(d.dev, chunks)
+		resp, err := d.Driver.SendToDevice(d.activeConnections[0], chunks)
 		if err != nil {
 			return &messages.Entropy{}, err
 		}
@@ -369,7 +377,7 @@ func (d *Device) ApplySettings(usePassphrase *bool, label string, language strin
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
-	defer d.dev.Close(false)
+	defer d.Disconnect()
 
 	if usePassphrase == nil {
 		return wire.Message{}, ErrUsePassPhraseNil
@@ -380,7 +388,7 @@ func (d *Device) ApplySettings(usePassphrase *bool, label string, language strin
 		return wire.Message{}, err
 	}
 
-	return d.Driver.SendToDevice(d.dev, applySettingsChunks)
+	return d.Driver.SendToDevice(d.activeConnections[0], applySettingsChunks)
 }
 
 // Backup ask the device to perform the seed backup
@@ -388,29 +396,19 @@ func (d *Device) Backup() (wire.Message, error) {
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
-
-	// if the device is disconnected in a subsequent call
-	// closing it again here causes a panic so we need to check if it is still connected
-	// TODO: improve this in next release
-	disconnected := false
-	defer func() {
-		if !disconnected {
-			d.dev.Close(disconnected)
-		}
-	}()
+	defer d.Disconnect()
 
 	backupChunks, err := MessageBackup()
 	if err != nil {
 		return wire.Message{}, err
 	}
 
-	msg, err := d.Driver.SendToDevice(d.dev, backupChunks)
+	msg, err := d.Driver.SendToDevice(d.activeConnections[0], backupChunks)
 	if err != nil {
 		return wire.Message{}, err
 	}
 
 	for msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		disconnected = true
 		msg, err = d.ButtonAck()
 		if err != nil {
 			return wire.Message{}, err
@@ -425,14 +423,14 @@ func (d *Device) Cancel() (wire.Message, error) {
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
-	defer d.dev.Close(false)
+	defer d.Disconnect()
 
 	cancelChunks, err := MessageCancel()
 	if err != nil {
 		return wire.Message{}, err
 	}
 
-	return d.Driver.SendToDevice(d.dev, cancelChunks)
+	return d.Driver.SendToDevice(d.activeConnections[0], cancelChunks)
 }
 
 // CheckMessageSignature Check a message signature matches the given address.
@@ -440,7 +438,7 @@ func (d *Device) CheckMessageSignature(message, signature, address string) (wire
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
-	defer d.dev.Close(false)
+	defer d.Disconnect()
 
 	// Send CheckMessageSignature
 	checkMessageSignatureChunks, err := MessageCheckMessageSignature(message, signature, address)
@@ -448,7 +446,7 @@ func (d *Device) CheckMessageSignature(message, signature, address string) (wire
 		return wire.Message{}, err
 	}
 
-	return d.Driver.SendToDevice(d.dev, checkMessageSignatureChunks)
+	return d.Driver.SendToDevice(d.activeConnections[0], checkMessageSignatureChunks)
 }
 
 // ChangePin changes device's PIN code
@@ -471,12 +469,7 @@ func (d *Device) ChangePin(removePin *bool) (wire.Message, error) {
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
-	disconnected := false
-	defer func() {
-		if !disconnected {
-			d.dev.Close(disconnected)
-		}
-	}()
+	defer d.Disconnect()
 
 	if removePin == nil {
 		return wire.Message{}, ErrRemovePinNil
@@ -487,14 +480,13 @@ func (d *Device) ChangePin(removePin *bool) (wire.Message, error) {
 		return wire.Message{}, err
 	}
 
-	msg, err := d.Driver.SendToDevice(d.dev, changePinChunks)
+	msg, err := d.Driver.SendToDevice(d.activeConnections[0], changePinChunks)
 	if err != nil {
 		return wire.Message{}, err
 	}
 
 	// Acknowledge that a button has been pressed
 	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		disconnected = true
 		return d.ButtonAck()
 	}
 
@@ -505,9 +497,12 @@ func (d *Device) ChangePin(removePin *bool) (wire.Message, error) {
 func (d *Device) Connected() bool {
 	var msg *wire.Message
 	var err error
-	if d.dev == nil {
+	if len(d.activeConnections) == 0 {
 		return false
 	}
+
+	dev := d.activeConnections[0]
+
 	chunks, err := MessageConnected()
 	if err != nil {
 		log.Error(err)
@@ -515,13 +510,13 @@ func (d *Device) Connected() bool {
 	}
 
 	for _, element := range chunks {
-		_, err = d.dev.Write(element[:])
+		_, err = dev.Write(element[:])
 		if err != nil {
 			return false
 		}
 	}
 
-	msg, err = wire.ReadFrom(d.dev)
+	msg, err = wire.ReadFrom(dev)
 	if err != nil {
 		return false
 	}
@@ -539,14 +534,15 @@ func (d *Device) Connected() bool {
 			}
 
 			for _, element := range entropyChunks {
-				_, err := d.dev.Write(element[:])
+				_, err := dev.Write(element[:])
 				if err != nil {
 					log.Errorf("entropy ack error: %v", err)
+					return
 				}
 			}
 		}()
 
-		msg, err = wire.ReadFrom(d.dev)
+		msg, err = wire.ReadFrom(dev)
 		if err != nil {
 			return false
 		}
@@ -580,9 +576,10 @@ func (d *Device) FirmwareUpload(payload []byte, hash [32]byte) error {
 	if err := d.Connect(); err != nil {
 		return err
 	}
-	defer d.dev.Close(false)
+	defer d.Disconnect()
+	dev := d.activeConnections[0]
 
-	if err := Initialize(d.dev); err != nil {
+	if err := Initialize(dev); err != nil {
 		return err
 	}
 
@@ -592,7 +589,7 @@ func (d *Device) FirmwareUpload(payload []byte, hash [32]byte) error {
 	if err != nil {
 		return err
 	}
-	erasemsg, err := d.Driver.SendToDevice(d.dev, chunks)
+	erasemsg, err := d.Driver.SendToDevice(dev, chunks)
 	if err != nil {
 		return err
 	}
@@ -617,7 +614,7 @@ func (d *Device) FirmwareUpload(payload []byte, hash [32]byte) error {
 	if err != nil {
 		return err
 	}
-	uploadmsg, err := d.Driver.SendToDevice(d.dev, chunks)
+	uploadmsg, err := d.Driver.SendToDevice(dev, chunks)
 	if err != nil {
 		return err
 	}
@@ -630,7 +627,7 @@ func (d *Device) FirmwareUpload(payload []byte, hash [32]byte) error {
 		if err != nil {
 			return err
 		}
-		resp, err := d.Driver.SendToDevice(d.dev, chunks)
+		resp, err := d.Driver.SendToDevice(dev, chunks)
 		if err != nil {
 			return err
 		}
@@ -663,14 +660,14 @@ func (d *Device) GetFeatures() (wire.Message, error) {
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
-	defer d.dev.Close(false)
+	defer d.Disconnect()
 
 	getFeaturesChunks, err := MessageGetFeatures()
 	if err != nil {
 		return wire.Message{}, err
 	}
 
-	return d.Driver.SendToDevice(d.dev, getFeaturesChunks)
+	return d.Driver.SendToDevice(d.activeConnections[0], getFeaturesChunks)
 }
 
 // GenerateMnemonic Ask the device to generate a mnemonic and configure itself with it.
@@ -678,12 +675,7 @@ func (d *Device) GenerateMnemonic(wordCount uint32, usePassphrase bool) (wire.Me
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
-	disconnected := false
-	defer func() {
-		if !disconnected {
-			d.dev.Close(disconnected)
-		}
-	}()
+	defer d.Disconnect()
 
 	if wordCount != 12 && wordCount != 24 {
 		return wire.Message{}, ErrInvalidWordCount
@@ -694,13 +686,12 @@ func (d *Device) GenerateMnemonic(wordCount uint32, usePassphrase bool) (wire.Me
 		return wire.Message{}, err
 	}
 
-	msg, err := d.Driver.SendToDevice(d.dev, generateMnemonicChunks)
+	msg, err := d.Driver.SendToDevice(d.activeConnections[0], generateMnemonicChunks)
 	if err != nil {
 		return msg, err
 	}
 
 	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		disconnected = true
 		return d.ButtonAck()
 	}
 
@@ -712,12 +703,7 @@ func (d *Device) Recovery(wordCount uint32, usePassphrase, dryRun bool) (wire.Me
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
-	disconnected := false
-	defer func() {
-		if !disconnected {
-			d.dev.Close(disconnected)
-		}
-	}()
+	defer d.Disconnect()
 
 	if wordCount != 12 && wordCount != 24 {
 		return wire.Message{}, ErrInvalidWordCount
@@ -729,14 +715,13 @@ func (d *Device) Recovery(wordCount uint32, usePassphrase, dryRun bool) (wire.Me
 		return wire.Message{}, err
 	}
 
-	msg, err := d.Driver.SendToDevice(d.dev, recoveryChunks)
+	msg, err := d.Driver.SendToDevice(d.activeConnections[0], recoveryChunks)
 	if err != nil {
 		return wire.Message{}, err
 	}
 	log.Printf("Recovery device response kind is: %d\n", msg.Kind)
 
 	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		disconnected = true
 		return d.ButtonAck()
 	}
 
@@ -748,25 +733,19 @@ func (d *Device) SetMnemonic(mnemonic string) (wire.Message, error) {
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
-	disconnected := false
-	defer func() {
-		if !disconnected {
-			d.dev.Close(disconnected)
-		}
-	}()
+	defer d.Disconnect()
 
 	// Send SetMnemonic
 	setMnemonicChunks, err := MessageSetMnemonic(mnemonic)
 	if err != nil {
 		return wire.Message{}, err
 	}
-	msg, err := d.Driver.SendToDevice(d.dev, setMnemonicChunks)
+	msg, err := d.Driver.SendToDevice(d.activeConnections[0], setMnemonicChunks)
 	if err != nil {
 		return wire.Message{}, err
 	}
 
 	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		disconnected = true
 		return d.ButtonAck()
 	}
 
@@ -778,25 +757,19 @@ func (d *Device) SignMessage(addressIndex int, message string) (wire.Message, er
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
-	disconnected := false
-	defer func() {
-		if !disconnected {
-			d.dev.Close(disconnected)
-		}
-	}()
+	defer d.Disconnect()
 
 	signMessageChunks, err := MessageSignMessage(addressIndex, message)
 	if err != nil {
 		return wire.Message{}, err
 	}
 
-	msg, err := d.Driver.SendToDevice(d.dev, signMessageChunks)
+	msg, err := d.Driver.SendToDevice(d.activeConnections[0], signMessageChunks)
 	if err != nil {
 		return wire.Message{}, err
 	}
 
 	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		disconnected = true
 		return d.ButtonAck()
 	}
 
@@ -808,14 +781,14 @@ func (d *Device) TransactionSign(inputs []*messages.SkycoinTransactionInput, out
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
-	defer d.dev.Close(false)
+	defer d.Disconnect()
 
 	transactionSignChunks, err := MessageTransactionSign(inputs, outputs)
 	if err != nil {
 		return wire.Message{}, err
 	}
 
-	return d.Driver.SendToDevice(d.dev, transactionSignChunks)
+	return d.Driver.SendToDevice(d.activeConnections[0], transactionSignChunks)
 }
 
 // Wipe wipes out device configuration
@@ -823,25 +796,19 @@ func (d *Device) Wipe() (wire.Message, error) {
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
-	disconnected := false
-	defer func() {
-		if !disconnected {
-			d.dev.Close(disconnected)
-		}
-	}()
+	defer d.Disconnect()
 
 	wipeChunks, err := MessageWipe()
 	if err != nil {
 		return wire.Message{}, err
 	}
 
-	msg, err := d.Driver.SendToDevice(d.dev, wipeChunks)
+	msg, err := d.Driver.SendToDevice(d.activeConnections[0], wipeChunks)
 	if err != nil {
 		return wire.Message{}, err
 	}
 
 	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		disconnected = true
 		return d.ButtonAck()
 	}
 
@@ -854,7 +821,9 @@ func (d *Device) ButtonAck() (wire.Message, error) {
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
-	defer d.dev.Close(false)
+	defer d.Disconnect()
+
+	dev := d.activeConnections[0]
 
 	// Send ButtonAck
 	buttonChunks, err := MessageButtonAck()
@@ -862,7 +831,7 @@ func (d *Device) ButtonAck() (wire.Message, error) {
 		return wire.Message{}, err
 	}
 
-	err = sendToDeviceNoAnswer(d.dev, buttonChunks)
+	err = sendToDeviceNoAnswer(dev, buttonChunks)
 	if err != nil {
 		return wire.Message{}, err
 	}
@@ -874,7 +843,7 @@ func (d *Device) ButtonAck() (wire.Message, error) {
 		}
 	}
 
-	msg, err := wire.ReadFrom(d.dev)
+	msg, err := wire.ReadFrom(dev)
 	if err != nil {
 		return wire.Message{}, err
 	}
@@ -891,14 +860,15 @@ func (d *Device) ButtonAck() (wire.Message, error) {
 			}
 
 			for _, element := range entropyChunks {
-				_, err := d.dev.Write(element[:])
+				_, err := dev.Write(element[:])
 				if err != nil {
 					log.Errorf("entropy ack error: %v", err)
+					return
 				}
 			}
 		}()
 
-		msg, err = wire.ReadFrom(d.dev)
+		msg, err = wire.ReadFrom(dev)
 		if err != nil {
 			return wire.Message{}, err
 		}
@@ -913,14 +883,14 @@ func (d *Device) PassphraseAck(passphrase string) (wire.Message, error) {
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
-	defer d.dev.Close(false)
+	defer d.Disconnect()
 
 	passphraseChunks, err := MessagePassphraseAck(passphrase)
 	if err != nil {
 		return wire.Message{}, err
 	}
 
-	return d.Driver.SendToDevice(d.dev, passphraseChunks)
+	return d.Driver.SendToDevice(d.activeConnections[0], passphraseChunks)
 }
 
 // WordAck send a word to the device during device "recovery procedure"
@@ -928,14 +898,14 @@ func (d *Device) WordAck(word string) (wire.Message, error) {
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
-	defer d.dev.Close(false)
+	defer d.Disconnect()
 
 	wordAckChunks, err := MessageWordAck(word)
 	if err != nil {
 		return wire.Message{}, err
 	}
 
-	return d.Driver.SendToDevice(d.dev, wordAckChunks)
+	return d.Driver.SendToDevice(d.activeConnections[0], wordAckChunks)
 }
 
 // PinMatrixAck during PIN code setting use this message to send user input to device
@@ -944,7 +914,7 @@ func (d *Device) PinMatrixAck(p string) (wire.Message, error) {
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
-	defer d.dev.Close(false)
+	defer d.Disconnect()
 
 	log.Printf("Setting pin: %s\n", p)
 
@@ -953,7 +923,7 @@ func (d *Device) PinMatrixAck(p string) (wire.Message, error) {
 		return wire.Message{}, err
 	}
 
-	return d.Driver.SendToDevice(d.dev, pinMatrixChunks)
+	return d.Driver.SendToDevice(d.activeConnections[0], pinMatrixChunks)
 }
 
 // SimulateButtonPress simulates a button press on emulator
@@ -967,7 +937,7 @@ func (d *Device) SimulateButtonPress() error {
 		return err
 	}
 
-	_, err = d.dev.Write(simulateMsg.Bytes())
+	_, err = d.activeConnections[0].Write(simulateMsg.Bytes())
 	if err != nil {
 		return err
 	}
