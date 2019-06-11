@@ -271,7 +271,7 @@ func (suite *devicerSuit) TestRecovery() {
 	}
 
 	for _, tc := range tt {
-		msg, err := device.Recovery(tc.wordCount, tc.usePassphrase, tc.dryRun)
+		msg, err := device.Recovery(tc.wordCount, &tc.usePassphrase, tc.dryRun)
 		suite.Equal(err, tc.err)
 		suite.Equal(msg.Kind, tc.msgKind)
 	}
