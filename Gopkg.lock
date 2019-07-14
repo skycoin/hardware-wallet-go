@@ -76,7 +76,8 @@
   revision = "bd9f95c53447f97ac56f24a415c25d04680552de"
 
 [[projects]]
-  digest = "1:aa75c1e257fe73048a5c6a69bda15876f90905e662c06e6e4ba2520b65c69b66"
+  branch = "develop"
+  digest = "1:ba8b59a1ae1e9721906f2e53ddc26797bdd08dba4605e0df90fee02fc119ae91"
   name = "github.com/skycoin/skycoin"
   packages = [
     "src/cipher",
@@ -87,8 +88,7 @@
     "src/util/logging",
   ]
   pruneopts = "UT"
-  revision = "ff754084df0912bc0d151529e2893ca86618fb3f"
-  version = "v0.26.0"
+  revision = "2f8c97d44a88bc1d0f2bfba518014dea39a0d26e"
 
 [[projects]]
   digest = "1:ac83cf90d08b63ad5f7e020ef480d319ae890c208f8524622a2f3136e2686b02"
