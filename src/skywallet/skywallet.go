@@ -788,22 +788,24 @@ func (d *Device) TransactionSign(inputs []*messages.SkycoinTransactionInput, out
 	return d.Driver.SendToDevice(d.dev, transactionSignChunks)
 }
 
-func (d *Device) SignTx(outputsCount int, inputsCount int, coinName string, version int, lockTime int, txHash []byte) (wire.Message, error){
+// SignTx Ask the device to sign a long transaction using the given information.
+func (d *Device) SignTx(outputsCount int, inputsCount int, coinName string, version int, lockTime int, txHash []byte) (wire.Message, error) {
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
 	defer d.Disconnect()
 
-	signTxChunks, err := MessageSignTx(outputsCount,inputsCount,coinName,version,lockTime,txHash)
+	signTxChunks, err := MessageSignTx(outputsCount, inputsCount, coinName, version, lockTime, txHash)
 	// signTxChunks, err := MessageSignTx(32,32,"Skycoin",1,1)
 	if err != nil {
 		return wire.Message{}, err
 	}
-	
+
 	return d.Driver.SendToDevice(d.dev, signTxChunks)
 }
 
-func (d *Device) TxAck(tx *messages.TxAck_TransactionType)(wire.Message, error){
+// TxAck Ask the device to continue a long transaction using the given information.
+func (d *Device) TxAck(tx *messages.TxAck_TransactionType) (wire.Message, error) {
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}

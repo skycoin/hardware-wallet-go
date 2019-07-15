@@ -304,30 +304,32 @@ func MessageTransactionSign(inputs []*messages.SkycoinTransactionInput, outputs 
 	return chunks, nil
 }
 
+// MessageSignTx prepare MessageSignTx request
 func MessageSignTx(outputsCount int, inputsCount int, coinName string, version int, lockTime int, txHash []byte) ([][64]byte, error) {
 	signTxMessage := &messages.SignTx{
-		OutputsCount:   proto.Uint32(uint32(outputsCount)),
-		InputsCount:    proto.Uint32(uint32(inputsCount)),
-		CoinName:       proto.String(coinName),
-		Version:        proto.Uint32(uint32(version)),
-		LockTime:       proto.Uint32(uint32(lockTime)),
-		TxHash:         txHash,
+		OutputsCount: proto.Uint32(uint32(outputsCount)),
+		InputsCount:  proto.Uint32(uint32(inputsCount)),
+		CoinName:     proto.String(coinName),
+		Version:      proto.Uint32(uint32(version)),
+		LockTime:     proto.Uint32(uint32(lockTime)),
+		TxHash:       txHash,
 	}
 	data, err := proto.Marshal(signTxMessage)
 	if err != nil {
 		return [][64]byte{}, err
 	}
-	
-	chunks := makeSkyWalletMessage(data,messages.MessageType_MessageType_SignTx)
+
+	chunks := makeSkyWalletMessage(data, messages.MessageType_MessageType_SignTx)
 	return chunks, nil
 }
 
-func MessageTxAck(tx *messages.TxAck_TransactionType)([][64]byte, error){
+// MessageTxAck prepare MessageTxAck request
+func MessageTxAck(tx *messages.TxAck_TransactionType) ([][64]byte, error) {
 	txAckMessage := &messages.TxAck{
-		Tx:		tx,
+		Tx: tx,
 	}
 	data, err := proto.Marshal(txAckMessage)
-	
+
 	if err != nil {
 		return [][64]byte{}, err
 	}
