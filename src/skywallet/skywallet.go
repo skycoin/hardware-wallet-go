@@ -789,14 +789,14 @@ func (d *Device) TransactionSign(inputs []*messages.SkycoinTransactionInput, out
 }
 
 // SignTx Ask the device to sign a long transaction using the given information.
-func (d *Device) SignTx(outputsCount int, inputsCount int, coinName string, version int, lockTime int, txHash []byte) (wire.Message, error) {
+func (d *Device) SignTx(outputsCount int, inputsCount int, coinName string, version int, lockTime int, txHash string) (wire.Message, error) {
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
 	defer d.Disconnect()
 
 	signTxChunks, err := MessageSignTx(outputsCount, inputsCount, coinName, version, lockTime, txHash)
-	// signTxChunks, err := MessageSignTx(32,32,"Skycoin",1,1)
+
 	if err != nil {
 		return wire.Message{}, err
 	}
@@ -805,12 +805,12 @@ func (d *Device) SignTx(outputsCount int, inputsCount int, coinName string, vers
 }
 
 // TxAck Ask the device to continue a long transaction using the given information.
-func (d *Device) TxAck(tx *messages.TxAck_TransactionType) (wire.Message, error) {
+func (d *Device) TxAck(inputs []*messages.TxAck_TransactionType_TxInputType, outputs []*messages.TxAck_TransactionType_TxOutputType, version int, lockTime int) (wire.Message, error) {
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
 	defer d.Disconnect()
-	txAckChunks, err := MessageTxAck(tx)
+	txAckChunks, err := MessageTxAck(inputs, outputs, version, lockTime)
 	if err != nil {
 		return wire.Message{}, err
 	}
