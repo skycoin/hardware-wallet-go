@@ -229,6 +229,20 @@ func sendToDevice(dev usb.Device, chunks [][64]byte) (wire.Message, error) {
 		}
 		wg.Wait()
 	}
+	for msg.Kind == uint16(messages.MessageType_MessageType_Success) {
+		success, err := decodeSuccessMsgStruct(*msg)
+		if err != nil {
+			return wire.Message{}, err
+		}
+		if success.MsgType != nil && *success.MsgType == messages.MessageType(messages.MessageType_MessageType_EntropyAck) {
+			msg, err = wire.ReadFrom(dev)
+			if err != nil {
+				return wire.Message{}, err
+			}
+		} else {
+			break
+		}
+	}
 
 	return *msg, err
 }
