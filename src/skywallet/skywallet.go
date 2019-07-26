@@ -107,8 +107,10 @@ func DeviceTypeFromString(deviceType string) DeviceType {
 	return dtRet
 }
 
-// NewDevice returns a new device instance
-func NewDevice(deviceType DeviceType) *Device {
+var devSingleCreator sync.Once
+var devSingleInstance *Device
+
+func newDevice(deviceType DeviceType) *Device {
 	driver, err := NewDriver(deviceType)
 	if err != nil {
 		log.Fatalf("failed to create driver: %s", err)
@@ -121,6 +123,16 @@ func NewDevice(deviceType DeviceType) *Device {
 		false,
 		ButtonType(-1),
 	}
+}
+
+// NewDevice returns a new device instance
+func NewDevice(deviceType DeviceType) *Device {
+	// TODO rename NewDevice to DeviceInstance as this is a singleton
+	// implementation.
+	devSingleCreator.Do(func() {
+		devSingleInstance = newDevice(deviceType)
+	})
+	return devSingleInstance
 }
 
 // Close closes the usb bus
