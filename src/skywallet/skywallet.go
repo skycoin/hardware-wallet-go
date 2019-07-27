@@ -82,7 +82,7 @@ type Devicer interface {
 type Device struct {
 	Driver DeviceDriver
 
-	// add mutex for atomic access to dev connection
+	// mutex to force connect requests to be sequential
 	sync.Mutex
 	dev usb.Device
 
@@ -144,30 +144,29 @@ func (d *Device) Close() {
 // Connect makes a connection to the connected device
 func (d *Device) Connect() error {
 	d.Lock()
-	defer d.Unlock()
 	// close any existing connections
 	if d.dev != nil {
+		return errors.New("already connected")
 		d.dev.Close(false)
 		d.dev = nil
 	}
 
 	dev, err := d.Driver.GetDevice()
-	if err != nil {
-		return err
+	if err == nil {
+		d.dev = dev
+	} else {
+		d.Unlock()
 	}
 
-	d.dev = dev
-	return nil
+	return err
 }
 
 // Disconnect the device
 func (d *Device) Disconnect() error {
-	d.Lock()
-	defer d.Unlock()
-
 	if d.dev != nil {
 		d.dev.Close(false)
 		d.dev = nil
+		d.Unlock()
 		return nil
 	}
 
@@ -398,20 +397,24 @@ func (d *Device) ApplySettings(usePassphrase *bool, label string, language strin
 }
 
 // Backup ask the device to perform the seed backup
-func (d *Device) Backup() (wire.Message, error) {
-	if err := d.Connect(); err != nil {
-		return wire.Message{}, err
-	}
-	defer d.Disconnect()
-
-	backupChunks, err := MessageBackup()
+func (d *Device) Backup() (msg wire.Message, err error) {
+	msg, err = func() (msg wire.Message, err error) {
+		if err := d.Connect(); err != nil {
+			return wire.Message{}, err
+		}
+		defer d.Disconnect()
+		backupChunks, err := MessageBackup()
+		if err != nil {
+			return wire.Message{}, err
+		}
+		msg, err = d.Driver.SendToDevice(d.dev, backupChunks)
+		if err != nil {
+			return wire.Message{}, err
+		}
+		return msg, nil
+	}()
 	if err != nil {
-		return wire.Message{}, err
-	}
-
-	msg, err := d.Driver.SendToDevice(d.dev, backupChunks)
-	if err != nil {
-		return wire.Message{}, err
+		return msg, err
 	}
 
 	for msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
