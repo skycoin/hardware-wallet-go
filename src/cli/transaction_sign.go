@@ -93,7 +93,6 @@ func transactionSignCmd() gcli.Command {
 				state := 0
 				index := 0
 
-				// Building an send first SignTx message
 				msg, err := device.SignTx(len(outputs), len(inputs), coinName, version, lockTime, txHash)
 				if err != nil {
 					log.Error(err)
@@ -114,44 +113,32 @@ func transactionSignCmd() gcli.Command {
 						}
 						switch *txRequest.RequestType {
 						case messages.TxRequest_TXINPUT:
-							if state == 0 {
-								// Sending Inputs
+							if state == 0 { // Sending Inputs for InnerHash
 								msg, err = sendInputs(device,&inputs,&inputIndex,version,lockTime,&index,&state)
-							} else if state == 2 {
-								// Printing Signatures
-								txRequest := &messages.TxRequest{}
-								err = proto.Unmarshal(msg.Data, txRequest)
+							} else if state == 2 { // Sending Inputs for Signatures
+								err = printSignatures(&msg)
 								if err != nil {
 									log.Error(err)
 									return
 								}
-								for _, sign := range txRequest.SignResult {
-									println(*sign.Signature)
-								}
-								// Sending Inputs for signatures
 								msg, err = sendInputs(device,&inputs,&inputIndex,version,lockTime,&index,&state)
 							} else {
-								log.Error("Protocol error: unexpected TxRequest type")
+								log.Error("protocol error: unexpected TxRequest type")
 								return
 							}
 						case messages.TxRequest_TXOUTPUT:
-							if state == 1 {
-								// Sending Outputs
+							if state == 1 { // Sending Outputs for InnerHash
 								msg, err = sendOutputs(device,&outputs,&addressIndex,&coins,&hours,version,lockTime,&index,&state)
 							} else {
-								log.Error("Protocol error: unexpected TxRequest type")
+								log.Error("protocol error: unexpected TxRequest type")
 								return
 							}
 						case messages.TxRequest_TXFINISHED:
 							if state == 3 {
-								txRequest := &messages.TxRequest{}
-								err = proto.Unmarshal(msg.Data, txRequest)
+								err = printSignatures(&msg)
 								if err != nil {
 									log.Error(err)
 									return
-								}
-								for _, sign := range txRequest.SignResult {
-									println(*sign.Signature)
 								}
 								return
 							} else {
@@ -170,7 +157,7 @@ func transactionSignCmd() gcli.Command {
 					case uint16(messages.MessageType_MessageType_ButtonRequest):
 						msg, err = device.ButtonAck()
 					default:
-						log.Error("Unexpected response message type from hardware wallet.")
+						log.Error("unexpected response message type from hardware wallet.")
 						return
 					}
 				}
@@ -300,4 +287,16 @@ func sendOutputs(device *skyWallet.Device, outputs *[]string, addressIndex *[]in
 		return device.TxAck(nil, txOutputs, version, lockTime)
 	}
 	return wire.Message{}, errors.New("empty outputs")
+}
+
+func printSignatures(msg *wire.Message) error {
+	txRequest := &messages.TxRequest{}
+	err := proto.Unmarshal(msg.Data, txRequest)
+	if err != nil {
+		return err
+	}
+	for _, sign := range txRequest.SignResult {
+		println(*sign.Signature)
+	}
+	return nil
 }
