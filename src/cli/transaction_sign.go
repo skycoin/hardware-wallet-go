@@ -94,10 +94,7 @@ func transactionSignCmd() gcli.Command {
 				index := 0
 
 				msg, err := device.SignTx(len(outputs), len(inputs), coinName, version, lockTime, txHash)
-				if err != nil {
-					log.Error(err)
-					return
-				}
+
 				for {
 					if err != nil {
 						log.Error(err)
@@ -114,21 +111,21 @@ func transactionSignCmd() gcli.Command {
 						switch *txRequest.RequestType {
 						case messages.TxRequest_TXINPUT:
 							if state == 0 { // Sending Inputs for InnerHash
-								msg, err = sendInputs(device,&inputs,&inputIndex,version,lockTime,&index,&state)
+								msg, err = sendInputs(device, &inputs, &inputIndex, version, lockTime, &index, &state)
 							} else if state == 2 { // Sending Inputs for Signatures
 								err = printSignatures(&msg)
 								if err != nil {
 									log.Error(err)
 									return
 								}
-								msg, err = sendInputs(device,&inputs,&inputIndex,version,lockTime,&index,&state)
+								msg, err = sendInputs(device, &inputs, &inputIndex, version, lockTime, &index, &state)
 							} else {
 								log.Error("protocol error: unexpected TxRequest type")
 								return
 							}
 						case messages.TxRequest_TXOUTPUT:
 							if state == 1 { // Sending Outputs for InnerHash
-								msg, err = sendOutputs(device,&outputs,&addressIndex,&coins,&hours,version,lockTime,&index,&state)
+								msg, err = sendOutputs(device, &outputs, &addressIndex, &coins, &hours, version, lockTime, &index, &state)
 							} else {
 								log.Error("protocol error: unexpected TxRequest type")
 								return
@@ -243,7 +240,7 @@ func transactionSignCmd() gcli.Command {
 	}
 }
 
-func sendInputs(device *skyWallet.Device, inputs *[]string, inputIndex *[]int, version int, lockTime int,index *int,state *int)(wire.Message, error){
+func sendInputs(device *skyWallet.Device, inputs *[]string, inputIndex *[]int, version int, lockTime int, index *int, state *int) (wire.Message, error) {
 	var txInputs []*messages.TxAck_TransactionType_TxInputType
 	startIndex := *index
 	for i, input := range (*inputs)[*index:] {
@@ -264,7 +261,7 @@ func sendInputs(device *skyWallet.Device, inputs *[]string, inputIndex *[]int, v
 	return wire.Message{}, errors.New("empty inputs")
 }
 
-func sendOutputs(device *skyWallet.Device, outputs *[]string, addressIndex *[]int, coins *[]int64, hours *[]int64, version int, lockTime int, index *int, state *int)(wire.Message, error){
+func sendOutputs(device *skyWallet.Device, outputs *[]string, addressIndex *[]int, coins *[]int64, hours *[]int64, version int, lockTime int, index *int, state *int) (wire.Message, error) {
 	var txOutputs []*messages.TxAck_TransactionType_TxOutputType
 	startIndex := *index
 	for i, output := range (*outputs)[*index:] {
@@ -296,7 +293,7 @@ func printSignatures(msg *wire.Message) error {
 		return err
 	}
 	for _, sign := range txRequest.SignResult {
-		println(*sign.Signature)
+		fmt.Println(*sign.Signature)
 	}
 	return nil
 }
