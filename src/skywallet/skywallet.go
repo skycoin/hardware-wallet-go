@@ -417,13 +417,6 @@ func (d *Device) Backup() (msg wire.Message, err error) {
 		return msg, err
 	}
 
-	for msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		msg, err = d.ButtonAck()
-		if err != nil {
-			return wire.Message{}, err
-		}
-	}
-
 	return msg, err
 }
 
@@ -492,11 +485,6 @@ func (d *Device) ChangePin(removePin *bool) (wire.Message, error) {
 	msg, err := d.Driver.SendToDevice(d.dev, changePinChunks)
 	if err != nil {
 		return wire.Message{}, err
-	}
-
-	// Acknowledge that a button has been pressed
-	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		return d.ButtonAck()
 	}
 
 	return msg, nil
@@ -697,10 +685,6 @@ func (d *Device) GenerateMnemonic(wordCount uint32, usePassphrase bool) (wire.Me
 		return msg, err
 	}
 
-	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		return d.ButtonAck()
-	}
-
 	return msg, err
 }
 
@@ -727,10 +711,6 @@ func (d *Device) Recovery(wordCount uint32, usePassphrase *bool, dryRun bool) (w
 	}
 	log.Printf("Recovery device response kind is: %d\n", msg.Kind)
 
-	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		return d.ButtonAck()
-	}
-
 	return msg, nil
 }
 
@@ -751,10 +731,6 @@ func (d *Device) SetMnemonic(mnemonic string) (wire.Message, error) {
 		return wire.Message{}, err
 	}
 
-	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		return d.ButtonAck()
-	}
-
 	return msg, err
 }
 
@@ -773,10 +749,6 @@ func (d *Device) SignMessage(addressIndex int, message string) (wire.Message, er
 	msg, err := d.Driver.SendToDevice(d.dev, signMessageChunks)
 	if err != nil {
 		return wire.Message{}, err
-	}
-
-	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		return d.ButtonAck()
 	}
 
 	return msg, err
@@ -812,10 +784,6 @@ func (d *Device) Wipe() (wire.Message, error) {
 	msg, err := d.Driver.SendToDevice(d.dev, wipeChunks)
 	if err != nil {
 		return wire.Message{}, err
-	}
-
-	if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-		return d.ButtonAck()
 	}
 
 	return msg, err
