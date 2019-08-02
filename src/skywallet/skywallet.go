@@ -85,7 +85,7 @@ type Device struct {
 	// mutex to force connect requests to be sequential
 	sync.Mutex
 	dev usb.Device
-
+	devReferenceCounter int
 	simulateButtonPress bool
 	simulateButtonType  ButtonType
 }
@@ -120,6 +120,7 @@ func newDevice(deviceType DeviceType) *Device {
 		driver,
 		sync.Mutex{},
 		nil,
+		0,
 		false,
 		ButtonType(-1),
 	}
@@ -144,33 +145,36 @@ func (d *Device) Close() {
 // Connect makes a connection to the connected device
 func (d *Device) Connect() error {
 	d.Lock()
-	// close any existing connections
-	if d.dev != nil {
-		return errors.New("already connected")
-		d.dev.Close(false)
-		d.dev = nil
-	}
+	defer d.Unlock()
+	if d.devReferenceCounter == 0 {
+		log.Debug("Creating device connection")
 
-	dev, err := d.Driver.GetDevice()
-	if err == nil {
-		d.dev = dev
+		dev, err := d.Driver.GetDevice()
+		if err == nil {
+			d.dev = dev
+			d.devReferenceCounter++
+		}
+		return err
 	} else {
-		d.Unlock()
+		log.Debug("Using existing device connection")
+		d.devReferenceCounter++
 	}
-
-	return err
+	return nil
 }
 
 // Disconnect the device
 func (d *Device) Disconnect() error {
-	if d.dev != nil {
-		d.dev.Close(false)
-		d.dev = nil
-		d.Unlock()
+	d.Lock()
+	defer d.Unlock()
+	d.devReferenceCounter--
+	if d.devReferenceCounter == 0 {
+		err := d.dev.Close(false)
+		if err == nil {
+			d.dev = nil
+		}
 		return nil
 	}
-
-	return errors.New("no device connected")
+	return nil
 }
 
 // GetUsbInfo returns information from the attached usb
