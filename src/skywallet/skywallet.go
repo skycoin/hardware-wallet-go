@@ -147,7 +147,6 @@ func (d *Device) Connect() error {
 	d.Lock()
 	defer d.Unlock()
 	if d.devReferenceCounter == 0 {
-		log.Debug("Creating device connection")
 
 		dev, err := d.Driver.GetDevice()
 		if err == nil {
@@ -156,7 +155,6 @@ func (d *Device) Connect() error {
 		}
 		return err
 	} else {
-		log.Debug("Using existing device connection")
 		d.devReferenceCounter++
 	}
 	return nil
