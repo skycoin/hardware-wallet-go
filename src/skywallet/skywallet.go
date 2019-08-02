@@ -402,25 +402,18 @@ func (d *Device) ApplySettings(usePassphrase *bool, label string, language strin
 
 // Backup ask the device to perform the seed backup
 func (d *Device) Backup() (msg wire.Message, err error) {
-	msg, err = func() (msg wire.Message, err error) {
-		if err := d.Connect(); err != nil {
-			return wire.Message{}, err
-		}
-		defer d.Disconnect()
-		backupChunks, err := MessageBackup()
-		if err != nil {
-			return wire.Message{}, err
-		}
-		msg, err = d.Driver.SendToDevice(d.dev, backupChunks)
-		if err != nil {
-			return wire.Message{}, err
-		}
-		return msg, nil
-	}()
-	if err != nil {
-		return msg, err
+	if err := d.Connect(); err != nil {
+		return wire.Message{}, err
 	}
-
+	defer d.Disconnect()
+	backupChunks, err := MessageBackup()
+	if err != nil {
+		return wire.Message{}, err
+	}
+	msg, err = d.Driver.SendToDevice(d.dev, backupChunks)
+	if err != nil {
+		return wire.Message{}, err
+	}
 	return msg, err
 }
 
