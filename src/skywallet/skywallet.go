@@ -84,7 +84,7 @@ type Device struct {
 
 	// mutex to force connect requests to be sequential
 	sync.Mutex
-	dev usb.Device
+	dev                 usb.Device
 	devReferenceCounter int
 	simulateButtonPress bool
 	simulateButtonType  ButtonType
@@ -154,9 +154,8 @@ func (d *Device) Connect() error {
 			d.devReferenceCounter++
 		}
 		return err
-	} else {
-		d.devReferenceCounter++
 	}
+	d.devReferenceCounter++
 	return nil
 }
 
