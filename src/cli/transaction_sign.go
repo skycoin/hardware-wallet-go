@@ -135,13 +135,11 @@ func transactionSignCmd() gcli.Command {
 								err = printSignatures(&msg)
 								if err != nil {
 									log.Error(err)
-									return
 								}
 								return
-							} else {
-								log.Error("protocol error: unexpected TXFINISHED message")
-								return
 							}
+							log.Error("protocol error: unexpected TXFINISHED message")
+							return
 						}
 					case uint16(messages.MessageType_MessageType_Failure):
 						failMsg, err := skyWallet.DecodeFailMsg(msg)
