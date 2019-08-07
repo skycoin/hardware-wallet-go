@@ -76,6 +76,8 @@ type Devicer interface {
 	ButtonAck() (wire.Message, error)
 	SetAutoPressButton(simulateButtonPress bool, simulateButtonType ButtonType) error
 	Close()
+	Connect() error
+	Disconnect() error
 }
 
 // Device provides hardware wallet functions
@@ -163,11 +165,11 @@ func (d *Device) Connect() error {
 func (d *Device) Disconnect() error {
 	d.Lock()
 	defer d.Unlock()
-	d.devReferenceCounter--
-	if d.devReferenceCounter == 0 {
+	if d.devReferenceCounter == 1 {
 		err := d.dev.Close(false)
 		if err == nil {
 			d.dev = nil
+			d.devReferenceCounter--
 		}
 		return nil
 	}
