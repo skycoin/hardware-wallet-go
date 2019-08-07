@@ -325,11 +325,11 @@ func MessageSignTx(outputsCount int, inputsCount int, coinName string, version i
 
 // MessageTxAck prepare MessageTxAck request
 func MessageTxAck(inputs []*messages.TxAck_TransactionType_TxInputType, outputs []*messages.TxAck_TransactionType_TxOutputType, version int, lockTime int) ([][64]byte, error) {
-	tx := &messages.TxAck_TransactionType {
-		Inputs: inputs,
-		Outputs: outputs,
+	tx := &messages.TxAck_TransactionType{
+		Inputs:   inputs,
+		Outputs:  outputs,
 		LockTime: proto.Uint32(uint32(lockTime)),
-		Version: proto.Uint32(uint32(version)),
+		Version:  proto.Uint32(uint32(version)),
 	}
 	txAckMessage := &messages.TxAck{
 		Tx: tx,
