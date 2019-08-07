@@ -149,7 +149,6 @@ func (d *Device) Connect() error {
 	d.Lock()
 	defer d.Unlock()
 	if d.devReferenceCounter == 0 {
-
 		dev, err := d.Driver.GetDevice()
 		if err == nil {
 			d.dev = dev
@@ -157,7 +156,6 @@ func (d *Device) Connect() error {
 		}
 		return err
 	}
-	d.devReferenceCounter++
 	return nil
 }
 
