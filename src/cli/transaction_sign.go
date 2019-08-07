@@ -3,9 +3,10 @@ package cli
 import (
 	"errors"
 	"fmt"
-	"github.com/skycoin/hardware-wallet-go/src/skywallet/wire"
 	"os"
 	"runtime"
+
+	"github.com/skycoin/hardware-wallet-go/src/skywallet/wire"
 
 	"github.com/gogo/protobuf/proto"
 
