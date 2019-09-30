@@ -55,7 +55,7 @@ Skycoin Hardware wallet command line interface
 ## Install
 
 ```bash
-$ cd $GOPATH/src/github.com/skycoin/hardware-wallet-go/
+$ cd $GOPATH/src/github.com/SkycoinProject/hardware-wallet-go/
 $ ./install.sh
 ```
 
@@ -105,7 +105,7 @@ All commands accept `--deviceType` option. Supported values are `USB` and `EMULA
 
 ### Internal entropy
 
-There are two kinds of internal entropy, [`getRawEntropy`](#get-raw-entropy) and `getMixedEntropy`(#get-mixed-entropy). The difference between this two are that raw entropy comes from a random buffer function that uses a peripheral device under the hood, in the other hand the mixed entropy comes from a salted entropy source as described in [this FAQ](https://github.com/skycoin/hardware-wallet/blob/develop/FAQ.md#random-source).
+There are two kinds of internal entropy, [`getRawEntropy`](#get-raw-entropy) and `getMixedEntropy`(#get-mixed-entropy). The difference between this two are that raw entropy comes from a random buffer function that uses a peripheral device under the hood, in the other hand the mixed entropy comes from a salted entropy source as described in [this FAQ](https://github.com/SkycoinProject/hardware-wallet/blob/develop/FAQ.md#random-source).
 
 
 ### Apply settings
@@ -130,11 +130,11 @@ $ skycoin-hw-cli applySettings --usePassphrase
  <summary>View Output</summary>
 
 ```
-2018/12/21 16:14:25 language:"" label:"" use_passphrase:true 
+2018/12/21 16:14:25 language:"" label:"" use_passphrase:true
 PinMatrixRequest response: 5959
 2018/12/21 16:14:34 Setting pin: 5959
 2018/12/21 16:14:34 Calling DecodeSuccessOrFailMsg on message kind 26
-2018/12/21 16:14:34 MessagePinMatrixAck Answer is: 26 / 
+2018/12/21 16:14:34 MessagePinMatrixAck Answer is: 26 /
 Success with code:  Settings applied
 ```
 </details>
@@ -149,7 +149,7 @@ $ skycoin-hw-cli applySettings --language en
  <summary>View Output</summary>
 
 ```
-[2019-03-24T17:02:36-04:00] INFO [device-wallet]: language:"en" label:"" use_passphrase:false 
+[2019-03-24T17:02:36-04:00] INFO [device-wallet]: language:"en" label:"" use_passphrase:false
 Success with code:  Settings applied
 ```
 </details>
@@ -224,7 +224,7 @@ $ skycoin-hw-cli setMnemonic --mnemonic="cloud flower upset remain green metal b
  <summary>View Output</summary>
 
 ```
-MessageButtonAck Answer is: 2 / 
+MessageButtonAck Answer is: 2 /
 Ecloud flower upset remain green metal below cup stem infant art thank
 ```
 </details>
@@ -345,7 +345,7 @@ $ skycoin-hw-cli checkMessageSignature  --address=2EU3JbveHdkxW6z5tdhbbB2kRAWvXC
  <summary>View Output</summary>
 
 ```
-Success 2! address that issued the signature is: 
+Success 2! address that issued the signature is:
 #2EU3JbveHdkxW6z5tdhbbB2kRAWvXC2pLzw
 
 ```
@@ -439,7 +439,7 @@ $ skycoin-hw-cli recovery
  <summary>View Output</summary>
 
 ```
-2018/12/07 17:50:26 Recovery device 46! Answer is: 
+2018/12/07 17:50:26 Recovery device 46! Answer is:
 Word: market
 Word: gaze
 Word: crouch
@@ -488,8 +488,8 @@ BootloaderMode: false
 DeviceId: 453543343446324545394145393446463443463634434445
 PinProtection: false
 PassphraseProtection: false
-Language: 
-Label: 
+Language:
+Label:
 Initialized: true
 BootloaderHash: 765b3ec3a9c5b2f70326d0afce869cef5d1081124b91e1440b5b96a41436b723
 PinCached: false
@@ -500,8 +500,8 @@ Model: 1
 FwMajor: 0
 FwMinor: 0
 FwPatch: 0
-FwVendor: 
-FwVendorKeys: 
+FwVendor:
+FwVendorKeys:
 UnfinishedBackup: false
 FirmwareFeatures: 0
 ```
@@ -581,7 +581,7 @@ INFO [skycoin-hw-cli]: Getting raw entropy from device
 ```
 </details>
 
-A real example about how to use this feature can be checked at the [TRNG validation](https://github.com/skycoin/hardware-wallet/tree/8edc2a28027875f464b68348c44fb188efb4dfbb#validate-the-trng) (please get noticed that the firmware should be build with this feature enabled trough `ENABLE_GETENTROPY`). The tool is use specifically [from here](https://github.com/skycoin/hardware-wallet/blob/8edc2a28027875f464b68348c44fb188efb4dfbb/trng-test/Makefile#L7-L8).
+A real example about how to use this feature can be checked at the [TRNG validation](https://github.com/SkycoinProject/hardware-wallet/tree/8edc2a28027875f464b68348c44fb188efb4dfbb#validate-the-trng) (please get noticed that the firmware should be build with this feature enabled trough `ENABLE_GETENTROPY`). The tool is use specifically [from here](https://github.com/SkycoinProject/hardware-wallet/blob/8edc2a28027875f464b68348c44fb188efb4dfbb/trng-test/Makefile#L7-L8).
 
 ### Get mixed entropy
 
@@ -610,4 +610,4 @@ INFO [skycoin-hw-cli]: Getting mixed entropy from device
 ```
 </details>
 
-A real example about how to use this feature can be checked at the [TRNG validation](https://github.com/skycoin/hardware-wallet/tree/8edc2a28027875f464b68348c44fb188efb4dfbb#validate-the-trng) (please get noticed that the firmware should be build with this feature enabled trough `ENABLE_GETENTROPY`). The tool is use specifically [from here](https://github.com/skycoin/hardware-wallet/blob/8edc2a28027875f464b68348c44fb188efb4dfbb/trng-test/Makefile#L7-L8).
+A real example about how to use this feature can be checked at the [TRNG validation](https://github.com/SkycoinProject/hardware-wallet/tree/8edc2a28027875f464b68348c44fb188efb4dfbb#validate-the-trng) (please get noticed that the firmware should be build with this feature enabled trough `ENABLE_GETENTROPY`). The tool is use specifically [from here](https://github.com/SkycoinProject/hardware-wallet/blob/8edc2a28027875f464b68348c44fb188efb4dfbb/trng-test/Makefile#L7-L8).

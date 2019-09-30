@@ -30,12 +30,12 @@
 
 
 [[constraint]]
-  name = "github.com/skycoin/skycoin"
+  name = "github.com/SkycoinProject/skycoin"
   branch = "develop"
 
 [[constraint]]
-  name = "github.com/skycoin/hardware-wallet-protob"
-  revision = "bd9f95c53447f97ac56f24a415c25d04680552de"
+  name = "github.com/SkycoinProject/hardware-wallet-protob"
+  branch = "develop"
 
 [[constraint]]
   name = "github.com/gogo/protobuf"
