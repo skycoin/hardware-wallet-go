@@ -304,6 +304,45 @@ func MessageTransactionSign(inputs []*messages.SkycoinTransactionInput, outputs 
 	return chunks, nil
 }
 
+// MessageSignTx prepare MessageSignTx request
+func MessageSignTx(outputsCount int, inputsCount int, coinName string, version int, lockTime int, txHash string) ([][64]byte, error) {
+	signTxMessage := &messages.SignTx{
+		OutputsCount: proto.Uint32(uint32(outputsCount)),
+		InputsCount:  proto.Uint32(uint32(inputsCount)),
+		CoinName:     proto.String(coinName),
+		Version:      proto.Uint32(uint32(version)),
+		LockTime:     proto.Uint32(uint32(lockTime)),
+		TxHash:       proto.String(txHash),
+	}
+	data, err := proto.Marshal(signTxMessage)
+	if err != nil {
+		return [][64]byte{}, err
+	}
+
+	chunks := makeSkyWalletMessage(data, messages.MessageType_MessageType_SignTx)
+	return chunks, nil
+}
+
+// MessageTxAck prepare MessageTxAck request
+func MessageTxAck(inputs []*messages.TxAck_TransactionType_TxInputType, outputs []*messages.TxAck_TransactionType_TxOutputType, version int, lockTime int) ([][64]byte, error) {
+	tx := &messages.TxAck_TransactionType{
+		Inputs:   inputs,
+		Outputs:  outputs,
+		LockTime: proto.Uint32(uint32(lockTime)),
+		Version:  proto.Uint32(uint32(version)),
+	}
+	txAckMessage := &messages.TxAck{
+		Tx: tx,
+	}
+	data, err := proto.Marshal(txAckMessage)
+
+	if err != nil {
+		return [][64]byte{}, err
+	}
+	chunks := makeSkyWalletMessage(data, messages.MessageType_MessageType_TxAck)
+	return chunks, nil
+}
+
 // MessageWipe prepare MessageWipe request
 func MessageWipe() ([][64]byte, error) {
 	wipeDevice := &messages.WipeDevice{}

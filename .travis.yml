@@ -67,7 +67,7 @@ script:
   - make test-integration-emulator
   # Test that dependencies can be updated
   - make clean
-  - make dep
+#  - make dep
 
 after_script:
   - kill -s KILL $(pgrep emulator)
