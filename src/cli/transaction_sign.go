@@ -6,7 +6,7 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/skycoin/hardware-wallet-go/src/skywallet/wire"
+	"github.com/SkycoinProject/hardware-wallet-go/src/skywallet/wire"
 
 	"github.com/gogo/protobuf/proto"
 
