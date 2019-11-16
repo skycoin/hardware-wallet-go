@@ -38,7 +38,7 @@ test: test_unit test-integration-emulator ## Run all tests
 
 install-linters: ## Install linters
 	go get -u github.com/FiloSottile/vendorcheck
-	curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh| sh -s -- -b $(go env GOPATH)/bin v1.18.0
+	curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh| sh -s -- -b $(shell go env GOPATH)/bin v1.18.0
 
 check-version:
 	test "$(shell cat ./VERSION)" = "$(shell ./ci-scripts/version.sh)"
