@@ -41,6 +41,25 @@ const (
 	DeviceTypeInvalid
 )
 
+type CoinType int32
+
+const (
+	InvalidCoinType CoinType = iota + 1
+	SkycoinCoinType
+	BitcoinCoinType
+)
+
+func CoinTypeFromString(ct string) (CoinType, error) {
+	switch ct {
+	case "SKY":
+		return SkycoinCoinType, nil
+	case "BTC":
+		return BitcoinCoinType, nil
+	default:
+		return InvalidCoinType, fmt.Errorf("invalid coin type: %s", ct)
+	}
+}
+
 const (
 	// SkycoinVendorID from https://github.com/SkycoinProject/hardware-wallet/blob/50000f674c56c0cc18eec30d55978b73ed279b2e/tiny-firmware/bootloader/usb.c#L57
 	SkycoinVendorID = 0x313A
