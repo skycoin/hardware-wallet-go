@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Only connect to `USB` devices announcing Skycoin vendor and product through HID.
 - Add `Available` function to check if a skycoin wallet is connected to the system.
 - Added cli integration tests.
+- Added BTC Adresses support
 
 ### Fixed
 
