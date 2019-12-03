@@ -41,14 +41,19 @@ const (
 	DeviceTypeInvalid
 )
 
+// CoinType type of coin, that will be used: Skycoin, Bitcoin, etc
 type CoinType int32
 
 const (
+	// InvalidCoinType not valid value
 	InvalidCoinType CoinType = iota + 1
+	// SkycoinCoinType Skycoin coin type
 	SkycoinCoinType
+	// BitcoinCoinType Bitcoin coin type
 	BitcoinCoinType
 )
 
+// CoinTypeFromString returns CoinType from String (i.e. SkycoinCoinType from 'SKY')
 func CoinTypeFromString(ct string) (CoinType, error) {
 	switch ct {
 	case "SKY":
