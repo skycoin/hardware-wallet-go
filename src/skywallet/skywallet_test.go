@@ -71,7 +71,7 @@ func (suite *devicerSuit) TestAddressGen() {
 	}
 
 	for _, tc := range tt {
-		msg, err := device.AddressGen(tc.addressN, tc.startIndex, false)
+		msg, err := device.AddressGen(tc.addressN, tc.startIndex, false, SkycoinCoinType)
 		suite.Equal(err, tc.err)
 		suite.Equal(msg.Kind, tc.msgKind)
 	}
