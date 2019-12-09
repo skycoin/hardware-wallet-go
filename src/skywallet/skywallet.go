@@ -763,6 +763,36 @@ func (d *Device) TransactionSign(inputs []*messages.SkycoinTransactionInput, out
 	return d.Driver.SendToDevice(d.dev, transactionSignChunks)
 }
 
+// SignTx Ask the device to sign a long transaction using the given information.
+func (d *Device) SignTx(outputsCount int, inputsCount int, coinName string, version int, lockTime int, txHash string) (wire.Message, error) {
+	if err := d.Connect(); err != nil {
+		return wire.Message{}, err
+	}
+	defer d.Disconnect()
+
+	signTxChunks, err := MessageSignTx(outputsCount, inputsCount, coinName, version, lockTime, txHash)
+
+	if err != nil {
+		return wire.Message{}, err
+	}
+
+	return d.Driver.SendToDevice(d.dev, signTxChunks)
+}
+
+// TxAck Ask the device to continue a long transaction using the given information.
+func (d *Device) TxAck(inputs []*messages.TxAck_TransactionType_TxInputType, outputs []*messages.TxAck_TransactionType_TxOutputType, version int, lockTime int) (wire.Message, error) {
+	if err := d.Connect(); err != nil {
+		return wire.Message{}, err
+	}
+	defer d.Disconnect()
+	txAckChunks, err := MessageTxAck(inputs, outputs, version, lockTime)
+	if err != nil {
+		return wire.Message{}, err
+	}
+
+	return d.Driver.SendToDevice(d.dev, txAckChunks)
+}
+
 // Wipe wipes out device configuration
 func (d *Device) Wipe() (wire.Message, error) {
 	if err := d.Connect(); err != nil {
