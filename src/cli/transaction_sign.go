@@ -183,7 +183,7 @@ func transactionSkycoinSign(device *skyWallet.Device, inputs, outputs []string, 
 				if err != nil {
 					return err
 				}
-				return fmt.Errorf("failed with message: %s\n", failMsg)
+				return fmt.Errorf("Failed with message: %s", failMsg)
 			case uint16(messages.MessageType_MessageType_ButtonRequest):
 				msg, err = device.ButtonAck()
 			default:
@@ -253,7 +253,7 @@ func transactionSkycoinSign(device *skyWallet.Device, inputs, outputs []string, 
 					return err
 				}
 
-				return fmt.Errorf("failed with message: %s\n", failMsg)
+				return fmt.Errorf("Failed with message: %s", failMsg)
 			default:
 				return fmt.Errorf("received unexpected message type: %s", messages.MessageType(msg.Kind))
 			}
