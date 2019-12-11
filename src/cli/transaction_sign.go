@@ -256,7 +256,7 @@ func sendInputs(device *skyWallet.Device, inputs *[]string, inputIndex *[]int, v
 		*index = 0
 		*state++
 		return device.TxAck(txInputs, nil, version, lockTime)
-	} else if *index==len(*inputs){
+	} else if *index == len(*inputs) {
 		*index = 0
 		*state++
 	}
@@ -284,7 +284,7 @@ func sendOutputs(device *skyWallet.Device, outputs *[]string, addressIndex *[]in
 		*index = 0
 		*state++
 		return device.TxAck(nil, txOutputs, version, lockTime)
-	} else if *index==len(*outputs){
+	} else if *index == len(*outputs) {
 		*index = 0
 		*state++
 	}
