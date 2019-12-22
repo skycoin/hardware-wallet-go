@@ -793,6 +793,20 @@ func (d *Device) TxAck(inputs []*messages.TxAck_TransactionType_TxInputType, out
 	return d.Driver.SendToDevice(d.dev, txAckChunks)
 }
 
+// BitcoinTxAck ask the device to continue a Bitcoin long transaction using the given information.
+func (d *Device) BitcoinTxAck(inputs []*messages.BitcoinTransactionInput, outputs []*messages.BitcoinTransactionOutput) (wire.Message, error) {
+	if err := d.Connect(); err != nil {
+		return wire.Message{}, err
+	}
+	defer d.Disconnect()
+	txAckChunks, err := BitcoinMessageTxAck(inputs, outputs)
+	if err != nil {
+		return wire.Message{}, err
+	}
+
+	return d.Driver.SendToDevice(d.dev, txAckChunks)
+}
+
 // Wipe wipes out device configuration
 func (d *Device) Wipe() (wire.Message, error) {
 	if err := d.Connect(); err != nil {
