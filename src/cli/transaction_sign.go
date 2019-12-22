@@ -117,6 +117,11 @@ func transactionSignCmd() gcli.Command {
 				if err != nil {
 					log.Error(err)
 				}
+			case skyWallet.BitcoinCoinType:
+				err = transactionBitcoinSign(device, prevHash, outputs, coins, inputIndex, addressIndex)
+				if err != nil {
+					log.Error(err)
+				}
 			default:
 				log.Error(fmt.Errorf("TransactionSign is not implemented for %s yet", coinType))
 			}
