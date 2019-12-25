@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"os"
@@ -102,10 +103,6 @@ func transactionSignCmd() gcli.Command {
 				}
 			}
 
-			if len(inputs) != len(inputIndex) {
-				fmt.Println("Every given input hash should have the an inputIndex")
-				return
-			}
 			if len(outputs) != len(coins) {
 				fmt.Println("Every given output should have a coin value")
 				return
@@ -136,6 +133,9 @@ func transactionSkycoinSign(device *skyWallet.Device, inputs, outputs []string, 
 	lockTime := 0
 	txHash := "dkdji9e2oidhash"
 
+	if len(inputs) != len(inputIndex) {
+		return fmt.Errorf("Every given input hash should have the an inputIndex")
+	}
 	if len(outputs) != len(hours) {
 		return fmt.Errorf("Every given output should have a coin value")
 	}
@@ -348,8 +348,12 @@ func transactionBitcoinSign(device *skyWallet.Device, prevHashes, outputs []stri
 	var transactionOutputs []*messages.BitcoinTransactionOutput
 	for i, prevHash := range prevHashes {
 		var transactionInput messages.BitcoinTransactionInput
-		transactionInput.Index = proto.Uint32(uint32(inputIndex[i]))
-		transactionInput.PrevHash = []byte(prevHash)
+		transactionInput.AddressN = proto.Uint32(uint32(inputIndex[i]))
+		decoded, err := hex.DecodeString(prevHash)
+		if err != nil {
+			return err
+		}
+		transactionInput.PrevHash = decoded
 		transactionInputs = append(transactionInputs, &transactionInput)
 	}
 	for i, output := range outputs {
@@ -383,7 +387,7 @@ func transactionBitcoinSign(device *skyWallet.Device, prevHashes, outputs []stri
 					return fmt.Errorf("protocol error: unexpected TxRequest type")
 				}
 			case messages.TxRequest_TXINPUT:
-				if state == 1 { // Sending Inputs for Signatures
+				if state == 1 {
 					err = printSignatures(&msg)
 					if err != nil {
 						return err
