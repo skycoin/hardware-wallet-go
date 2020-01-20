@@ -192,7 +192,7 @@ func (d *Device) GetUsbInfo() ([]usb.Info, error) {
 }
 
 // AddressGen Ask the device to generate an address
-func (d *Device) AddressGen(addressN, startIndex uint32, confirmAddress bool) (wire.Message, error) {
+func (d *Device) AddressGen(addressN, startIndex uint32, confirmAddress bool, coinType CoinType) (wire.Message, error) {
 	if err := d.Connect(); err != nil {
 		return wire.Message{}, err
 	}
@@ -202,7 +202,7 @@ func (d *Device) AddressGen(addressN, startIndex uint32, confirmAddress bool) (w
 		return wire.Message{}, ErrAddressNZero
 	}
 
-	addressGenChunks, err := MessageAddressGen(addressN, startIndex, confirmAddress)
+	addressGenChunks, err := MessageAddressGen(addressN, startIndex, confirmAddress, coinType)
 	if err != nil {
 		return wire.Message{}, err
 	}

@@ -75,19 +75,34 @@ func MessageCheckMessageSignature(message, signature, address string) ([][64]byt
 }
 
 // MessageAddressGen prepare MessageAddressGen request
-func MessageAddressGen(addressN, startIndex uint32, confirmAddress bool) ([][64]byte, error) {
-	skycoinAddress := &messages.SkycoinAddress{
-		AddressN:       proto.Uint32(addressN),
-		ConfirmAddress: proto.Bool(confirmAddress),
-		StartIndex:     proto.Uint32(startIndex),
+func MessageAddressGen(addressN, startIndex uint32, confirmAddress bool, coinType CoinType) ([][64]byte, error) {
+	var chunks [][64]byte
+	switch coinType {
+	case SkycoinCoinType:
+		address := &messages.SkycoinAddress{
+			AddressN:       proto.Uint32(addressN),
+			ConfirmAddress: proto.Bool(confirmAddress),
+			StartIndex:     proto.Uint32(startIndex),
+		}
+		data, err := proto.Marshal(address)
+		if err != nil {
+			return [][64]byte{}, err
+		}
+		chunks = makeSkyWalletMessage(data, messages.MessageType_MessageType_SkycoinAddress)
+	case BitcoinCoinType:
+		address := &messages.BitcoinAddress{
+			AddressN:       proto.Uint32(addressN),
+			ConfirmAddress: proto.Bool(confirmAddress),
+			StartIndex:     proto.Uint32(startIndex),
+		}
+		data, err := proto.Marshal(address)
+		if err != nil {
+			return [][64]byte{}, err
+		}
+		chunks = makeSkyWalletMessage(data, messages.MessageType_MessageType_BitcoinAddress)
+
 	}
 
-	data, err := proto.Marshal(skycoinAddress)
-	if err != nil {
-		return [][64]byte{}, err
-	}
-
-	chunks := makeSkyWalletMessage(data, messages.MessageType_MessageType_SkycoinAddress)
 	return chunks, nil
 }
 
