@@ -54,7 +54,7 @@ var (
 
 // Devicer provides api for the hw wallet functions
 type Devicer interface {
-	AddressGen(addressN, startIndex uint32, confirmAddress bool) (wire.Message, error)
+	AddressGen(addressN, startIndex uint32, confirmAddress bool, coinType CoinType) (wire.Message, error)
 	ApplySettings(usePassphrase *bool, label string, language string) (wire.Message, error)
 	Backup() (wire.Message, error)
 	Cancel() (wire.Message, error)
