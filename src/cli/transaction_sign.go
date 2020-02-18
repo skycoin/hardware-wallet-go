@@ -127,141 +127,117 @@ func transactionSignCmd() gcli.Command {
 }
 
 func transactionSkycoinSign(device *skyWallet.Device, inputs, outputs []string, coins, hours []int64, inputIndex, addressIndex []int) error {
-
-	coinName := "Skycoin"
-	version := 1
-	lockTime := 0
-	txHash := "dkdji9e2oidhash"
-
 	if len(inputs) != len(inputIndex) {
-		return fmt.Errorf("Every given input hash should have the an inputIndex")
+		return fmt.Errorf("every given input hash should have the an inputIndex")
 	}
 	if len(outputs) != len(hours) {
-		return fmt.Errorf("Every given output should have a coin value")
+		return fmt.Errorf("every given output should have a coin value")
+	}
+	var transactionInputs []*messages.TxAck_TransactionType_TxInputType
+	var transactionOutputs []*messages.TxAck_TransactionType_TxOutputType
+
+	for i, input := range inputs {
+		transactionInputs = append(transactionInputs, &messages.TxAck_TransactionType_TxInputType{
+			AddressN: []uint32{*proto.Uint32(uint32((inputIndex)[i]))},
+			HashIn:   proto.String(input),
+		})
+	}
+	for i, output := range outputs {
+		transactionOutputs = append(transactionOutputs, &messages.TxAck_TransactionType_TxOutputType{
+			Address: proto.String(output),
+			Coins:   proto.Uint64(uint64((coins)[i])),
+			Hours:   proto.Uint64(uint64((hours)[i])),
+		})
+		if i < len(addressIndex) {
+			transactionOutputs[len(transactionOutputs)-1].AddressN = []uint32{uint32((addressIndex)[i])}
+		}
+	}
+	signer := skyWallet.SkycoinTransactionSigner{
+		Device:   device,
+		Inputs:   transactionInputs,
+		Outputs:  transactionOutputs,
+		Version:  1,
+		LockTime: 0,
+		State:    0,
 	}
 
-	if len(inputs) > 7 || len(outputs) > 7 {
-		state := 0
-		index := 0
+	index := 0
 
-		msg, err := device.SignTx(len(outputs), len(inputs), coinName, version, lockTime, txHash)
+	msg, err := signer.InitSigningProcess()
 
-		for {
-			if err != nil {
-				return err
-			}
-			switch msg.Kind {
-			case uint16(messages.MessageType_MessageType_TxRequest):
-				txRequest := &messages.TxRequest{}
-				err = proto.Unmarshal(msg.Data, txRequest)
-				if err != nil {
-					return err
-				}
-				switch *txRequest.RequestType {
-				case messages.TxRequest_TXINPUT:
-					if state == 0 { // Sending Inputs for InnerHash
-						msg, err = sendInputs(device, &inputs, &inputIndex, version, lockTime, &index, &state)
-					} else if state == 2 { // Sending Inputs for Signatures
-						err = printSignatures(&msg)
-						if err != nil {
-							return err
-						}
-						msg, err = sendInputs(device, &inputs, &inputIndex, version, lockTime, &index, &state)
-					} else {
-						return fmt.Errorf("protocol error: unexpected TxRequest type")
-					}
-				case messages.TxRequest_TXOUTPUT:
-					if state == 1 { // Sending Outputs for InnerHash
-						msg, err = sendOutputs(device, &outputs, &addressIndex, &coins, &hours, version, lockTime, &index, &state)
-					} else {
-						return fmt.Errorf("protocol error: unexpected TxRequest type")
-					}
-				case messages.TxRequest_TXFINISHED:
-					if state == 3 {
-						err = printSignatures(&msg)
-						return err
-					}
-					return fmt.Errorf("protocol error: unexpected TXFINISHED message")
-				}
-			case uint16(messages.MessageType_MessageType_Failure):
-				failMsg, err := skyWallet.DecodeFailMsg(msg)
-				if err != nil {
-					return err
-				}
-				return fmt.Errorf("Failed with message: %s", failMsg)
-			case uint16(messages.MessageType_MessageType_ButtonRequest):
-				msg, err = device.ButtonAck()
-			default:
-				return fmt.Errorf("unexpected response message type from hardware wallet")
-			}
-		}
-	} else {
-		var transactionInputs []*messages.SkycoinTransactionInput
-		var transactionOutputs []*messages.SkycoinTransactionOutput
-		for i, input := range inputs {
-			var transactionInput messages.SkycoinTransactionInput
-			transactionInput.HashIn = proto.String(input)
-			transactionInput.Index = proto.Uint32(uint32(inputIndex[i]))
-			transactionInputs = append(transactionInputs, &transactionInput)
-		}
-		for i, output := range outputs {
-			var transactionOutput messages.SkycoinTransactionOutput
-			transactionOutput.Address = proto.String(output)
-			transactionOutput.Coin = proto.Uint64(uint64(coins[i]))
-			transactionOutput.Hour = proto.Uint64(uint64(hours[i]))
-			if i < len(addressIndex) {
-				transactionOutput.AddressIndex = proto.Uint32(uint32(addressIndex[i]))
-			}
-			transactionOutputs = append(transactionOutputs, &transactionOutput)
-		}
-
-		msg, err := device.TransactionSign(transactionInputs, transactionOutputs)
+	for {
 		if err != nil {
 			return err
 		}
-
-		for {
-			switch msg.Kind {
-			case uint16(messages.MessageType_MessageType_ResponseTransactionSign):
-				signatures, err := skyWallet.DecodeResponseTransactionSign(msg)
-				if err != nil {
-					return err
-				}
-				fmt.Println(signatures)
-				return nil
-			case uint16(messages.MessageType_MessageType_Success):
-				return fmt.Errorf("Should end with ResponseTransactionSign request")
-			case uint16(messages.MessageType_MessageType_ButtonRequest):
-				msg, err = device.ButtonAck()
-				if err != nil {
-					return err
-				}
-			case uint16(messages.MessageType_MessageType_PassphraseRequest):
-				var passphrase string
-				fmt.Printf("Input passphrase: ")
-				fmt.Scanln(&passphrase)
-				msg, err = device.PassphraseAck(passphrase)
-				if err != nil {
-					return err
-				}
-			case uint16(messages.MessageType_MessageType_PinMatrixRequest):
-				var pinEnc string
-				fmt.Printf("PinMatrixRequest response: ")
-				fmt.Scanln(&pinEnc)
-				msg, err = device.PinMatrixAck(pinEnc)
-				if err != nil {
-					return err
-				}
-			case uint16(messages.MessageType_MessageType_Failure):
-				failMsg, err := skyWallet.DecodeFailMsg(msg)
-				if err != nil {
-					return err
-				}
-
-				return fmt.Errorf("Failed with message: %s", failMsg)
-			default:
-				return fmt.Errorf("received unexpected message type: %s", messages.MessageType(msg.Kind))
+		switch msg.Kind {
+		case uint16(messages.MessageType_MessageType_TxRequest):
+			txRequest := &messages.TxRequest{}
+			err = proto.Unmarshal(msg.Data, txRequest)
+			if err != nil {
+				return err
 			}
+			switch *txRequest.RequestType {
+			case messages.TxRequest_TXINPUT:
+				if signer.State == 0 { // Sending Inputs for InnerHash
+					if len(inputs)-index > 8 {
+						msg, err = signer.SendInputs(index, 8)
+						index += 8
+					} else {
+						msg, err = signer.SendInputs(index, len(inputs)-index)
+						signer.State += 1
+						index = 0
+					}
+				} else if signer.State == 2 { // Sending Inputs for Signatures
+					//err = printSignatures(&msg)
+					err = signer.AddSignatures(&msg)
+					if err != nil {
+						return err
+					}
+					if len(inputs)-index > 8 {
+						msg, err = signer.SendInputs(index, 8)
+					} else {
+						msg, err = signer.SendInputs(index, len(inputs)-index)
+						signer.State += 1
+						index = 0
+					}
+					index += 8
+				} else {
+					return fmt.Errorf("protocol error: unexpected TxRequest type")
+				}
+			case messages.TxRequest_TXOUTPUT:
+				if signer.State == 1 { // Sending Outputs for InnerHash
+					if len(outputs)-index > 8 {
+						msg, err = signer.SendOutputs(index, 8)
+						index += 8
+					} else {
+						msg, err = signer.SendOutputs(index, len(outputs)-index)
+						signer.State += 1
+						index = 0
+					}
+				} else {
+					return fmt.Errorf("protocol error: unexpected TxRequest type")
+				}
+			case messages.TxRequest_TXFINISHED:
+				if signer.State == 3 {
+					err = signer.AddSignatures(&msg)
+					if err != nil {
+						return err
+					}
+					fmt.Println(signer.Signatures)
+					return nil
+				}
+				return fmt.Errorf("protocol error: unexpected TXFINISHED message")
+			}
+		case uint16(messages.MessageType_MessageType_Failure):
+			failMsg, err := skyWallet.DecodeFailMsg(msg)
+			if err != nil {
+				return err
+			}
+			return fmt.Errorf("Failed with message: %s", failMsg)
+		case uint16(messages.MessageType_MessageType_ButtonRequest):
+			msg, err = device.ButtonAck()
+		default:
+			return fmt.Errorf("unexpected response message type from hardware wallet")
 		}
 	}
 }
