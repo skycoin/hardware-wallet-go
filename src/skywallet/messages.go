@@ -329,6 +329,8 @@ func MessageSignTx(outputsCount int, inputsCount int, coinName string, version i
 		LockTime:     proto.Uint32(uint32(lockTime)),
 		TxHash:       proto.String(txHash),
 	}
+	log.Println(signTxMessage)
+
 	data, err := proto.Marshal(signTxMessage)
 	if err != nil {
 		return [][64]byte{}, err
