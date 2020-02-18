@@ -158,140 +158,14 @@ func transactionSkycoinSign(device *skyWallet.Device, inputs, outputs []string, 
 		Outputs:  transactionOutputs,
 		Version:  1,
 		LockTime: 0,
-		State:    0,
 	}
 
-	index := 0
-
-	msg, err := signer.InitSigningProcess()
-
-	for {
-		if err != nil {
-			return err
-		}
-		switch msg.Kind {
-		case uint16(messages.MessageType_MessageType_TxRequest):
-			txRequest := &messages.TxRequest{}
-			err = proto.Unmarshal(msg.Data, txRequest)
-			if err != nil {
-				return err
-			}
-			switch *txRequest.RequestType {
-			case messages.TxRequest_TXINPUT:
-				if signer.State == 0 { // Sending Inputs for InnerHash
-					if len(inputs)-index > 8 {
-						msg, err = signer.SendInputs(index, 8)
-						index += 8
-					} else {
-						msg, err = signer.SendInputs(index, len(inputs)-index)
-						signer.State += 1
-						index = 0
-					}
-				} else if signer.State == 2 { // Sending Inputs for Signatures
-					//err = printSignatures(&msg)
-					err = signer.AddSignatures(&msg)
-					if err != nil {
-						return err
-					}
-					if len(inputs)-index > 8 {
-						msg, err = signer.SendInputs(index, 8)
-					} else {
-						msg, err = signer.SendInputs(index, len(inputs)-index)
-						signer.State += 1
-						index = 0
-					}
-					index += 8
-				} else {
-					return fmt.Errorf("protocol error: unexpected TxRequest type")
-				}
-			case messages.TxRequest_TXOUTPUT:
-				if signer.State == 1 { // Sending Outputs for InnerHash
-					if len(outputs)-index > 8 {
-						msg, err = signer.SendOutputs(index, 8)
-						index += 8
-					} else {
-						msg, err = signer.SendOutputs(index, len(outputs)-index)
-						signer.State += 1
-						index = 0
-					}
-				} else {
-					return fmt.Errorf("protocol error: unexpected TxRequest type")
-				}
-			case messages.TxRequest_TXFINISHED:
-				if signer.State == 3 {
-					err = signer.AddSignatures(&msg)
-					if err != nil {
-						return err
-					}
-					fmt.Println(signer.Signatures)
-					return nil
-				}
-				return fmt.Errorf("protocol error: unexpected TXFINISHED message")
-			}
-		case uint16(messages.MessageType_MessageType_Failure):
-			failMsg, err := skyWallet.DecodeFailMsg(msg)
-			if err != nil {
-				return err
-			}
-			return fmt.Errorf("Failed with message: %s", failMsg)
-		case uint16(messages.MessageType_MessageType_ButtonRequest):
-			msg, err = device.ButtonAck()
-		default:
-			return fmt.Errorf("unexpected response message type from hardware wallet")
-		}
+	signatures, err := signer.Sign()
+	if err != nil {
+		return err
 	}
-}
-
-func sendInputs(device *skyWallet.Device, inputs *[]string, inputIndex *[]int, version int, lockTime int, index *int, state *int) (wire.Message, error) {
-	var txInputs []*messages.TxAck_TransactionType_TxInputType
-	startIndex := *index
-	for i, input := range (*inputs)[*index:] {
-		if len(txInputs) == 7 {
-			return device.TxAck(txInputs, []*messages.TxAck_TransactionType_TxOutputType{}, version, lockTime)
-		}
-		var txInput messages.TxAck_TransactionType_TxInputType
-		txInput.AddressN = []uint32{*proto.Uint32(uint32((*inputIndex)[startIndex+i]))}
-		txInput.HashIn = proto.String(input)
-		txInputs = append(txInputs, &txInput)
-		*index++
-	}
-	if len(txInputs) != 0 {
-		*index = 0
-		*state++
-		return device.TxAck(txInputs, nil, version, lockTime)
-	} else if *index == len(*inputs) {
-		*index = 0
-		*state++
-	}
-	return wire.Message{}, errors.New("empty inputs")
-}
-
-func sendOutputs(device *skyWallet.Device, outputs *[]string, addressIndex *[]int, coins *[]int64, hours *[]int64, version int, lockTime int, index *int, state *int) (wire.Message, error) {
-	var txOutputs []*messages.TxAck_TransactionType_TxOutputType
-	startIndex := *index
-	for i, output := range (*outputs)[*index:] {
-		if len(txOutputs) == 7 {
-			return device.TxAck(nil, txOutputs, version, lockTime)
-		}
-		var txOutput messages.TxAck_TransactionType_TxOutputType
-		txOutput.Address = proto.String(output)
-		if i < len(*addressIndex) {
-			txOutput.AddressN = []uint32{uint32((*addressIndex)[startIndex+i])}
-		}
-		txOutput.Coins = proto.Uint64(uint64((*coins)[startIndex+i]))
-		txOutput.Hours = proto.Uint64(uint64((*hours)[startIndex+i]))
-		txOutputs = append(txOutputs, &txOutput)
-		*index++
-	}
-	if len(txOutputs) != 0 {
-		*index = 0
-		*state++
-		return device.TxAck(nil, txOutputs, version, lockTime)
-	} else if *index == len(*outputs) {
-		*index = 0
-		*state++
-	}
-	return wire.Message{}, errors.New("empty outputs")
+	fmt.Println(signatures)
+	return err
 }
 
 func printSignatures(msg *wire.Message) error {
