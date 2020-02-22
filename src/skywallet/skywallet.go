@@ -7,6 +7,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/gogo/protobuf/proto"
+
 	"github.com/SkycoinProject/hardware-wallet-go/src/skywallet/usb"
 
 	"github.com/SkycoinProject/skycoin/src/util/logging"
@@ -774,13 +776,25 @@ func (d *Device) TransactionSign(inputs []*messages.SkycoinTransactionInput, out
 			transactionOutputs[len(transactionOutputs)-1].AddressN = make([]uint32, *output.AddressIndex)
 		}
 	}
-	//transactionSignChunks, err := MessageTransactionSign(inputs, outputs)
-	transactionSignChunks, err := MessageTransactionSign(inputs, outputs)
+	signer := SkycoinTransactionSigner{
+		Device:   d,
+		Inputs:   transactionInputs,
+		Outputs:  transactionOutputs,
+		Version:  1,
+		LockTime: 0,
+	}
+	signatures, err := signer.Sign()
 	if err != nil {
 		return wire.Message{}, err
 	}
-
-	return d.Driver.SendToDevice(d.dev, transactionSignChunks)
+	data, err := proto.Marshal(&messages.ResponseTransactionSign{Signatures: signatures})
+	if err != nil {
+		return wire.Message{}, err
+	}
+	return wire.Message{
+		Kind: uint16(messages.MessageType_MessageType_ResponseTransactionSign),
+		Data: data,
+	}, nil
 }
 
 // SignTx Ask the device to sign a long transaction using the given information.

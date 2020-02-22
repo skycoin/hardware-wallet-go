@@ -3,31 +3,34 @@ package skywallet
 import (
 	"errors"
 	"fmt"
-	"github.com/SkycoinProject/hardware-wallet-go/src/skywallet/wire"
-	messages "github.com/SkycoinProject/hardware-wallet-protob/go"
+
 	"github.com/gogo/protobuf/proto"
+
+	messages "github.com/SkycoinProject/hardware-wallet-protob/go"
+
+	"github.com/SkycoinProject/hardware-wallet-go/src/skywallet/wire"
 )
 
 //go:generate mockery -name TransactionSigner -case underscore -inpkg -testonly
 
-// TransactionData represents a data (inputs, outputs) needed to sign transaction
+// TransactionSigner represents a data (inputs, outputs) needed to sign transaction
 type TransactionSigner interface {
 	Sign() ([]string, error)
 }
 
-// *
-// Structure representing signing Skycoin transaction process
+// SkycoinTransactionSigner represents signing Skycoin transaction process
 // @used_in TransactionSign
 type SkycoinTransactionSigner struct {
-	Device   *Device
-	Inputs   []*messages.TxAck_TransactionType_TxInputType
-	Outputs  []*messages.TxAck_TransactionType_TxOutputType
-	Version  int
-	LockTime int
+	Device     *Device
+	Inputs     []*messages.TxAck_TransactionType_TxInputType
+	Outputs    []*messages.TxAck_TransactionType_TxOutputType
+	Version    int
+	LockTime   int
 	signatures []string
-	state    int
+	state      int
 }
 
+// Sign method signs the Skycoin Transaction
 func (s *SkycoinTransactionSigner) Sign() ([]string, error) {
 	msg, err := s.initSigningProcess()
 
@@ -51,10 +54,16 @@ func (s *SkycoinTransactionSigner) Sign() ([]string, error) {
 				if s.state == 0 { // Sending Inputs for InnerHash
 					if len(s.Inputs)-index > 8 {
 						msg, err = s.sendInputs(index, 8)
+						if err != nil {
+							return nil, err
+						}
 						index += 8
 					} else {
 						msg, err = s.sendInputs(index, len(s.Inputs)-index)
-						s.state += 1
+						if err != nil {
+							return nil, err
+						}
+						s.state++
 						index = 0
 					}
 				} else if s.state == 2 { // Sending Inputs for Signatures
@@ -64,9 +73,15 @@ func (s *SkycoinTransactionSigner) Sign() ([]string, error) {
 					}
 					if len(s.Inputs)-index > 8 {
 						msg, err = s.sendInputs(index, 8)
+						if err != nil {
+							return nil, err
+						}
 					} else {
 						msg, err = s.sendInputs(index, len(s.Inputs)-index)
-						s.state += 1
+						if err != nil {
+							return nil, err
+						}
+						s.state++
 						index = 0
 					}
 					index += 8
@@ -77,10 +92,16 @@ func (s *SkycoinTransactionSigner) Sign() ([]string, error) {
 				if s.state == 1 { // Sending Outputs for InnerHash
 					if len(s.Outputs)-index > 8 {
 						msg, err = s.sendOutputs(index, 8)
+						if err != nil {
+							return nil, err
+						}
 						index += 8
 					} else {
 						msg, err = s.sendOutputs(index, len(s.Outputs)-index)
-						s.state += 1
+						if err != nil {
+							return nil, err
+						}
+						s.state++
 						index = 0
 					}
 				} else {
@@ -104,6 +125,9 @@ func (s *SkycoinTransactionSigner) Sign() ([]string, error) {
 			return nil, fmt.Errorf("failed with message: %s", failMsg)
 		case uint16(messages.MessageType_MessageType_ButtonRequest):
 			msg, err = s.Device.ButtonAck()
+			if err != nil {
+				return nil, err
+			}
 		default:
 			return nil, fmt.Errorf("unexpected response message type from hardware wallet")
 		}
@@ -148,14 +172,4 @@ func (s *SkycoinTransactionSigner) addSignatures(msg *wire.Message) error {
 		s.signatures = append(s.signatures, sign.GetSignature())
 	}
 	return nil
-}
-
-// *
-// Structure representing signing Bitcoin transaction process
-// @used_in TransactionSign
-type BitcoinTransactionSigner struct {
-	device  *Device
-	inputs  []messages.BitcoinTransactionInput
-	outputs []messages.BitcoinTransactionOutput
-	state   int
 }
