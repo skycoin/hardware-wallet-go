@@ -54,7 +54,7 @@ var (
 
 // Devicer provides api for the hw wallet functions
 type Devicer interface {
-	AddressGen(addressN, startIndex uint32, confirmAddress bool) (wire.Message, error)
+	AddressGen(addressN, startIndex uint32, confirmAddress bool, coinType CoinType) (wire.Message, error)
 	ApplySettings(usePassphrase *bool, label string, language string) (wire.Message, error)
 	Backup() (wire.Message, error)
 	Cancel() (wire.Message, error)
@@ -786,6 +786,20 @@ func (d *Device) TxAck(inputs []*messages.TxAck_TransactionType_TxInputType, out
 	}
 	defer d.Disconnect()
 	txAckChunks, err := MessageTxAck(inputs, outputs, version, lockTime)
+	if err != nil {
+		return wire.Message{}, err
+	}
+
+	return d.Driver.SendToDevice(d.dev, txAckChunks)
+}
+
+// BitcoinTxAck ask the device to continue a Bitcoin long transaction using the given information.
+func (d *Device) BitcoinTxAck(inputs []*messages.BitcoinTransactionInput, outputs []*messages.BitcoinTransactionOutput) (wire.Message, error) {
+	if err := d.Connect(); err != nil {
+		return wire.Message{}, err
+	}
+	defer d.Disconnect()
+	txAckChunks, err := BitcoinMessageTxAck(inputs, outputs)
 	if err != nil {
 		return wire.Message{}, err
 	}

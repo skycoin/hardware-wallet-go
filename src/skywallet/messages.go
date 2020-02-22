@@ -358,6 +358,24 @@ func MessageTxAck(inputs []*messages.TxAck_TransactionType_TxInputType, outputs 
 	return chunks, nil
 }
 
+// BitcoinMessageTxAck prepare MessageTxAck request
+func BitcoinMessageTxAck(inputs []*messages.BitcoinTransactionInput, outputs []*messages.BitcoinTransactionOutput) ([][64]byte, error) {
+	tx := &messages.BitcoinTransactionType{
+		Inputs:  inputs,
+		Outputs: outputs,
+	}
+	txAckMessage := &messages.BitcoinTxAck{
+		Tx: tx,
+	}
+	data, err := proto.Marshal(txAckMessage)
+
+	if err != nil {
+		return [][64]byte{}, err
+	}
+	chunks := makeSkyWalletMessage(data, messages.MessageType_MessageType_BitcoinTxAck)
+	return chunks, nil
+}
+
 // MessageWipe prepare MessageWipe request
 func MessageWipe() ([][64]byte, error) {
 	wipeDevice := &messages.WipeDevice{}
