@@ -755,6 +755,26 @@ func (d *Device) TransactionSign(inputs []*messages.SkycoinTransactionInput, out
 	}
 	defer d.Disconnect()
 
+	var transactionInputs []*messages.TxAck_TransactionType_TxInputType
+	var transactionOutputs []*messages.TxAck_TransactionType_TxOutputType
+
+	for _, input := range inputs {
+		transactionInputs = append(transactionInputs, &messages.TxAck_TransactionType_TxInputType{
+			AddressN: make([]uint32, *input.Index),
+			HashIn:   input.HashIn,
+		})
+	}
+	for _, output := range outputs {
+		transactionOutputs = append(transactionOutputs, &messages.TxAck_TransactionType_TxOutputType{
+			Address: output.Address,
+			Coins:   output.Coin,
+			Hours:   output.Hour,
+		})
+		if output.AddressIndex != nil {
+			transactionOutputs[len(transactionOutputs)-1].AddressN = make([]uint32, *output.AddressIndex)
+		}
+	}
+	//transactionSignChunks, err := MessageTransactionSign(inputs, outputs)
 	transactionSignChunks, err := MessageTransactionSign(inputs, outputs)
 	if err != nil {
 		return wire.Message{}, err
