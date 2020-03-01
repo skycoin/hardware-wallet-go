@@ -15,6 +15,7 @@ import (
 
 // TransactionSigner represents a data (inputs, outputs) needed to sign transaction
 type TransactionSigner interface {
+	SetDevice(*Device)
 	Sign() ([]string, error)
 }
 
@@ -28,6 +29,11 @@ type SkycoinTransactionSigner struct {
 	LockTime   int
 	signatures []string
 	state      int
+}
+
+// SetDevice assigns device, which will be signing
+func (s *SkycoinTransactionSigner) SetDevice(device *Device) {
+	s.Device = device
 }
 
 // Sign method signs the Skycoin Transaction
@@ -184,6 +190,11 @@ type BitcoinTransactionSigner struct {
 	LockTime   int
 	signatures []string
 	state      int
+}
+
+// SetDevice assigns device, which will be signing
+func (s *BitcoinTransactionSigner) SetDevice(device *Device) {
+	s.Device = device
 }
 
 // Sign method signs the Bitcoin Transaction

@@ -150,14 +150,13 @@ func transactionSkycoinSign(device *skyWallet.Device, inputs, outputs []string, 
 		}
 	}
 	signer := skyWallet.SkycoinTransactionSigner{
-		Device:   device,
 		Inputs:   transactionInputs,
 		Outputs:  transactionOutputs,
 		Version:  1,
 		LockTime: 0,
 	}
 
-	signatures, err := signer.Sign()
+	signatures, err := device.GeneralTransactionSign(&signer)
 	if err != nil {
 		return err
 	}
@@ -193,19 +192,16 @@ func transactionBitcoinSign(device *skyWallet.Device, prevHashes, outputs []stri
 	}
 
 	signer := skyWallet.BitcoinTransactionSigner{
-		Device:   device,
 		Inputs:   transactionInputs,
 		Outputs:  transactionOutputs,
 		Version:  1,
 		LockTime: 0,
 	}
 
-	signatures, err := signer.Sign()
+	signatures, err := device.GeneralTransactionSign(&signer)
 	if err != nil {
 		return err
 	}
 	fmt.Println(signatures)
 	return err
 }
-
-

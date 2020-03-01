@@ -70,6 +70,7 @@ type Devicer interface {
 	Recovery(wordCount uint32, usePassphrase *bool, dryRun bool) (wire.Message, error)
 	SetMnemonic(mnemonic string) (wire.Message, error)
 	TransactionSign(inputs []*messages.SkycoinTransactionInput, outputs []*messages.SkycoinTransactionOutput) (wire.Message, error)
+	GeneralTransactionSign(signer TransactionSigner)
 	SignMessage(addressIndex int, message string) (wire.Message, error)
 	Wipe() (wire.Message, error)
 	PinMatrixAck(p string) (wire.Message, error)
@@ -795,6 +796,12 @@ func (d *Device) TransactionSign(inputs []*messages.SkycoinTransactionInput, out
 		Kind: uint16(messages.MessageType_MessageType_ResponseTransactionSign),
 		Data: data,
 	}, nil
+}
+
+// GeneralTransactionSign Ask the device to sign a transaction using the given TransactionSigner
+func (d *Device) GeneralTransactionSign(signer TransactionSigner) ([]string, error) {
+	signer.SetDevice(d)
+	return signer.Sign()
 }
 
 // SignTx Ask the device to sign a long transaction using the given information.
