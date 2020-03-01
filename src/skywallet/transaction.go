@@ -173,3 +173,142 @@ func (s *SkycoinTransactionSigner) addSignatures(msg *wire.Message) error {
 	}
 	return nil
 }
+
+// BitcoinTransactionSigner represents signing Skycoin transaction process
+// @used_in TransactionSign
+type BitcoinTransactionSigner struct {
+	Device     *Device
+	Inputs     []*messages.BitcoinTransactionInput
+	Outputs    []*messages.BitcoinTransactionOutput
+	Version    int
+	LockTime   int
+	signatures []string
+	state      int
+}
+
+// Sign method signs the Bitcoin Transaction
+func (s *BitcoinTransactionSigner) Sign() ([]string, error) {
+	msg, err := s.initSigningProcess()
+
+	if err != nil {
+		return nil, err
+	}
+	index := 0
+	s.state = 0
+	for {
+		if err != nil {
+			return nil, err
+		}
+		switch msg.Kind {
+		case uint16(messages.MessageType_MessageType_TxRequest):
+			txRequest := &messages.TxRequest{}
+			err = proto.Unmarshal(msg.Data, txRequest)
+			if err != nil {
+				return nil, err
+			}
+			switch *txRequest.RequestType {
+			case messages.TxRequest_TXOUTPUT:
+				if s.state == 0 { // Sending Outputs for Confirmation
+					if len(s.Outputs)-index > 8 {
+						msg, err = s.sendOutputs(index, 8)
+						if err != nil {
+							return nil, err
+						}
+						index += 8
+					} else {
+						msg, err = s.sendOutputs(index, len(s.Outputs)-index)
+						if err != nil {
+							return nil, err
+						}
+						s.state++
+						index = 0
+					}
+				} else {
+					return nil, fmt.Errorf("protocol error: unexpected TxRequest type")
+				}
+			case messages.TxRequest_TXINPUT:
+				if s.state == 1 {
+					err = s.addSignatures(&msg)
+					if err != nil {
+						return nil, err
+					}
+					if len(s.Inputs)-index > 8 {
+						msg, err = s.sendInputs(index, 8)
+						if err != nil {
+							return nil, err
+						}
+					} else {
+						msg, err = s.sendInputs(index, len(s.Inputs)-index)
+						if err != nil {
+							return nil, err
+						}
+						s.state++
+						index = 0
+					}
+					index += 8
+				} else {
+					return nil, fmt.Errorf("protocol error: unexpected TxRequest type")
+				}
+			case messages.TxRequest_TXFINISHED:
+				if s.state == 2 {
+					err = s.addSignatures(&msg)
+					if err != nil {
+						return nil, err
+					}
+					return s.signatures, nil
+				}
+				return nil, fmt.Errorf("protocol error: unexpected TXFINISHED message")
+			}
+		case uint16(messages.MessageType_MessageType_Failure):
+			failMsg, err := DecodeFailMsg(msg)
+			if err != nil {
+				return nil, err
+			}
+			return nil, fmt.Errorf("Failed with message: %s", failMsg)
+		case uint16(messages.MessageType_MessageType_ButtonRequest):
+			msg, err = s.Device.ButtonAck()
+		default:
+			return nil, fmt.Errorf("unexpected response message type from hardware wallet")
+		}
+	}
+}
+
+func (s *BitcoinTransactionSigner) initSigningProcess() (wire.Message, error) {
+	return s.Device.SignTx(len(s.Outputs), len(s.Inputs), "Bitcoin", s.Version, s.LockTime, "dkdji9e2oidhash")
+}
+
+func (s *BitcoinTransactionSigner) sendInputs(startIndex, count int) (wire.Message, error) {
+	if startIndex+count > len(s.Inputs) {
+		return wire.Message{}, fmt.Errorf("invalid index or count")
+	}
+
+	txInputs := s.Inputs[startIndex : startIndex+count]
+	if len(txInputs) != 0 {
+		return s.Device.BitcoinTxAck(txInputs, nil)
+	}
+	return wire.Message{}, errors.New("empty inputs")
+}
+
+func (s *BitcoinTransactionSigner) sendOutputs(startIndex, count int) (wire.Message, error) {
+	if startIndex+count > len(s.Outputs) {
+		return wire.Message{}, fmt.Errorf("invalid index or count")
+	}
+
+	txOutputs := s.Outputs[startIndex : startIndex+count]
+	if len(txOutputs) != 0 {
+		return s.Device.BitcoinTxAck(nil, txOutputs)
+	}
+	return wire.Message{}, errors.New("empty inputs")
+}
+
+func (s *BitcoinTransactionSigner) addSignatures(msg *wire.Message) error {
+	txRequest := &messages.TxRequest{}
+	err := proto.Unmarshal(msg.Data, txRequest)
+	if err != nil {
+		return err
+	}
+	for _, sign := range txRequest.SignResult {
+		s.signatures = append(s.signatures, sign.GetSignature())
+	}
+	return nil
+}
