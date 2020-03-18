@@ -135,6 +135,7 @@ func (s *SkycoinTransactionSigner) Sign() ([]string, error) {
 }
 
 func (s *SkycoinTransactionSigner) initSigningProcess() (wire.Message, error) {
+	// txHash is random, as it is not used now
 	return s.Device.SignTx(len(s.Outputs), len(s.Inputs), "Skycoin", s.Version, s.LockTime, "dkdji9e2oidhash")
 }
 
