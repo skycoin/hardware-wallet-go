@@ -788,7 +788,10 @@ func (d *Device) TransactionSign(inputs []*messages.SkycoinTransactionInput, out
 		return wire.Message{}, err
 	}
 	padding := false
-	data, err := proto.Marshal(&messages.ResponseTransactionSign{Signatures: signatures, Padding:&padding})
+	data, err := proto.Marshal(&messages.ResponseTransactionSign{
+		Padding:    &padding,
+		Signatures: signatures,
+	})
 	if err != nil {
 		return wire.Message{}, err
 	}
