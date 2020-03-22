@@ -19,6 +19,19 @@ type TransactionSigner interface {
 	Sign() ([]string, error)
 }
 
+var (
+	//ErrEmptyInput is returned if no inputs were given to sign
+	ErrEmptyInput = errors.New("empty inputs")
+	//ErrInvalidIndex is returned if inputs doesn't have such indexes
+	ErrInvalidIndex = errors.New("invalid index or count")
+	//ErrUnexpectedTxinput is returned if TXINPUT was received, but not expected for finite-state machine
+	ErrUnexpectedTxinput = errors.New("protocol error: unexpected TXINPUT")
+	//ErrUnexpectedTxoutput is returned if TXOUTPUT was received, but not expected for finite-state machine
+	ErrUnexpectedTxoutput = errors.New("protocol error: unexpected TXOUTPUT")
+	//ErrUnexpectedTxfinished is returned if TXFINISHED was received, but not expected for finite-state machine
+	ErrUnexpectedTxfinished = errors.New("protocol error: unexpected TXFINISHED")
+)
+
 // SkycoinTransactionSigner represents signing Skycoin transaction process
 // @used_in TransactionSign
 type SkycoinTransactionSigner struct {
@@ -92,7 +105,7 @@ func (s *SkycoinTransactionSigner) Sign() ([]string, error) {
 					}
 					index += 8
 				} else {
-					return nil, fmt.Errorf("protocol error: expected TXINPUT, but got %s", *txRequest.RequestType)
+					return nil, ErrUnexpectedTxinput
 				}
 			case messages.TxRequest_TXOUTPUT:
 				if s.state == 1 { // Sending Outputs for InnerHash
@@ -111,7 +124,7 @@ func (s *SkycoinTransactionSigner) Sign() ([]string, error) {
 						index = 0
 					}
 				} else {
-					return nil, fmt.Errorf("protocol error: expected TXOUTPUT, but got %s", *txRequest.RequestType)
+					return nil, ErrUnexpectedTxoutput
 				}
 			case messages.TxRequest_TXFINISHED:
 				if s.state == 3 {
@@ -121,7 +134,7 @@ func (s *SkycoinTransactionSigner) Sign() ([]string, error) {
 					}
 					return s.signatures, nil
 				}
-				return nil, fmt.Errorf("protocol error: unexpected TXFINISHED message")
+				return nil, ErrUnexpectedTxfinished
 			}
 		case uint16(messages.MessageType_MessageType_Failure):
 			failMsg, err := DecodeFailMsg(msg)
@@ -147,26 +160,26 @@ func (s *SkycoinTransactionSigner) initSigningProcess() (wire.Message, error) {
 
 func (s *SkycoinTransactionSigner) sendInputs(startIndex, count int) (wire.Message, error) {
 	if startIndex+count > len(s.Inputs) {
-		return wire.Message{}, fmt.Errorf("invalid index or count")
+		return wire.Message{}, ErrInvalidIndex
 	}
 
 	txInputs := s.Inputs[startIndex : startIndex+count]
 	if len(txInputs) != 0 {
 		return s.Device.TxAck(txInputs, nil, s.Version, s.LockTime)
 	}
-	return wire.Message{}, errors.New("empty inputs")
+	return wire.Message{}, ErrEmptyInput
 }
 
 func (s *SkycoinTransactionSigner) sendOutputs(startIndex, count int) (wire.Message, error) {
 	if startIndex+count > len(s.Outputs) {
-		return wire.Message{}, fmt.Errorf("invalid index or count")
+		return wire.Message{}, ErrEmptyInput
 	}
 
 	txOutputs := s.Outputs[startIndex : startIndex+count]
 	if len(txOutputs) != 0 {
 		return s.Device.TxAck(nil, txOutputs, s.Version, s.LockTime)
 	}
-	return wire.Message{}, errors.New("empty inputs")
+	return wire.Message{}, ErrEmptyInput
 }
 
 func (s *SkycoinTransactionSigner) addSignatures(msg *wire.Message) error {
@@ -236,7 +249,7 @@ func (s *BitcoinTransactionSigner) Sign() ([]string, error) {
 						index = 0
 					}
 				} else {
-					return nil, fmt.Errorf("protocol error: unexpected TxRequest type")
+					return nil, ErrUnexpectedTxoutput
 				}
 			case messages.TxRequest_TXINPUT:
 				if s.state == 1 {
@@ -259,7 +272,7 @@ func (s *BitcoinTransactionSigner) Sign() ([]string, error) {
 					}
 					index += 8
 				} else {
-					return nil, fmt.Errorf("protocol error: unexpected TxRequest type")
+					return nil, ErrUnexpectedTxinput
 				}
 			case messages.TxRequest_TXFINISHED:
 				if s.state == 2 {
@@ -269,7 +282,7 @@ func (s *BitcoinTransactionSigner) Sign() ([]string, error) {
 					}
 					return s.signatures, nil
 				}
-				return nil, fmt.Errorf("protocol error: unexpected TXFINISHED message")
+				return nil, ErrUnexpectedTxfinished
 			}
 		case uint16(messages.MessageType_MessageType_Failure):
 			failMsg, err := DecodeFailMsg(msg)
@@ -291,26 +304,26 @@ func (s *BitcoinTransactionSigner) initSigningProcess() (wire.Message, error) {
 
 func (s *BitcoinTransactionSigner) sendInputs(startIndex, count int) (wire.Message, error) {
 	if startIndex+count > len(s.Inputs) {
-		return wire.Message{}, fmt.Errorf("invalid index or count")
+		return wire.Message{}, ErrInvalidIndex
 	}
 
 	txInputs := s.Inputs[startIndex : startIndex+count]
 	if len(txInputs) != 0 {
 		return s.Device.BitcoinTxAck(txInputs, nil)
 	}
-	return wire.Message{}, errors.New("empty inputs")
+	return wire.Message{}, ErrEmptyInput
 }
 
 func (s *BitcoinTransactionSigner) sendOutputs(startIndex, count int) (wire.Message, error) {
 	if startIndex+count > len(s.Outputs) {
-		return wire.Message{}, fmt.Errorf("invalid index or count")
+		return wire.Message{}, ErrInvalidIndex
 	}
 
 	txOutputs := s.Outputs[startIndex : startIndex+count]
 	if len(txOutputs) != 0 {
 		return s.Device.BitcoinTxAck(nil, txOutputs)
 	}
-	return wire.Message{}, errors.New("empty inputs")
+	return wire.Message{}, ErrEmptyInput
 }
 
 func (s *BitcoinTransactionSigner) addSignatures(msg *wire.Message) error {
