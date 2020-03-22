@@ -92,7 +92,7 @@ func (s *SkycoinTransactionSigner) Sign() ([]string, error) {
 					}
 					index += 8
 				} else {
-					return nil, fmt.Errorf("protocol error: unexpected TxRequest type")
+					return nil, fmt.Errorf("protocol error: expected TXINPUT, but got %s", *txRequest.RequestType)
 				}
 			case messages.TxRequest_TXOUTPUT:
 				if s.state == 1 { // Sending Outputs for InnerHash
@@ -111,7 +111,7 @@ func (s *SkycoinTransactionSigner) Sign() ([]string, error) {
 						index = 0
 					}
 				} else {
-					return nil, fmt.Errorf("protocol error: unexpected TxRequest type")
+					return nil, fmt.Errorf("protocol error: expected TXOUTPUT, but got %s", *txRequest.RequestType)
 				}
 			case messages.TxRequest_TXFINISHED:
 				if s.state == 3 {
@@ -141,6 +141,7 @@ func (s *SkycoinTransactionSigner) Sign() ([]string, error) {
 }
 
 func (s *SkycoinTransactionSigner) initSigningProcess() (wire.Message, error) {
+	// txHash is random, as it is not used now
 	return s.Device.SignTx(len(s.Outputs), len(s.Inputs), "Skycoin", s.Version, s.LockTime, "dkdji9e2oidhash")
 }
 
