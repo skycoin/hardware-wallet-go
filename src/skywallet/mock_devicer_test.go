@@ -236,6 +236,29 @@ func (_m *MockDevicer) FirmwareUpload(payload []byte, hash [32]byte) error {
 	return r0
 }
 
+// GeneralTransactionSign provides a mock function with given fields: signer
+func (_m *MockDevicer) GeneralTransactionSign(signer TransactionSigner) ([]string, error) {
+	ret := _m.Called(signer)
+
+	var r0 []string
+	if rf, ok := ret.Get(0).(func(TransactionSigner) []string); ok {
+		r0 = rf(signer)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]string)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(TransactionSigner) error); ok {
+		r1 = rf(signer)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GenerateMnemonic provides a mock function with given fields: wordCount, usePassphrase
 func (_m *MockDevicer) GenerateMnemonic(wordCount uint32, usePassphrase bool) (wire.Message, error) {
 	ret := _m.Called(wordCount, usePassphrase)

@@ -2,12 +2,9 @@ package cli
 
 import (
 	"encoding/hex"
-	"errors"
 	"fmt"
 	"os"
 	"runtime"
-
-	"github.com/SkycoinProject/hardware-wallet-go/src/skywallet/wire"
 
 	"github.com/gogo/protobuf/proto"
 
@@ -153,14 +150,13 @@ func transactionSkycoinSign(device *skyWallet.Device, inputs, outputs []string, 
 		}
 	}
 	signer := skyWallet.SkycoinTransactionSigner{
-		Device:   device,
 		Inputs:   transactionInputs,
 		Outputs:  transactionOutputs,
 		Version:  1,
 		LockTime: 0,
 	}
 
-	signatures, err := signer.Sign()
+	signatures, err := device.GeneralTransactionSign(&signer)
 	if err != nil {
 		return err
 	}
@@ -168,31 +164,10 @@ func transactionSkycoinSign(device *skyWallet.Device, inputs, outputs []string, 
 	return err
 }
 
-func printSignatures(msg *wire.Message) error {
-	txRequest := &messages.TxRequest{}
-	err := proto.Unmarshal(msg.Data, txRequest)
-	if err != nil {
-		return err
-	}
-	for _, sign := range txRequest.SignResult {
-		fmt.Println(*sign.Signature)
-	}
-	return nil
-}
-
 func transactionBitcoinSign(device *skyWallet.Device, prevHashes, outputs []string, coins []int64, inputIndex, addressIndex []int) error {
-
-	coinName := "Bitcoin"
-	version := 1
-	lockTime := 0
-	txHash := "dkdji9e2oidhash"
-
 	if len(prevHashes) != len(inputIndex) {
 		return fmt.Errorf("Every given input index should have a hash of previous the tx")
 	}
-
-	state := 0
-	index := 0
 
 	var transactionInputs []*messages.BitcoinTransactionInput
 	var transactionOutputs []*messages.BitcoinTransactionOutput
@@ -216,93 +191,17 @@ func transactionBitcoinSign(device *skyWallet.Device, prevHashes, outputs []stri
 		transactionOutputs = append(transactionOutputs, &transactionOutput)
 	}
 
-	msg, err := device.SignTx(len(outputs), len(prevHashes), coinName, version, lockTime, txHash)
+	signer := skyWallet.BitcoinTransactionSigner{
+		Inputs:   transactionInputs,
+		Outputs:  transactionOutputs,
+		Version:  1,
+		LockTime: 0,
+	}
 
-	for {
-		if err != nil {
-			return err
-		}
-		switch msg.Kind {
-		case uint16(messages.MessageType_MessageType_TxRequest):
-			txRequest := &messages.TxRequest{}
-			err = proto.Unmarshal(msg.Data, txRequest)
-			if err != nil {
-				return err
-			}
-			switch *txRequest.RequestType {
-			case messages.TxRequest_TXOUTPUT:
-				if state == 0 { // Sending Outputs for Confirmation
-					msg, err = sendBitcoinOutputs(device, transactionOutputs, &index, &state)
-				} else {
-					return fmt.Errorf("protocol error: unexpected TxRequest type")
-				}
-			case messages.TxRequest_TXINPUT:
-				if state == 1 {
-					err = printSignatures(&msg)
-					if err != nil {
-						return err
-					}
-					msg, err = sendBitcoinInputs(device, transactionInputs, &index, &state)
-				} else {
-					return fmt.Errorf("protocol error: unexpected TxRequest type")
-				}
-			case messages.TxRequest_TXFINISHED:
-				if state == 2 {
-					err = printSignatures(&msg)
-					return err
-				}
-				return fmt.Errorf("protocol error: unexpected TXFINISHED message")
-			}
-		case uint16(messages.MessageType_MessageType_Failure):
-			failMsg, err := skyWallet.DecodeFailMsg(msg)
-			if err != nil {
-				return err
-			}
-			return fmt.Errorf("Failed with message: %s", failMsg)
-		case uint16(messages.MessageType_MessageType_ButtonRequest):
-			msg, err = device.ButtonAck()
-		default:
-			return fmt.Errorf("unexpected response message type from hardware wallet")
-		}
+	signatures, err := device.GeneralTransactionSign(&signer)
+	if err != nil {
+		return err
 	}
-}
-
-func sendBitcoinOutputs(device *skyWallet.Device, outputs []*messages.BitcoinTransactionOutput, index, state *int) (wire.Message, error) {
-	var txOutputs []*messages.BitcoinTransactionOutput
-	for i, output := range outputs[*index:] {
-		if i == 7 {
-			return device.BitcoinTxAck(nil, txOutputs)
-		}
-		txOutputs = append(txOutputs, output)
-		*index++
-	}
-	if len(txOutputs) != 0 {
-		*index = 0
-		*state++
-		return device.BitcoinTxAck(nil, txOutputs)
-	} else if *index == len(outputs) {
-		*index = 0
-		*state++
-	}
-	return wire.Message{}, errors.New("empty outputs")
-}
-
-func sendBitcoinInputs(device *skyWallet.Device, inputs []*messages.BitcoinTransactionInput, index, state *int) (wire.Message, error) {
-	var txInputs []*messages.BitcoinTransactionInput
-	for i, input := range inputs[*index:] {
-		if i == 7 {
-			return device.BitcoinTxAck(txInputs, nil)
-		}
-		txInputs = append(txInputs, input)
-		*index++
-	}
-	if len(txInputs) != 0 {
-		*index = 0
-		*state++
-		return device.BitcoinTxAck(txInputs, nil)
-	} else if *index == len(inputs) {
-		*index = 0
-		*state++
-	}
-	return wire.Message{}, errors.New("empty inputs")
+	fmt.Println(signatures)
+	return err
 }
