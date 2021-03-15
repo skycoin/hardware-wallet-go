@@ -98,6 +98,7 @@ func NewApp() (*App, error) {
 		getRawEntropyCmd(),
 		getMixedEntropyCmd(),
 		getUsbDetails(),
+		deterministicBuildCmd(),
 	}
 
 	app.Name = "skycoin-hw-cli"
