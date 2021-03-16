@@ -22,8 +22,8 @@ dep: ## Ensure package dependencies are up to date
 
 mocks: ## Create all mock files for unit tests
 	echo "Generating mock files"
-	mockery -name Devicer -dir ./src/skywallet -case underscore -inpkg -testonly
-	mockery -name DeviceDriver -dir ./src/skywallet -case underscore -inpkg -testonly
+	mockery --name Devicer --dir ./src/skywallet --case underscore --inpackage
+	mockery --name DeviceDriver --dir ./src/skywallet --case underscore --inpackage
 
 test-unit: ## Run unit tests
 	go test -v github.com/skycoin/hardware-wallet-go/src/skywallet
