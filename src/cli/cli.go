@@ -6,7 +6,7 @@ package cli
 import (
 	"fmt"
 
-	"github.com/SkycoinProject/skycoin/src/util/logging"
+	"github.com/skycoin/skycoin/src/util/logging"
 	gcli "github.com/urfave/cli"
 )
 
