@@ -15,7 +15,7 @@ before_install:
 
 install:
   - if [[ ! -d $GOPATH/src/github.com/skycoin/hardware-wallet-go ]]; then mkdir -p $GOPATH/src/github.com/skycoin; ln -s $TRAVIS_BUILD_DIR $GOPATH/src/github.com/skycoin/hardware-wallet-go; fi
-  - go get github.com/vektra/mockery/.../
+  - go get github.com/vektra/mockery/v2/.../
   - cd $GOPATH/src/github.com/skycoin/hardware-wallet-go
   - make mocks
   - make install-linters
@@ -90,4 +90,3 @@ deploy:
   on:
     repo: skycoin/hardware-wallet-go
     tags: true
-
