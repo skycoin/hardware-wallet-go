@@ -16,26 +16,26 @@ env:
   global:
     - XARGS="-screen 0 1024x768x24"
 before_install:
-  addons:
-    apt:
-      update: true
-      packages: 
-        - libudev-dev
-        - libusb-1.0-0-dev
-        - libsdl2-dev
-        - libsdl2-image-dev
-        - libegl1-mesa-dev
-        - libgles2-mesa-dev
-        - mesa-utils
-        - libgl1-mesa-glx
-    homebrew:
-      packages:
-        - sdl2_image
-        - sdl2
-        - mesa
-        - mesalib-glw
-        - libusb
-      update: true
+addons:
+  apt:
+    update: true
+    packages: 
+      - libudev-dev
+      - libusb-1.0-0-dev
+      - libsdl2-dev
+      - libsdl2-image-dev
+      - libegl1-mesa-dev
+      - libgles2-mesa-dev
+      - mesa-utils
+      - libgl1-mesa-glx
+  homebrew:
+    packages:
+      - sdl2_image
+      - sdl2
+      - mesa
+      - mesalib-glw
+      - libusb
+    update: true
 
 
       
