@@ -3,6 +3,9 @@ dist: xenial
 
 go:
   - "1.16.x"
+
+env:
+- GO111MODULE=on
   
 matrix:
   include:
