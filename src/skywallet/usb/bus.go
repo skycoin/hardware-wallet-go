@@ -4,7 +4,7 @@ import (
 	"errors"
 	"io"
 
-	"github.com/skycoin/skycoin/src/util/logging"
+	"github.com/SkycoinProject/skycoin/src/util/logging"
 )
 
 var (

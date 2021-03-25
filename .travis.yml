@@ -1,62 +1,37 @@
-# Travis build configuration
-# https://docs.travis-ci.com/user/customizing-the-build/
 language: go
-
-# Version of go to use
+dist: xenial
 go:
-  - "1.15.x"
-
+  - "1.12.x"
 matrix:
   include:
     - os: linux
-      dist: xenial
       env:
         - PIP='sudo pip3'
 env:
   global:
     - XARGS="-screen 0 1024x768x24"
 before_install:
-addons:
-  apt:
-    update: true
-    packages: 
-      - libudev-dev
-      - libusb-1.0-0-dev
-      - libsdl2-dev
-      - libsdl2-image-dev
-      - libegl1-mesa-dev
-      - libgles2-mesa-dev
-      - mesa-utils
-      - libgl1-mesa-glx
-  homebrew:
-    packages:
-      - sdl2_image
-      - sdl2
-      - mesa
-      - mesalib-glw
-      - libusb
-    update: true
-
-
-      
+  - source ./ci-scripts/install-$TRAVIS_OS_NAME.sh
 
 install:
-  - if [[ ! -d $GOPATH/src/github.com/skycoin/hardware-wallet-go ]]; then mkdir -p $GOPATH/src/github.com/skycoin; ln -s $TRAVIS_BUILD_DIR $GOPATH/src/github.com/skycoin/hardware-wallet-go; fi
+  - if [[ ! -d $GOPATH/src/github.com/SkycoinProject/hardware-wallet-go ]]; then mkdir -p $GOPATH/src/github.com/skycoin; ln -s $TRAVIS_BUILD_DIR $GOPATH/src/github.com/SkycoinProject/hardware-wallet-go; fi
   - go get github.com/vektra/mockery/.../
-  - cd $GOPATH/src/github.com/skycoin/hardware-wallet-go
+  - cd $GOPATH/src/github.com/SkycoinProject/hardware-wallet-go
   - make mocks
   - make install-linters
   - make lint
   - go get -t ./...
 
 before_script:
+  # Install go dep
+  - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
   # Start Xvfb on osx
   - if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
     ( sudo Xvfb :99 -ac ${XARGS}; echo "Xvfb ok" )&
     fi
   # Install hardware wallet for running tests against emulator
   - mkdir -p tmp/hardware-wallet
-  - git clone --depth=1 --single-branch --branch develop https://github.com/skycoin/hardware-wallet.git tmp/hardware-wallet
+  - git clone --depth=1 --single-branch --branch develop https://github.com/SkycoinProject/hardware-wallet.git tmp/hardware-wallet
   - git -C tmp/hardware-wallet submodule update --init
   # Install OS-specific test and build dependencies for hardware-wallet
   - ( cd ./tmp/hardware-wallet && sh "ci-scripts/install-${TRAVIS_OS_NAME}.sh" )
@@ -113,5 +88,6 @@ deploy:
   skip_cleanup: true
   draft: true
   on:
-    repo: skycoin/hardware-wallet-go
+    repo: SkycoinProject/hardware-wallet-go
     tags: true
+

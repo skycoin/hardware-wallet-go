@@ -9,7 +9,7 @@ yes | no
 
 Requires changes in protobuff specs?
 no
-related to PR skycoin/hardware-wallet-protob# for issue skycoin/hardware-wallet-protob#
+related to PR SkycoinProject/hardware-wallet-protob# for issue SkycoinProject/hardware-wallet-protob#
 
 Requires testing
 yes | no
