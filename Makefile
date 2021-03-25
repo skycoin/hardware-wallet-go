@@ -37,9 +37,7 @@ test-integration-wallet: ## Run usb integration tests
 test: test_unit test-integration-emulator ## Run all tests
 
 install-linters: ## Install linters
-	go get -u github.com/FiloSottile/vendorcheck
-	curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh| sh -s -- -b $(shell go env GOPATH)/bin v1.18.0
-
+  - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $GOPATH/bin v1.31.0
 check-version:
 	test "$(shell cat ./VERSION)" = "$(shell ./ci-scripts/version.sh)"
 
