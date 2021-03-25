@@ -1,19 +1,16 @@
 language: go
-dist: xenial
-
 go:
-  - "1.14.x"
+  # - "1.16.x" At minimum the code should run make check on the latest two go versions in the default linux environment provided by Travis.
+  - "1.16.x"
+
+dist: xenial
   
 matrix:
   include:
     - os: linux
       env:
         - PIP='sudo pip3'
-env:
-  global:
-    - XARGS="-screen 0 1024x768x24"
-before_install:
-   - go get github.com/vektra/mockery/.../
+
 addons:
   apt:
     update: true
@@ -34,6 +31,13 @@ addons:
       - mesalib-glw
       - libusb
     update: true
+
+env:
+  global:
+    - XARGS="-screen 0 1024x768x24"
+
+before_install:
+   - go get github.com/vektra/mockery/.../
 
 install:
   - make mocks
