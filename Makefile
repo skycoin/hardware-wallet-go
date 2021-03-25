@@ -4,7 +4,6 @@
 .PHONY: dep mocks
 .PHONY: clean lint check format
 
-GOPATH  ?= $(HOME)/go
 UNAME_S ?= $(shell uname -s)
 VERSION_RAW  =$(shell ./ci-scripts/version.sh)
 VERSION_MAJOR=$(shell echo $(VERSION_RAW) | tr -d v | cut -d. -f1)
