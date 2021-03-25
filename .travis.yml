@@ -1,7 +1,6 @@
 language: go
 dist: xenial
-go:
-  - "1.12.x"
+  
 matrix:
   include:
     - os: linux
@@ -14,7 +13,6 @@ before_install:
   - source ./ci-scripts/install-$TRAVIS_OS_NAME.sh
 
 install:
-  - if [[ ! -d $GOPATH/src/github.com/skycoin/hardware-wallet-go ]]; then mkdir -p $GOPATH/src/github.com/skycoin; ln -s $TRAVIS_BUILD_DIR $GOPATH/src/github.com/skycoin/hardware-wallet-go; fi
   - go get github.com/vektra/mockery/.../
   - cd $GOPATH/src/github.com/skycoin/hardware-wallet-go
   - make mocks
@@ -23,8 +21,6 @@ install:
   - go get -t ./...
 
 before_script:
-  # Install go dep
-  - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
   # Start Xvfb on osx
   - if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
     ( sudo Xvfb :99 -ac ${XARGS}; echo "Xvfb ok" )&
