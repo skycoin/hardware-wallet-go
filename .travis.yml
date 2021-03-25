@@ -1,5 +1,8 @@
 language: go
 dist: xenial
+
+go:
+  - "1.15.x"
   
 matrix:
   include:
@@ -14,7 +17,6 @@ before_install:
 
 install:
   - go get github.com/vektra/mockery/.../
-  - cd $GOPATH/src/github.com/skycoin/hardware-wallet-go
   - make mocks
   - make install-linters
   - make lint
