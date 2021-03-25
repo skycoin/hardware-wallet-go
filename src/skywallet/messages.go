@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/skycoin/skycoin/src/cipher"
+	"github.com/SkycoinProject/skycoin/src/cipher"
 	"github.com/gogo/protobuf/proto"
 
-	messages "github.com/skycoin/hardware-wallet-protob/go"
+	messages "github.com/SkycoinProject/hardware-wallet-protob/go"
 )
 
 // MessageCancel prepare Cancel request

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/skycoin/hardware-wallet-go/src/cli"
+	"github.com/SkycoinProject/hardware-wallet-go/src/cli"
 )
 
 func main() {
