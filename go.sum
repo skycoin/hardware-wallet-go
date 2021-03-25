@@ -22,8 +22,8 @@ github.com/shurcooL/sanitized_anchor_name v1.0.0 h1:PdmoCO6wvbs+7yrJyMORt4/BmY5I
 github.com/shurcooL/sanitized_anchor_name v1.0.0/go.mod h1:1NzhyTcUVG4SuEtjjoZeVRXNmyL/1OwPU0+IJeTBvfc=
 github.com/sirupsen/logrus v1.8.1 h1:dJKuHgqk1NNQlqoA6BTlM1Wf9DOH3NBjQyu0h9+AZZE=
 github.com/sirupsen/logrus v1.8.1/go.mod h1:yWOB1SBYBC5VeMP7gHvWumXLIWorT60ONWic61uBYv0=
-github.com/skycoin/hardware-wallet-protob v0.0.0-20201207053447-110045fa3e23 h1:qkCBGP/79JIGtubNseRcM/zY4/GWgrObQ9oidjR+INA=
-github.com/skycoin/hardware-wallet-protob v0.0.0-20201207053447-110045fa3e23/go.mod h1:DQkREFo9i5Lh6i0oPrCH4smPzhBQiKIzUqr7fbRya0Y=
+github.com/skycoin/hardware-wallet-protob v0.0.0-20190714190439-bd9f95c53447 h1:bb1HcnFnPi2nNrtQxlM2OhJdYrgKyhJCmYttCCAFyl4=
+github.com/skycoin/hardware-wallet-protob v0.0.0-20190714190439-bd9f95c53447/go.mod h1:DQkREFo9i5Lh6i0oPrCH4smPzhBQiKIzUqr7fbRya0Y=
 github.com/skycoin/skycoin v0.27.1 h1:HatxsRwVSPaV4qxH6290xPBmkH/HgiuAoY2qC+e8C9I=
 github.com/skycoin/skycoin v0.27.1/go.mod h1:78nHjQzd8KG0jJJVL/j0xMmrihXi70ti63fh8vXScJw=
 github.com/stretchr/objx v0.1.0 h1:4G4v2dO3VZwixGIRoQ5Lfboy6nUhCyYzaqnIAPPhYs4=
