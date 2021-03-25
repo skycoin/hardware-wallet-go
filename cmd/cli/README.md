@@ -55,7 +55,7 @@ Skycoin Hardware wallet command line interface
 ## Install
 
 ```bash
-$ cd $GOPATH/src/github.com/SkycoinProject/hardware-wallet-go/
+$ cd $GOPATH/src/github.com/skycoin/hardware-wallet-go/
 $ ./install.sh
 ```
 
@@ -105,7 +105,7 @@ All commands accept `--deviceType` option. Supported values are `USB` and `EMULA
 
 ### Internal entropy
 
-There are two kinds of internal entropy, [`getRawEntropy`](#get-raw-entropy) and `getMixedEntropy`(#get-mixed-entropy). The difference between this two are that raw entropy comes from a random buffer function that uses a peripheral device under the hood, in the other hand the mixed entropy comes from a salted entropy source as described in [this FAQ](https://github.com/SkycoinProject/hardware-wallet/blob/develop/FAQ.md#random-source).
+There are two kinds of internal entropy, [`getRawEntropy`](#get-raw-entropy) and `getMixedEntropy`(#get-mixed-entropy). The difference between this two are that raw entropy comes from a random buffer function that uses a peripheral device under the hood, in the other hand the mixed entropy comes from a salted entropy source as described in [this FAQ](https://github.com/skycoin/hardware-wallet/blob/develop/FAQ.md#random-source).
 
 
 ### Apply settings
@@ -584,7 +584,7 @@ INFO [skycoin-hw-cli]: Getting raw entropy from device
 ```
 </details>
 
-A real example about how to use this feature can be checked at the [TRNG validation](https://github.com/SkycoinProject/hardware-wallet/tree/8edc2a28027875f464b68348c44fb188efb4dfbb#validate-the-trng) (please get noticed that the firmware should be build with this feature enabled trough `ENABLE_GETENTROPY`). The tool is use specifically [from here](https://github.com/SkycoinProject/hardware-wallet/blob/8edc2a28027875f464b68348c44fb188efb4dfbb/trng-test/Makefile#L7-L8).
+A real example about how to use this feature can be checked at the [TRNG validation](https://github.com/skycoin/hardware-wallet/tree/8edc2a28027875f464b68348c44fb188efb4dfbb#validate-the-trng) (please get noticed that the firmware should be build with this feature enabled trough `ENABLE_GETENTROPY`). The tool is use specifically [from here](https://github.com/skycoin/hardware-wallet/blob/8edc2a28027875f464b68348c44fb188efb4dfbb/trng-test/Makefile#L7-L8).
 
 ### Get mixed entropy
 
@@ -613,4 +613,4 @@ INFO [skycoin-hw-cli]: Getting mixed entropy from device
 ```
 </details>
 
-A real example about how to use this feature can be checked at the [TRNG validation](https://github.com/SkycoinProject/hardware-wallet/tree/8edc2a28027875f464b68348c44fb188efb4dfbb#validate-the-trng) (please get noticed that the firmware should be build with this feature enabled trough `ENABLE_GETENTROPY`). The tool is use specifically [from here](https://github.com/SkycoinProject/hardware-wallet/blob/8edc2a28027875f464b68348c44fb188efb4dfbb/trng-test/Makefile#L7-L8).
+A real example about how to use this feature can be checked at the [TRNG validation](https://github.com/skycoin/hardware-wallet/tree/8edc2a28027875f464b68348c44fb188efb4dfbb#validate-the-trng) (please get noticed that the firmware should be build with this feature enabled trough `ENABLE_GETENTROPY`). The tool is use specifically [from here](https://github.com/skycoin/hardware-wallet/blob/8edc2a28027875f464b68348c44fb188efb4dfbb/trng-test/Makefile#L7-L8).

@@ -26,7 +26,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Pretty(`json`) print features output.
 - Add a progress bar, currently used in get entropy messages only.
 - Add a `getRawEntropy` and `getMixedEntropy` to get entropy from the physical device.
-- Use `protobuf` file definitions from a [`git submodule`](http://github.com/SkycoinProject/hardware-wallet-protob.git).
+- Use `protobuf` file definitions from a [`git submodule`](http://github.com/skycoin/hardware-wallet-protob.git).
 - Mnemonic and recovery functions support `--wordCount` argument for seed sizes of `24` and `12` (default) .
 - Add `-deviceType` flag and `DEVICE_TYPE` env var to set devicetype, options are `USB` or `EMULATOR`.
 - Add autocomplete for cli
@@ -44,7 +44,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Fixed
 
-- Change protobuf messages for check signature to be consistent with [harware-wallet](https://github.com/SkycoinProject/hardware-wallet/blob/2648cf384b5455c994ba54acf6a31cd1272c6f66/tiny-firmware/protob/messages.options#L21).
+- Change protobuf messages for check signature to be consistent with [harware-wallet](https://github.com/skycoin/hardware-wallet/blob/2648cf384b5455c994ba54acf6a31cd1272c6f66/tiny-firmware/protob/messages.options#L21).
 - CLI returns error during firmaware update if device is not in bootloader mode.
 
 ### Changed

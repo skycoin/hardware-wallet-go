@@ -2,7 +2,7 @@
 
 # Go bindings and CLI tool for the Skycoin hardware wallet
 
-[![Build Status](https://travis-ci.com/SkycoinProject/hardware-wallet-go.svg?branch=master)](https://travis-ci.com/SkycoinProject/hardware-wallet-go)
+[![Build Status](https://travis-ci.com/skycoin/hardware-wallet-go.svg?branch=master)](https://travis-ci.com/skycoin/hardware-wallet-go)
 
 ## Table of contents
 
@@ -33,7 +33,7 @@ https://github.com/golang/go/wiki/Ubuntu
 ### Download source code
 
 ```bash
-$ go get github.com/SkycoinProject/hardware-wallet-go
+$ go get github.com/skycoin/hardware-wallet-go
 ```
 
 ### Dependancies management
@@ -54,11 +54,11 @@ $ make dep
 $ go run cmd/cli/cli.go
 ```
 
-See also [CLI README](https://github.com/SkycoinProject/hardware-wallet-go/blob/master/cmd/cli/README.md) for information about the Command Line Interface.
+See also [CLI README](https://github.com/skycoin/hardware-wallet-go/blob/master/cmd/cli/README.md) for information about the Command Line Interface.
 
 # Development guidelines
 
-Code added in this repository should comply to development guidelines documented in [Skycoin wiki](https://github.com/SkycoinProject/skycoin/wiki).
+Code added in this repository should comply to development guidelines documented in [Skycoin wiki](https://github.com/skycoin/skycoin/wiki).
 
 The project has two branches: `master` and `develop`.
 
@@ -67,7 +67,7 @@ The project has two branches: `master` and `develop`.
 
 # Versioning policies
 
-This go client library follows the [versioning rules for SkyWallet client libraries](https://github.com/SkycoinProject/hardware-wallet/tree/develop/README.md#versioning-libraries) .
+This go client library follows the [versioning rules for SkyWallet client libraries](https://github.com/skycoin/hardware-wallet/tree/develop/README.md#versioning-libraries) .
 
 # Running tests
 
@@ -80,7 +80,7 @@ make test
 If a physical SkyWallet device is connected then the test suite will exchange test messages with it. Likewise, the emulator will reply to test messages if executed in advance as follows.
 
 ```
-git clone https://github.com/SkycoinProject/hardware-wallet /some/path/to/hardware-wallet
+git clone https://github.com/skycoin/hardware-wallet /some/path/to/hardware-wallet
 make clean -C /some/path/to/hardware-wallet && make -C /some/path/to/hardware-wallet run-emulator
 ```
 
@@ -105,7 +105,7 @@ If neither the emulator nor a physical device are connected then tests will be s
 
 # Pre-release testing
 
-Pre-release testing procedure requires [skycoin-cli](https://github.com/SkycoinProject/skycoin/tree/develop/cmd/cli) of version strictly greater than `0.26.0`. Please [install it](https://github.com/SkycoinProject/skycoin/blob/develop/cmd/cli/README.md#install) if not available in your system. Some operations in the process require [running a Skycoin node](https://github.com/SkycoinProject/skycoin/tree/master/INTEGRATION.md#running-the-skycoin-node). Also clone [Skywallet firmware repository](https://github.com/SkycoinProject/hardware-wallet/) in advance.
+Pre-release testing procedure requires [skycoin-cli](https://github.com/skycoin/skycoin/tree/develop/cmd/cli) of version strictly greater than `0.26.0`. Please [install it](https://github.com/skycoin/skycoin/blob/develop/cmd/cli/README.md#install) if not available in your system. Some operations in the process require [running a Skycoin node](https://github.com/skycoin/skycoin/tree/master/INTEGRATION.md#running-the-skycoin-node). Also clone [Skywallet firmware repository](https://github.com/skycoin/hardware-wallet/) in advance.
 
 The instructions that follow are meant to be followed for Skywallet devices flashed without memory protection. If your device memory is protected then some values might be different e.g. `firmwareFeatures`.
 
@@ -124,7 +124,7 @@ Some values need to be known during the process. They are represented by the fol
 
 Perform these actions before releasing:
 
-**Note** : In all cases `skycoin-cli` would be equivalent to `go run cmd/cli/cli.go` if current working directory set to `$GOPATH/src/github.com/SkycoinProject/skycoin`.
+**Note** : In all cases `skycoin-cli` would be equivalent to `go run cmd/cli/cli.go` if current working directory set to `$GOPATH/src/github.com/skycoin/skycoin`.
 
 ##### Run project test suite
 
@@ -313,4 +313,4 @@ skycoin-cli walletBalance $WALLET2.wlt
 
 ## Wiki
 
-More information in [the wiki](https://github.com/SkycoinProject/hardware-wallet-go/wiki)
+More information in [the wiki](https://github.com/skycoin/hardware-wallet-go/wiki)
