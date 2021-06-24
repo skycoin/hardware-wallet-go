@@ -21,10 +21,17 @@ func deterministicBuildCmd() gcli.Command {
 		Description: "",
 
 		Flags: []gcli.Flag{
-			gcli.IntFlag{
-				Name:  "iterNum",
-				Value: 1,
-				Usage: "Number of iterations",
+			gcli.StringFlag{
+				Name:  "mnemonic",
+				Usage: "Mnemonic that will be stored in the device to generate addresses.",
+			},
+			gcli.StringFlag{
+				Name:  "file_name",
+				Usage: "Name of file to store results of a tool",
+			},
+			gcli.StringFlag{
+				Name:  "file_action",
+				Usage: "Two options to interact with file - overwrite (OVERWRITE) or append to existed (APPEND)",
 			},
 			gcli.StringFlag{
 				Name:   "deviceType",
@@ -44,6 +51,8 @@ func deterministicBuildCmd() gcli.Command {
 		Action: func(c *gcli.Context) {
 			//grt coinType (only SKY)
 			coinType, err := skyWallet.CoinTypeFromString(c.String("coinType"))
+
+			file_name := c.String("file_name")
 
 			if err != nil {
       	log.Error(err)
@@ -67,28 +76,34 @@ func deterministicBuildCmd() gcli.Command {
 				}
 			}
 
+			toolResult := result{Mnemonic: c.String("mnemonic")}
+
+			start := time.Now()
+
     	switch coinType {
     		case skyWallet.SkycoinCoinType:
 
-					//generate mnemonic
-					msg, err := device.GenerateMnemonic(12, false)
+					//set mnemonic
+					mnemonic := c.String("mnemonic")
+					msg, err := device.SetMnemonic(mnemonic)
+					if err != nil {
+						log.Error(err)
+						return
+					}
 
-				  if err != nil {
-				    log.Error(err)
-				  }
+					if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
+						msg, err = device.ButtonAck()
+						if err != nil {
+							log.Error(err)
+							return
+						}
+					}
 
-				  if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-				    // Send ButtonAck
-				    msg, err = device.ButtonAck()
-				    if err != nil {
-				      log.Error(err)
-				    }
-				  }
-
-				  responseMsg, err := skyWallet.DecodeSuccessOrFailMsg(msg)
-				  if err != nil {
-				    log.Error(err)
-				  }
+					responseMsg, err := skyWallet.DecodeSuccessOrFailMsg(msg)
+					if err != nil {
+						log.Error(err)
+						return
+					}
 
 					fmt.Println(responseMsg)
 
@@ -123,7 +138,7 @@ func deterministicBuildCmd() gcli.Command {
 							fmt.Println("Firmware was successfully wiped from the device")
 						}
 
-						msg, err = device.GenerateMnemonic(12, false)
+						msg, err = device.SetMnemonic(mnemonic)
 
 					  if err != nil {
 					    log.Error(err)
@@ -161,6 +176,7 @@ func deterministicBuildCmd() gcli.Command {
 							log.Error(err)
 						}
 						fmt.Println(addresses)
+						toolResult.Address = addresses[0]
 					} else {
 						failMsg, err := skyWallet.DecodeFailMsg(msg)
 						if err != nil {
@@ -171,6 +187,42 @@ func deterministicBuildCmd() gcli.Command {
 				default:
 					fmt.Println("Error")
     		}
+				toolResult.Duration = time.Since(start).Nanoseconds()
+
+				string_to_write := fmt.Sprintf("Mnemonic: %s, Duration: %d, Address: %s", toolResult.Mnemonic, toolResult.Duration, toolResult.Address)
+
+				fmt.Println(string_to_write)
+
+				file, _ := json.MarshalIndent(toolResult, "", " ")
+
+				if strings.Compare(c.String("file_action"), "APPEND") == 0{
+
+						f, err := os.OpenFile(file_name, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+
+						if err != nil{
+							log.Error(err)
+						}
+
+						defer f.Close()
+
+						if _, err = f.WriteString(string(file)); err != nil {
+							log.Error(err)
+						}
+
+				}else{
+						f, err := os.OpenFile(file_name, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
+
+						if err != nil{
+							log.Error(err)
+						}
+
+						defer f.Close()
+
+						if _, err = f.WriteString(string(file)); err != nil {
+							log.Error(err)
+						}
+				}
+
   	},
 	}
 }
