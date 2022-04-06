@@ -7,15 +7,15 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/SkycoinProject/hardware-wallet-go/src/skywallet/wire"
+	"github.com/skycoin/hardware-wallet-go/src/skywallet/wire"
 
 	"github.com/gogo/protobuf/proto"
 
 	gcli "github.com/urfave/cli"
 
-	messages "github.com/SkycoinProject/hardware-wallet-protob/go"
+	messages "github.com/skycoin/hardware-wallet-protob/go"
 
-	skyWallet "github.com/SkycoinProject/hardware-wallet-go/src/skywallet"
+	skyWallet "github.com/skycoin/hardware-wallet-go/src/skywallet"
 )
 
 func transactionSignCmd() gcli.Command {
