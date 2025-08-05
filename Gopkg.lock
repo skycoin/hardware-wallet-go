@@ -4,7 +4,7 @@
 [[projects]]
   branch = "develop"
   digest = "1:e718fe42263acc8383b6968e9b433d3a32aebe5226dca11640c72f37fd12d7c9"
-  name = "github.com/SkycoinProject/hardware-wallet-protob"
+  name = "github.com/skycoin/hardware-wallet-protob"
   packages = [
     "go",
     "go/google/protobuf"
@@ -15,7 +15,7 @@
 [[projects]]
   branch = "develop"
   digest = "1:2728630bba5efd76d5c9ee6fc80b25d610641187445b11abc6f1442664368bad"
-  name = "github.com/SkycoinProject/skycoin"
+  name = "github.com/skycoin/skycoin"
   packages = [
     "src/cipher",
     "src/cipher/base58",
@@ -167,9 +167,9 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "github.com/SkycoinProject/hardware-wallet-protob/go",
-    "github.com/SkycoinProject/skycoin/src/cipher",
-    "github.com/SkycoinProject/skycoin/src/util/logging",
+    "github.com/skycoin/hardware-wallet-protob/go",
+    "github.com/skycoin/skycoin/src/cipher",
+    "github.com/skycoin/skycoin/src/util/logging",
     "github.com/gogo/protobuf/proto",
     "github.com/stretchr/testify/mock",
     "github.com/stretchr/testify/require",

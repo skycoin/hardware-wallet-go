@@ -12,10 +12,10 @@ import (
 
 	"github.com/gogo/protobuf/proto"
 
-	messages "github.com/SkycoinProject/hardware-wallet-protob/go"
+	messages "github.com/skycoin/hardware-wallet-protob/go"
 
-	"github.com/SkycoinProject/hardware-wallet-go/src/skywallet/usb"
-	"github.com/SkycoinProject/hardware-wallet-go/src/skywallet/wire"
+	"github.com/skycoin/hardware-wallet-go/src/skywallet/usb"
+	"github.com/skycoin/hardware-wallet-go/src/skywallet/wire"
 )
 
 // DeviceType type of device: emulator or usb
