@@ -107,6 +107,21 @@ import (
 )
 
 //-----------------------------------------------------------------------------
+type c_endpoint_descriptor C.struct_libusb_endpoint_descriptor
+type c_interface_descriptor C.struct_libusb_interface_descriptor
+type c_interface C.struct_libusb_interface
+type c_config_descriptor C.struct_libusb_config_descriptor
+type c_ss_endpoint_companion_descriptor C.struct_libusb_ss_endpoint_companion_descriptor
+type c_bos_dev_capability_descriptor C.struct_libusb_bos_dev_capability_descriptor
+type c_bos_descriptor C.struct_libusb_bos_descriptor
+type c_usb_2_0_extension_descriptor C.struct_libusb_usb_2_0_extension_descriptor
+type c_ss_usb_device_capability_descriptor C.struct_libusb_ss_usb_device_capability_descriptor
+type c_container_id_descriptor C.struct_libusb_container_id_descriptor
+type c_device_descriptor C.struct_libusb_device_descriptor
+type c_transfer C.struct_libusb_transfer
+type c_version C.struct_libusb_version
+
+//-----------------------------------------------------------------------------
 // utilities
 
 func bcd2str(x uint16) string {
@@ -399,18 +414,19 @@ type Endpoint_Descriptor struct {
 	Extra            []byte
 }
 
-func (x *C.struct_libusb_endpoint_descriptor) c2go() *Endpoint_Descriptor {
+func (x *c_endpoint_descriptor) c2go() *Endpoint_Descriptor {
+	c := (*C.struct_libusb_endpoint_descriptor)(unsafe.Pointer(x))
 	return &Endpoint_Descriptor{
-		ptr:              x,
-		BLength:          uint8(x.bLength),
-		BDescriptorType:  uint8(x.bDescriptorType),
-		BEndpointAddress: uint8(x.bEndpointAddress),
-		BmAttributes:     uint8(x.bmAttributes),
-		WMaxPacketSize:   uint16(x.wMaxPacketSize),
-		BInterval:        uint8(x.bInterval),
-		BRefresh:         uint8(x.bRefresh),
-		BSynchAddress:    uint8(x.bSynchAddress),
-		Extra:            C.GoBytes(unsafe.Pointer(x.extra), x.extra_length),
+		ptr:              c,
+		BLength:          uint8(c.bLength),
+		BDescriptorType:  uint8(c.bDescriptorType),
+		BEndpointAddress: uint8(c.bEndpointAddress),
+		BmAttributes:     uint8(c.bmAttributes),
+		WMaxPacketSize:   uint16(c.wMaxPacketSize),
+		BInterval:        uint8(c.bInterval),
+		BRefresh:         uint8(c.bRefresh),
+		BSynchAddress:    uint8(c.bSynchAddress),
+		Extra:            C.GoBytes(unsafe.Pointer(c.extra), c.extra_length),
 	}
 }
 
@@ -449,31 +465,33 @@ type Interface_Descriptor struct {
 	Extra              []byte
 }
 
-func (x *C.struct_libusb_interface_descriptor) c2go() *Interface_Descriptor {
+func (x *c_interface_descriptor) c2go() *Interface_Descriptor {
+	c := (*C.struct_libusb_interface_descriptor)(unsafe.Pointer(x))
 	var list []C.struct_libusb_endpoint_descriptor
 	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&list))
-	hdr.Cap = int(x.bNumEndpoints)
-	hdr.Len = int(x.bNumEndpoints)
-	hdr.Data = uintptr(unsafe.Pointer(x.endpoint))
-	endpoints := make([]*Endpoint_Descriptor, x.bNumEndpoints)
-	for i, _ := range endpoints {
-		endpoints[i] = (&list[i]).c2go()
+	hdr.Cap = int(c.bNumEndpoints)
+	hdr.Len = int(c.bNumEndpoints)
+	hdr.Data = uintptr(unsafe.Pointer(c.endpoint))
+	endpoints := make([]*Endpoint_Descriptor, c.bNumEndpoints)
+	for i := range endpoints {
+		endpoints[i] = (*c_endpoint_descriptor)(&list[i]).c2go()
 	}
 	return &Interface_Descriptor{
-		ptr:                x,
-		BLength:            uint8(x.bLength),
-		BDescriptorType:    uint8(x.bDescriptorType),
-		BInterfaceNumber:   uint8(x.bInterfaceNumber),
-		BAlternateSetting:  uint8(x.bAlternateSetting),
-		BNumEndpoints:      uint8(x.bNumEndpoints),
-		BInterfaceClass:    uint8(x.bInterfaceClass),
-		BInterfaceSubClass: uint8(x.bInterfaceSubClass),
-		BInterfaceProtocol: uint8(x.bInterfaceProtocol),
-		IInterface:         uint8(x.iInterface),
+		ptr:                c,
+		BLength:            uint8(c.bLength),
+		BDescriptorType:    uint8(c.bDescriptorType),
+		BInterfaceNumber:   uint8(c.bInterfaceNumber),
+		BAlternateSetting:  uint8(c.bAlternateSetting),
+		BNumEndpoints:      uint8(c.bNumEndpoints),
+		BInterfaceClass:    uint8(c.bInterfaceClass),
+		BInterfaceSubClass: uint8(c.bInterfaceSubClass),
+		BInterfaceProtocol: uint8(c.bInterfaceProtocol),
+		IInterface:         uint8(c.iInterface),
 		Endpoint:           endpoints,
-		Extra:              C.GoBytes(unsafe.Pointer(x.extra), x.extra_length),
+		Extra:              C.GoBytes(unsafe.Pointer(c.extra), c.extra_length),
 	}
 }
+
 
 // return a string for an Interface_Descriptor
 func (x *Interface_Descriptor) String() string {
@@ -504,19 +522,20 @@ type Interface struct {
 	Altsetting     []*Interface_Descriptor
 }
 
-func (x *C.struct_libusb_interface) c2go() *Interface {
-	var list []C.struct_libusb_interface_descriptor
+func (x *c_interface) c2go() *Interface {
+	c := (*C.struct_libusb_interface)(unsafe.Pointer(x))
+	var list []*C.struct_libusb_interface_descriptor
 	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&list))
-	hdr.Cap = int(x.num_altsetting)
-	hdr.Len = int(x.num_altsetting)
-	hdr.Data = uintptr(unsafe.Pointer(x.altsetting))
-	altsetting := make([]*Interface_Descriptor, x.num_altsetting)
-	for i, _ := range altsetting {
-		altsetting[i] = (&list[i]).c2go()
+	hdr.Cap = int(c.num_altsetting)
+	hdr.Len = int(c.num_altsetting)
+	hdr.Data = uintptr(unsafe.Pointer(c.altsetting))
+	altsetting := make([]*Interface_Descriptor, c.num_altsetting)
+	for i := range altsetting {
+		altsetting[i] = (*c_interface_descriptor)(list[i]).c2go()
 	}
 	return &Interface{
-		ptr:            x,
-		Num_altsetting: int(x.num_altsetting),
+		ptr:            c,
+		Num_altsetting: int(c.num_altsetting),
 		Altsetting:     altsetting,
 	}
 }
@@ -551,30 +570,32 @@ type Config_Descriptor struct {
 	Extra               []byte
 }
 
-func (x *C.struct_libusb_config_descriptor) c2go() *Config_Descriptor {
+func (x *c_config_descriptor) c2go() *Config_Descriptor {
+	c := (*C.struct_libusb_config_descriptor)(unsafe.Pointer(x))
 	var list []C.struct_libusb_interface
 	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&list))
-	hdr.Cap = int(x.bNumInterfaces)
-	hdr.Len = int(x.bNumInterfaces)
-	hdr.Data = uintptr(unsafe.Pointer(x._interface))
-	interfaces := make([]*Interface, x.bNumInterfaces)
-	for i, _ := range interfaces {
-		interfaces[i] = (&list[i]).c2go()
+	hdr.Cap = int(c.bNumInterfaces)
+	hdr.Len = int(c.bNumInterfaces)
+	hdr.Data = uintptr(unsafe.Pointer(c._interface))
+	interfaces := make([]*Interface, c.bNumInterfaces)
+	for i := range interfaces {
+		interfaces[i] = (*c_interface)(&list[i]).c2go()
 	}
 	return &Config_Descriptor{
-		ptr:                 x,
-		BLength:             uint8(x.bLength),
-		BDescriptorType:     uint8(x.bDescriptorType),
-		WTotalLength:        uint16(x.wTotalLength),
-		BNumInterfaces:      uint8(x.bNumInterfaces),
-		BConfigurationValue: uint8(x.bConfigurationValue),
-		IConfiguration:      uint8(x.iConfiguration),
-		BmAttributes:        uint8(x.bmAttributes),
-		MaxPower:            uint8(x.MaxPower),
+		ptr:                 c,
+		BLength:             uint8(c.bLength),
+		BDescriptorType:     uint8(c.bDescriptorType),
+		WTotalLength:        uint16(c.wTotalLength),
+		BNumInterfaces:      uint8(c.bNumInterfaces),
+		BConfigurationValue: uint8(c.bConfigurationValue),
+		IConfiguration:      uint8(c.iConfiguration),
+		BmAttributes:        uint8(c.bmAttributes),
+		MaxPower:            uint8(c.MaxPower),
 		Interface:           interfaces,
-		Extra:               C.GoBytes(unsafe.Pointer(x.extra), x.extra_length),
+		Extra:               C.GoBytes(unsafe.Pointer(c.extra), c.extra_length),
 	}
 }
+	var list []C.struct_libusb_interface
 
 // return a string for a Config_Descriptor
 func (x *Config_Descriptor) String() string {
@@ -609,16 +630,18 @@ type SS_Endpoint_Companion_Descriptor struct {
 	WBytesPerInterval uint16
 }
 
-func (x *C.struct_libusb_ss_endpoint_companion_descriptor) c2go() *SS_Endpoint_Companion_Descriptor {
+func (x *c_ss_endpoint_companion_descriptor) c2go() *SS_Endpoint_Companion_Descriptor {
+	c := (*C.struct_libusb_ss_endpoint_companion_descriptor)(unsafe.Pointer(x))
 	return &SS_Endpoint_Companion_Descriptor{
-		ptr:               x,
-		BLength:           uint8(x.bLength),
-		BDescriptorType:   uint8(x.bDescriptorType),
-		BMaxBurst:         uint8(x.bMaxBurst),
-		BmAttributes:      uint8(x.bmAttributes),
-		WBytesPerInterval: uint16(x.wBytesPerInterval),
+		ptr:               c,
+		BLength:           uint8(c.bLength),
+		BDescriptorType:   uint8(c.bDescriptorType),
+		BMaxBurst:         uint8(c.bMaxBurst),
+		BmAttributes:      uint8(c.bmAttributes),
+		WBytesPerInterval: uint16(c.wBytesPerInterval),
 	}
 }
+	
 
 //-----------------------------------------------------------------------------
 
@@ -633,13 +656,14 @@ type BOS_Dev_Capability_Descriptor struct {
 	Dev_capability_data []byte
 }
 
-func (x *C.struct_libusb_bos_dev_capability_descriptor) c2go() *BOS_Dev_Capability_Descriptor {
+func (x *c_bos_dev_capability_descriptor) c2go() *BOS_Dev_Capability_Descriptor {
+	c := (*C.struct_libusb_bos_dev_capability_descriptor)(unsafe.Pointer(x))
 	return &BOS_Dev_Capability_Descriptor{
-		ptr:                 x,
-		BLength:             uint8(x.bLength),
-		BDescriptorType:     uint8(x.bDescriptorType),
-		BDevCapabilityType:  uint8(x.bDevCapabilityType),
-		Dev_capability_data: C.GoBytes(unsafe.Pointer(C.dev_capability_data_ptr(x)), C.int(x.bLength-3)),
+		ptr:                 c,
+		BLength:             uint8(c.bLength),
+		BDescriptorType:     uint8(c.bDescriptorType),
+		BDevCapabilityType:  uint8(c.bDevCapabilityType),
+		Dev_capability_data: C.GoBytes(unsafe.Pointer(C.dev_capability_data_ptr(c)), C.int(c.bLength-3)),
 	}
 }
 
@@ -656,21 +680,22 @@ type BOS_Descriptor struct {
 	Dev_capability  []*BOS_Dev_Capability_Descriptor
 }
 
-func (x *C.struct_libusb_bos_descriptor) c2go() *BOS_Descriptor {
+func (x *c_bos_descriptor) c2go() *BOS_Descriptor {
+	c := (*C.struct_libusb_bos_descriptor)(unsafe.Pointer(x))
 	var list []*C.struct_libusb_bos_dev_capability_descriptor
 	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&list))
-	hdr.Cap = int(x.bNumDeviceCaps)
-	hdr.Len = int(x.bNumDeviceCaps)
-	hdr.Data = uintptr(unsafe.Pointer(C.dev_capability_ptr(x)))
-	dev_capability := make([]*BOS_Dev_Capability_Descriptor, x.bNumDeviceCaps)
-	for i, _ := range dev_capability {
-		dev_capability[i] = list[i].c2go()
+	hdr.Cap = int(c.bNumDeviceCaps)
+	hdr.Len = int(c.bNumDeviceCaps)
+	hdr.Data = uintptr(unsafe.Pointer(C.dev_capability_ptr(c)))
+	dev_capability := make([]*BOS_Dev_Capability_Descriptor, c.bNumDeviceCaps)
+	for i := range dev_capability {
+		dev_capability[i] = (*c_bos_dev_capability_descriptor)(list[i]).c2go()
 	}
 	return &BOS_Descriptor{
-		ptr:             x,
-		BLength:         uint8(x.bLength),
-		BDescriptorType: uint8(x.bDescriptorType),
-		WTotalLength:    uint16(x.wTotalLength),
+		ptr:             c,
+		BLength:         uint8(c.bLength),
+		BDescriptorType: uint8(c.bDescriptorType),
+		WTotalLength:    uint16(c.wTotalLength),
 		Dev_capability:  dev_capability,
 	}
 }
@@ -688,13 +713,14 @@ type USB_2_0_Extension_Descriptor struct {
 	BmAttributes       uint32
 }
 
-func (x *C.struct_libusb_usb_2_0_extension_descriptor) c2go() *USB_2_0_Extension_Descriptor {
+func (x *c_usb_2_0_extension_descriptor) c2go() *USB_2_0_Extension_Descriptor {
+	c := (*C.struct_libusb_usb_2_0_extension_descriptor)(unsafe.Pointer(x))
 	return &USB_2_0_Extension_Descriptor{
-		ptr:                x,
-		BLength:            uint8(x.bLength),
-		BDescriptorType:    uint8(x.bDescriptorType),
-		BDevCapabilityType: uint8(x.bDevCapabilityType),
-		BmAttributes:       uint32(x.bmAttributes),
+		ptr:                c,
+		BLength:            uint8(c.bLength),
+		BDescriptorType:    uint8(c.bDescriptorType),
+		BDevCapabilityType: uint8(c.bDevCapabilityType),
+		BmAttributes:       uint32(c.bmAttributes),
 	}
 }
 
@@ -715,17 +741,18 @@ type SS_USB_Device_Capability_Descriptor struct {
 	BU2DevExitLat         uint16
 }
 
-func (x *C.struct_libusb_ss_usb_device_capability_descriptor) c2go() *SS_USB_Device_Capability_Descriptor {
+func (x *c_ss_usb_device_capability_descriptor) c2go() *SS_USB_Device_Capability_Descriptor {
+	c := (*C.struct_libusb_ss_usb_device_capability_descriptor)(unsafe.Pointer(x))
 	return &SS_USB_Device_Capability_Descriptor{
-		ptr:                   x,
-		BLength:               uint8(x.bLength),
-		BDescriptorType:       uint8(x.bDescriptorType),
-		BDevCapabilityType:    uint8(x.bDevCapabilityType),
-		BmAttributes:          uint8(x.bmAttributes),
-		WSpeedSupported:       uint16(x.wSpeedSupported),
-		BFunctionalitySupport: uint8(x.bFunctionalitySupport),
-		BU1DevExitLat:         uint8(x.bU1DevExitLat),
-		BU2DevExitLat:         uint16(x.bU2DevExitLat),
+		ptr:                   c,
+		BLength:               uint8(c.bLength),
+		BDescriptorType:       uint8(c.bDescriptorType),
+		BDevCapabilityType:    uint8(c.bDevCapabilityType),
+		BmAttributes:          uint8(c.bmAttributes),
+		WSpeedSupported:       uint16(c.wSpeedSupported),
+		BFunctionalitySupport: uint8(c.bFunctionalitySupport),
+		BU1DevExitLat:         uint8(c.bU1DevExitLat),
+		BU2DevExitLat:         uint16(c.bU2DevExitLat),
 	}
 }
 
@@ -743,14 +770,15 @@ type Container_ID_Descriptor struct {
 	ContainerID        []byte
 }
 
-func (x *C.struct_libusb_container_id_descriptor) c2go() *Container_ID_Descriptor {
+func (x *c_container_id_descriptor) c2go() *Container_ID_Descriptor {
+	c := (*C.struct_libusb_container_id_descriptor)(unsafe.Pointer(x))
 	return &Container_ID_Descriptor{
-		ptr:                x,
-		BLength:            uint8(x.bLength),
-		BDescriptorType:    uint8(x.bDescriptorType),
-		BDevCapabilityType: uint8(x.bDevCapabilityType),
-		BReserved:          uint8(x.bReserved),
-		ContainerID:        C.GoBytes(unsafe.Pointer(&x.ContainerID[0]), 16),
+		ptr:                c,
+		BLength:            uint8(c.bLength),
+		BDescriptorType:    uint8(c.bDescriptorType),
+		BDevCapabilityType: uint8(c.bDevCapabilityType),
+		BReserved:          uint8(c.bReserved),
+		ContainerID:        C.GoBytes(unsafe.Pointer(&c.ContainerID[0]), 16),
 	}
 }
 
@@ -790,23 +818,24 @@ type Device_Descriptor struct {
 	BNumConfigurations uint8
 }
 
-func (x *C.struct_libusb_device_descriptor) c2go() *Device_Descriptor {
+func (x *c_device_descriptor) c2go() *Device_Descriptor {
+	c := (*C.struct_libusb_device_descriptor)(unsafe.Pointer(x))
 	return &Device_Descriptor{
-		ptr:                x,
-		BLength:            uint8(x.bLength),
-		BDescriptorType:    uint8(x.bDescriptorType),
-		BcdUSB:             uint16(x.bcdUSB),
-		BDeviceClass:       uint8(x.bDeviceClass),
-		BDeviceSubClass:    uint8(x.bDeviceSubClass),
-		BDeviceProtocol:    uint8(x.bDeviceProtocol),
-		BMaxPacketSize0:    uint8(x.bMaxPacketSize0),
-		IdVendor:           uint16(x.idVendor),
-		IdProduct:          uint16(x.idProduct),
-		BcdDevice:          uint16(x.bcdDevice),
-		IManufacturer:      uint8(x.iManufacturer),
-		IProduct:           uint8(x.iProduct),
-		ISerialNumber:      uint8(x.iSerialNumber),
-		BNumConfigurations: uint8(x.bNumConfigurations),
+		ptr:                c,
+		BLength:            uint8(c.bLength),
+		BDescriptorType:    uint8(c.bDescriptorType),
+		BcdUSB:             uint16(c.bcdUSB),
+		BDeviceClass:       uint8(c.bDeviceClass),
+		BDeviceSubClass:    uint8(c.bDeviceSubClass),
+		BDeviceProtocol:    uint8(c.bDeviceProtocol),
+		BMaxPacketSize0:    uint8(c.bMaxPacketSize0),
+		IdVendor:           uint16(c.idVendor),
+		IdProduct:          uint16(c.idProduct),
+		BcdDevice:          uint16(c.bcdDevice),
+		IManufacturer:      uint8(c.iManufacturer),
+		IProduct:           uint8(c.iProduct),
+		ISerialNumber:      uint8(c.iSerialNumber),
+		BNumConfigurations: uint8(c.bNumConfigurations),
 	}
 }
 
@@ -860,12 +889,13 @@ type Transfer struct {
 	ptr *C.struct_libusb_transfer
 }
 
-func (x *C.struct_libusb_transfer) c2go() *Transfer {
+func (x *c_transfer) c2go() *Transfer {
+	c := (*C.struct_libusb_transfer)(unsafe.Pointer(x))
 	return &Transfer{
-		ptr: x,
+		ptr: c,
 	}
 }
-
+	
 func (x *Transfer) go2c() *C.struct_libusb_transfer {
 	return x.ptr
 }
@@ -889,15 +919,16 @@ type Version struct {
 	Describe string
 }
 
-func (x *C.struct_libusb_version) c2go() *Version {
+func (x *c_version) c2go() *Version {
+	c := (*C.struct_libusb_version)(unsafe.Pointer(x))
 	return &Version{
-		ptr:      x,
-		Major:    uint16(x.major),
-		Minor:    uint16(x.minor),
-		Micro:    uint16(x.micro),
-		Nano:     uint16(x.nano),
-		Rc:       C.GoString(x.rc),
-		Describe: C.GoString(x.describe),
+		ptr:      c,
+		Major:    uint16(c.major),
+		Minor:    uint16(c.minor),
+		Micro:    uint16(c.micro),
+		Nano:     uint16(c.nano),
+		Rc:       C.GoString(c.rc),
+		Describe: C.GoString(c.describe),
 	}
 }
 
@@ -1148,7 +1179,7 @@ func Error_Name(code int) string {
 
 func Get_Version() *Version {
 	ver := (*C.struct_libusb_version)(unsafe.Pointer(C.libusb_get_version()))
-	return ver.c2go()
+	return (*c_version)(ver).c2go()
 }
 
 func CPU_To_LE16(x uint16) uint16 {
@@ -1179,7 +1210,7 @@ func Get_Device_Descriptor(dev Device) (*Device_Descriptor, error) {
 	if rc != 0 {
 		return nil, &libusb_error{rc}
 	}
-	return (&desc).c2go(), nil
+	return (*c_device_descriptor)(&desc).c2go(), nil
 }
 
 func Get_Active_Config_Descriptor(dev Device) (*Config_Descriptor, error) {
@@ -1188,7 +1219,7 @@ func Get_Active_Config_Descriptor(dev Device) (*Config_Descriptor, error) {
 	if rc != 0 {
 		return nil, &libusb_error{rc}
 	}
-	return desc.c2go(), nil
+	return (*c_config_descriptor)(desc).c2go(), nil
 }
 
 func Get_Config_Descriptor(dev Device, config_index uint8) (*Config_Descriptor, error) {
@@ -1197,7 +1228,7 @@ func Get_Config_Descriptor(dev Device, config_index uint8) (*Config_Descriptor, 
 	if rc != 0 {
 		return nil, &libusb_error{rc}
 	}
-	return desc.c2go(), nil
+	/*lint:ignore*/ return (*c_config_descriptor)(desc).c2go(), nil
 }
 
 func Get_Config_Descriptor_By_Value(dev Device, bConfigurationValue uint8) (*Config_Descriptor, error) {
@@ -1206,7 +1237,7 @@ func Get_Config_Descriptor_By_Value(dev Device, bConfigurationValue uint8) (*Con
 	if rc != 0 {
 		return nil, &libusb_error{rc}
 	}
-	return desc.c2go(), nil
+	return (*c_config_descriptor)(desc).c2go(), nil
 }
 
 func Free_Config_Descriptor(config *Config_Descriptor) {
@@ -1219,7 +1250,7 @@ func Get_SS_Endpoint_Companion_Descriptor(ctx Context, endpoint *Endpoint_Descri
 	if rc != 0 {
 		return nil, &libusb_error{rc}
 	}
-	return desc.c2go(), nil
+	return (*c_ss_endpoint_companion_descriptor)(desc).c2go(), nil
 }
 
 func Free_SS_Endpoint_Companion_Descriptor(ep_comp *SS_Endpoint_Companion_Descriptor) {
@@ -1232,7 +1263,7 @@ func Get_BOS_Descriptor(hdl Device_Handle) (*BOS_Descriptor, error) {
 	if rc != 0 {
 		return nil, &libusb_error{rc}
 	}
-	return desc.c2go(), nil
+	return (*c_bos_descriptor)(desc).c2go(), nil
 }
 
 func Free_BOS_Descriptor(bos *BOS_Descriptor) {
@@ -1245,7 +1276,7 @@ func Get_USB_2_0_Extension_Descriptor(ctx Context, dev_cap *BOS_Dev_Capability_D
 	if rc != 0 {
 		return nil, &libusb_error{rc}
 	}
-	return desc.c2go(), nil
+	return (*c_usb_2_0_extension_descriptor)(desc).c2go(), nil
 }
 
 func Free_USB_2_0_Extension_Descriptor(usb_2_0_extension *USB_2_0_Extension_Descriptor) {
@@ -1258,7 +1289,7 @@ func Get_SS_USB_Device_Capability_Descriptor(ctx Context, dev_cap *BOS_Dev_Capab
 	if rc != 0 {
 		return nil, &libusb_error{rc}
 	}
-	return desc.c2go(), nil
+	return (*c_ss_usb_device_capability_descriptor)(desc).c2go(), nil
 }
 
 func Free_SS_USB_Device_Capability_Descriptor(ss_usb_device_cap *SS_USB_Device_Capability_Descriptor) {
@@ -1271,7 +1302,7 @@ func Get_Container_ID_Descriptor(ctx Context, dev_cap *BOS_Dev_Capability_Descri
 	if rc != 0 {
 		return nil, &libusb_error{rc}
 	}
-	return desc.c2go(), nil
+	return (*c_container_id_descriptor)(desc).c2go(), nil
 }
 
 func Free_Container_ID_Descriptor(container_id *Container_ID_Descriptor) {
@@ -1332,7 +1363,7 @@ func Alloc_Transfer(iso_packets int) (*Transfer, error) {
 	if ptr == nil {
 		return nil, &libusb_error{ERROR_OTHER}
 	}
-	return ptr.c2go(), nil
+	return (*c_transfer)(ptr).c2go(), nil
 }
 
 func Free_Transfer(transfer *Transfer) {

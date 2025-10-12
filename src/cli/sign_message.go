@@ -5,66 +5,44 @@ import (
 	"os"
 	"runtime"
 
-	gcli "github.com/urfave/cli"
-
+	"github.com/spf13/cobra"
 	messages "github.com/skycoin/hardware-wallet-protob/go"
-
 	skyWallet "github.com/skycoin/hardware-wallet-go/src/skywallet"
 )
 
-func signMessageCmd() gcli.Command {
-	name := "signMessage"
-	return gcli.Command{
-		Name:        name,
-		Usage:       "Ask the device to sign a message using the secret key at given index.",
-		Description: "",
-		Flags: []gcli.Flag{
-			gcli.IntFlag{
-				Name:  "addressN",
-				Value: 0,
-				Usage: "Index of the address that will issue the signature. Assume 0 if not set.",
-			},
-			gcli.StringFlag{
-				Name:  "message",
-				Usage: "The message that the signature claims to be signing.",
-			},
-			gcli.StringFlag{
-				Name:   "deviceType",
-				Usage:  "Device type to send instructions to, hardware wallet (USB) or emulator.",
-				EnvVar: "DEVICE_TYPE",
-			},
-		},
-		OnUsageError: onCommandUsageError(name),
-		Action: func(c *gcli.Context) {
-			device := skyWallet.NewDevice(skyWallet.DeviceTypeFromString(c.String("deviceType")))
+func signMessageCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "signMessage",
+		Short: "Ask the device to sign a message using the secret key at given index.",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			deviceType, _ := cmd.Flags().GetString("deviceType")
+			addressN, _ := cmd.Flags().GetInt("addressN")
+			message, _ := cmd.Flags().GetString("message")
+
+			device := skyWallet.NewDevice(skyWallet.DeviceTypeFromString(deviceType))
 			if device == nil {
-				return
+				return fmt.Errorf("failed to create device")
 			}
 			defer device.Close()
 
 			if os.Getenv("AUTO_PRESS_BUTTONS") == "1" && device.Driver.DeviceType() == skyWallet.DeviceTypeEmulator && runtime.GOOS == "linux" {
 				err := device.SetAutoPressButton(true, skyWallet.ButtonRight)
 				if err != nil {
-					log.Error(err)
-					return
+					return err
 				}
 			}
 
-			addressN := c.Int("addressN")
-			message := c.String("message")
 			var signature string
 
 			msg, err := device.SignMessage(addressN, message)
 			if err != nil {
-				log.Error(err)
-				return
+				return err
 			}
 
 			if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
 				msg, err = device.ButtonAck()
 				if err != nil {
-					log.Error(err)
-					return
+					return err
 				}
 			}
 
@@ -75,8 +53,7 @@ func signMessageCmd() gcli.Command {
 					fmt.Scanln(&pinEnc)
 					msg, err = device.PinMatrixAck(pinEnc)
 					if err != nil {
-						log.Error(err)
-						return
+						return err
 					}
 					continue
 				}
@@ -87,8 +64,15 @@ func signMessageCmd() gcli.Command {
 					fmt.Scanln(&passphrase)
 					msg, err = device.PassphraseAck(passphrase)
 					if err != nil {
-						log.Error(err)
-						return
+						return err
+					}
+					continue
+				}
+
+				if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
+					msg, err = device.ButtonAck()
+					if err != nil {
+						return err
 					}
 					continue
 				}
@@ -97,20 +81,24 @@ func signMessageCmd() gcli.Command {
 			if msg.Kind == uint16(messages.MessageType_MessageType_ResponseSkycoinSignMessage) {
 				signature, err = skyWallet.DecodeResponseSkycoinSignMessage(msg)
 				if err != nil {
-					log.Error(err)
-					return
+					return err
 				}
-				fmt.Print(signature)
 			} else {
 				failMsg, err := skyWallet.DecodeFailMsg(msg)
 				if err != nil {
-					log.Error(err)
-					return
+					return err
 				}
-
-				fmt.Printf("Failed with message: %s\n", failMsg)
-				return
+				return fmt.Errorf("failed with: %s", failMsg)
 			}
+
+			fmt.Println(signature)
+			return nil
 		},
 	}
+
+	cmd.Flags().Int("addressN", 0, "Index of the address that will issue the signature. Assume 0 if not set.")
+	cmd.Flags().String("message", "", "The message that the signature claims to be signing.")
+	cmd.Flags().String("deviceType", "", "Device type to send instructions to, hardware wallet (USB) or emulator.")
+
+	return cmd
 }

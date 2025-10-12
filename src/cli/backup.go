@@ -5,46 +5,35 @@ import (
 	"os"
 	"runtime"
 
-	gcli "github.com/urfave/cli"
+	"github.com/spf13/cobra"
 
 	messages "github.com/skycoin/hardware-wallet-protob/go"
 
 	skyWallet "github.com/skycoin/hardware-wallet-go/src/skywallet"
 )
 
-func backupCmd() gcli.Command {
-	name := "backup"
-	return gcli.Command{
-		Name:         name,
-		Usage:        "Ask the device to perform the seed backup procedure.",
-		Description:  "",
-		OnUsageError: onCommandUsageError(name),
-		Flags: []gcli.Flag{
-			gcli.StringFlag{
-				Name:   "deviceType",
-				Usage:  "Device type to send instructions to, hardware wallet (USB) or emulator.",
-				EnvVar: "DEVICE_TYPE",
-			},
-		},
-		Action: func(c *gcli.Context) {
-			device := skyWallet.NewDevice(skyWallet.DeviceTypeFromString(c.String("deviceType")))
+func backupCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "backup",
+		Short: "Ask the device to perform the seed backup procedure.",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			deviceType, _ := cmd.Flags().GetString("deviceType")
+			device := skyWallet.NewDevice(skyWallet.DeviceTypeFromString(deviceType))
 			if device == nil {
-				return
+				return fmt.Errorf("failed to create device")
 			}
 			defer device.Close()
 
 			if os.Getenv("AUTO_PRESS_BUTTONS") == "1" && device.Driver.DeviceType() == skyWallet.DeviceTypeEmulator && runtime.GOOS == "linux" {
 				err := device.SetAutoPressButton(true, skyWallet.ButtonRight)
 				if err != nil {
-					log.Error(err)
-					return
+					return err
 				}
 			}
 
 			msg, err := device.Backup()
 			if err != nil {
-				log.Error(err)
-				return
+				return err
 			}
 
 			if msg.Kind == uint16(messages.MessageType_MessageType_PinMatrixRequest) {
@@ -53,15 +42,13 @@ func backupCmd() gcli.Command {
 				fmt.Scanln(&pinEnc)
 				msg, err := device.PinMatrixAck(pinEnc)
 				if err != nil {
-					log.Error(err)
-					return
+					return err
 				}
 
 				for msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
 					msg, err = device.ButtonAck()
 					if err != nil {
-						log.Error(err)
-						return
+						return err
 					}
 				}
 			}
@@ -69,18 +56,21 @@ func backupCmd() gcli.Command {
 			for msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
 				msg, err = device.ButtonAck()
 				if err != nil {
-					log.Error(err)
-					return
+					return err
 				}
 			}
 
 			responseMsg, err := skyWallet.DecodeSuccessOrFailMsg(msg)
 			if err != nil {
-				log.Error(err)
-				return
+				return err
 			}
 
 			fmt.Println(responseMsg)
+			return nil
 		},
 	}
+
+	cmd.Flags().String("deviceType", "", "Device type to send instructions to, hardware wallet (USB) or emulator.")
+
+	return cmd
 }
