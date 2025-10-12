@@ -12,7 +12,7 @@ import (
 
 func init() {
 	getMixedEntropyCmd.Flags().IntVar(&entropyBytes, "entropyBytes", 1048576, "Number of how many bytes of entropy to read.")
-	getMixedEntropyCmd.Flags().StringVar(&deviceType, "deviceType", "", "Device type to send instructions to, hardware wallet (USB) or emulator.")
+	getMixedEntropyCmd.Flags().StringVar(&deviceType, "deviceType", "USB", "Device type to send instructions to, hardware wallet (USB) or emulator.")
 }
 
 var getMixedEntropyCmd = &cobra.Command{

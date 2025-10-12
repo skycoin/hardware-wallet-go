@@ -12,7 +12,7 @@ import (
 
 func init() {
 	setMnemonicCmd.Flags().StringVar(&mnemonic, "mnemonic", "", "Mnemonic that will be stored in the device to generate addresses.")
-	setMnemonicCmd.Flags().StringVar(&deviceType, "deviceType", "", "Device type to send instructions to, hardware wallet (USB) or emulator.")
+	setMnemonicCmd.Flags().StringVar(&deviceType, "deviceType", "USB", "Device type to send instructions to, hardware wallet (USB) or emulator.")
 }
 
 var setMnemonicCmd = &cobra.Command{

@@ -10,7 +10,7 @@ import (
 )
 
 func init() {
-	removePinCode.Flags().StringVar(&deviceType, "deviceType", "", "Device type to send instructions to, hardware wallet (USB) or emulator.")
+	removePinCode.Flags().StringVar(&deviceType, "deviceType", "USB", "Device type to send instructions to, hardware wallet (USB) or emulator.")
 }
 
 var removePinCode = &cobra.Command{

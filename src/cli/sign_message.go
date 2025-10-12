@@ -13,7 +13,7 @@ import (
 func init() {
 	signMessageCmd.Flags().IntVar(&addressN, "addressN", 0, "Index of the address that will issue the signature. Assume 0 if not set.")
 	signMessageCmd.Flags().StringVar(&message, "message", "", "The message that the signature claims to be signing.")
-	signMessageCmd.Flags().StringVar(&deviceType, "deviceType", "", "Device type to send instructions to, hardware wallet (USB) or emulator.")
+	signMessageCmd.Flags().StringVar(&deviceType, "deviceType", "USB", "Device type to send instructions to, hardware wallet (USB) or emulator.")
 }
 
 

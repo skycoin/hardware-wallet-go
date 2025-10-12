@@ -10,7 +10,7 @@ import (
 )
 
 func init() {
-	firmwareUpdate.Flags().StringVar(&deviceType, "deviceType", "", "Device type to send instructions to, hardware wallet (USB) or emulator.")
+	firmwareUpdate.Flags().StringVar(&deviceType, "deviceType", "USB", "Device type to send instructions to, hardware wallet (USB) or emulator.")
 }
 
 var firmwareUpdate = &cobra.Command{

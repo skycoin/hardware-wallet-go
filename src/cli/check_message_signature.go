@@ -13,7 +13,7 @@ func init() {
 	checkMessageSignatureCmd.Flags().StringVar(&message, "message", "", "The message that the signature claims to be signing.")
 	checkMessageSignatureCmd.Flags().StringVar(&signature, "signature", "", "Signature of the message.")
 	checkMessageSignatureCmd.Flags().StringVar(&address, "address", "", "Address to verify against the signature.")
-	checkMessageSignatureCmd.Flags().StringVar(&deviceType, "deviceType", "", "Device type to send instructions to, hardware wallet (USB) or emulator.")
+	checkMessageSignatureCmd.Flags().StringVar(&deviceType, "deviceType", "USB", "Device type to send instructions to, hardware wallet (USB) or emulator.")
 }
 
 var checkMessageSignatureCmd = &cobra.Command{

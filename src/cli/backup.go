@@ -13,7 +13,7 @@ import (
 )
 
 func init() {
-	backupCmd.Flags().StringVar(&deviceType, "deviceType", "", "Device type to send instructions to, hardware wallet (USB) or emulator.")
+	backupCmd.Flags().StringVar(&deviceType, "deviceType", "USB", "Device type to send instructions to, hardware wallet (USB) or emulator.")
 }
 
 var backupCmd = &cobra.Command{

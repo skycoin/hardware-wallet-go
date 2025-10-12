@@ -11,7 +11,7 @@ import (
 )
 
 func init() {
-	cancelCmd.Flags().StringVar(&deviceType, "deviceType", "", "Device type to send instructions to, hardware wallet (USB) or emulator.")
+	cancelCmd.Flags().StringVar(&deviceType, "deviceType", "USB", "Device type to send instructions to, hardware wallet (USB) or emulator.")
 }
 
 var cancelCmd = &cobra.Command{

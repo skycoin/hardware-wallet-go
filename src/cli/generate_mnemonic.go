@@ -13,7 +13,7 @@ import (
 func init() {
 	generateMnemonicCmd.Flags().BoolVar(&usePassphrase, "usePassphrase", false, "Configure a passphrase")
 	generateMnemonicCmd.Flags().IntVar(&wordCount, "wordCount", 12, "Use a specific (12 | 24) number of words for the Mnemonic")
-	generateMnemonicCmd.Flags().StringVar(&deviceType, "deviceType", "", "Device type to send instructions to, hardware wallet (USB) or emulator.")
+	generateMnemonicCmd.Flags().StringVar(&deviceType, "deviceType", "USB", "Device type to send instructions to, hardware wallet (USB) or emulator.")
 }
 
 var generateMnemonicCmd = &cobra.Command{

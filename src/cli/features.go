@@ -15,7 +15,7 @@ import (
 )
 
 func init() {
-	featuresCmd.Flags().StringVar(&deviceType, "deviceType", "", "Device type to send instructions to, hardware wallet (USB) or emulator.")
+	featuresCmd.Flags().StringVar(&deviceType, "deviceType", "USB", "Device type to send instructions to, hardware wallet (USB) or emulator.")
 }
 
 var featuresCmd = &cobra.Command{

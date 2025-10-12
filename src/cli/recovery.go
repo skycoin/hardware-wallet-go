@@ -11,7 +11,7 @@ import (
 )
 
 func init() {
-	recoveryCmd.Flags().StringVar(&deviceType, "deviceType", "", "Device type to send instructions to, hardware wallet (USB) or emulator.")
+	recoveryCmd.Flags().StringVar(&deviceType, "deviceType", "USB", "Device type to send instructions to, hardware wallet (USB) or emulator.")
 }
 
 var recoveryCmd = &cobra.Command{

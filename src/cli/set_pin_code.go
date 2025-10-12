@@ -11,7 +11,7 @@ import (
 )
 
 func init() {
-	setPinCode.Flags().StringVar(&deviceType, "deviceType", "", "Device type to send instructions to, hardware wallet (USB) or emulator.")
+	setPinCode.Flags().StringVar(&deviceType, "deviceType", "USB", "Device type to send instructions to, hardware wallet (USB) or emulator.")
 }
 
 var setPinCode = &cobra.Command{

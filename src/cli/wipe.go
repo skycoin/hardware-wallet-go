@@ -13,7 +13,7 @@ import (
 )
 
 func init() {
-	wipeCmd.Flags().StringVar(&deviceType, "deviceType", "", "Device type to send instructions to, hardware wallet (USB) or emulator.")
+	wipeCmd.Flags().StringVar(&deviceType, "deviceType", "USB", "Device type to send instructions to, hardware wallet (USB) or emulator.")
 }
 
 var wipeCmd = &cobra.Command{

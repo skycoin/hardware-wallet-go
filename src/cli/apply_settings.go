@@ -13,7 +13,7 @@ import (
 func init() {
 	applySettingsCmd.Flags().BoolVar(&usePassphrase, "usePassphrase", false, "Configure a passphrase (true or false)")
 	applySettingsCmd.Flags().StringVar(&label, "label", "", "Configure a device label")
-	applySettingsCmd.Flags().StringVar(&deviceType, "deviceType", "", "Device type to send instructions to, hardware wallet (USB) or emulator.")
+	applySettingsCmd.Flags().StringVar(&deviceType, "deviceType", "USB", "Device type to send instructions to, hardware wallet (USB) or emulator.")
 	applySettingsCmd.Flags().StringVar(&language, "language", "", "Configure a device language")
 }
 
