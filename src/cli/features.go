@@ -14,12 +14,14 @@ import (
 	skyWallet "github.com/skycoin/hardware-wallet-go/src/skywallet"
 )
 
-func featuresCmd() *cobra.Command {
-	cmd := &cobra.Command{
+func init() {
+	featuresCmd.Flags().StringVar(&deviceType, "deviceType", "", "Device type to send instructions to, hardware wallet (USB) or emulator.")
+}
+
+var featuresCmd = &cobra.Command{
 		Use:   "features",
 		Short: "Ask the device Features.",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			deviceType, _ := cmd.Flags().GetString("deviceType")
+		RunE: func(_ *cobra.Command, _ []string) error {
 			device := skyWallet.NewDevice(skyWallet.DeviceTypeFromString(deviceType))
 			if device == nil {
 				return fmt.Errorf("failed to create device")
@@ -67,9 +69,4 @@ func featuresCmd() *cobra.Command {
 			}
 			return nil
 		},
-	}
-
-	cmd.Flags().String("deviceType", "", "Device type to send instructions to, hardware wallet (USB) or emulator.")
-
-	return cmd
 }

@@ -12,12 +12,14 @@ import (
 	skyWallet "github.com/skycoin/hardware-wallet-go/src/skywallet"
 )
 
-func wipeCmd() *cobra.Command {
-	cmd := &cobra.Command{
+func init() {
+	wipeCmd.Flags().StringVar(&deviceType, "deviceType", "", "Device type to send instructions to, hardware wallet (USB) or emulator.")
+}
+
+var wipeCmd = &cobra.Command{
 		Use:   "wipe",
 		Short: "Ask the device to wipe clean all the configuration it contains.",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			deviceType, _ := cmd.Flags().GetString("deviceType")
+		RunE: func(_ *cobra.Command, _ []string) error {
 			device := skyWallet.NewDevice(skyWallet.DeviceTypeFromString(deviceType))
 			if device == nil {
 				return fmt.Errorf("failed to create device")
@@ -56,8 +58,3 @@ func wipeCmd() *cobra.Command {
 			return nil
 		},
 	}
-
-	cmd.Flags().String("deviceType", "", "Device type to send instructions to, hardware wallet (USB) or emulator.")
-
-	return cmd
-}

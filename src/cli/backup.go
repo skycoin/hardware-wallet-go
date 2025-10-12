@@ -12,12 +12,14 @@ import (
 	skyWallet "github.com/skycoin/hardware-wallet-go/src/skywallet"
 )
 
-func backupCmd() *cobra.Command {
-	cmd := &cobra.Command{
+func init() {
+	backupCmd.Flags().StringVar(&deviceType, "deviceType", "", "Device type to send instructions to, hardware wallet (USB) or emulator.")
+}
+
+var backupCmd = &cobra.Command{
 		Use:   "backup",
 		Short: "Ask the device to perform the seed backup procedure.",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			deviceType, _ := cmd.Flags().GetString("deviceType")
+		RunE: func(_ *cobra.Command, _ []string) error {
 			device := skyWallet.NewDevice(skyWallet.DeviceTypeFromString(deviceType))
 			if device == nil {
 				return fmt.Errorf("failed to create device")
@@ -69,8 +71,3 @@ func backupCmd() *cobra.Command {
 			return nil
 		},
 	}
-
-	cmd.Flags().String("deviceType", "", "Device type to send instructions to, hardware wallet (USB) or emulator.")
-
-	return cmd
-}

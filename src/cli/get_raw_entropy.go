@@ -10,14 +10,15 @@ import (
 	skyWallet "github.com/skycoin/hardware-wallet-go/src/skywallet"
 )
 
-func getRawEntropyCmd() *cobra.Command {
-	cmd := &cobra.Command{
+func init() {
+	getRawEntropyCmd.Flags().IntVar(&entropyBytes, "entropyBytes", 1048576, "Number of how many bytes of entropy to read.")
+	getRawEntropyCmd.Flags().StringVar(&deviceType, "deviceType", "", "Device type to send instructions to, hardware wallet (USB) or emulator.")
+}
+
+var getRawEntropyCmd = &cobra.Command{
 		Use:   "getRawEntropy",
 		Short: "Get device raw internal entropy and write it down to a file",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			deviceType, _ := cmd.Flags().GetString("deviceType")
-			entropyBytes, _ := cmd.Flags().GetInt("entropyBytes")
-
+		RunE: func(_ *cobra.Command, _ []string) error {
 			device := skyWallet.NewDevice(skyWallet.DeviceTypeFromString(deviceType))
 			if device == nil {
 				return fmt.Errorf("failed to create device")
@@ -50,9 +51,3 @@ func getRawEntropyCmd() *cobra.Command {
 			return nil
 		},
 	}
-
-	cmd.Flags().Int("entropyBytes", 1048576, "Number of how many bytes of entropy to read.")
-	cmd.Flags().String("deviceType", "", "Device type to send instructions to, hardware wallet (USB) or emulator.")
-
-	return cmd
-}

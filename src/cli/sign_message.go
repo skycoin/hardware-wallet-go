@@ -10,14 +10,17 @@ import (
 	skyWallet "github.com/skycoin/hardware-wallet-go/src/skywallet"
 )
 
-func signMessageCmd() *cobra.Command {
-	cmd := &cobra.Command{
+func init() {
+	signMessageCmd.Flags().IntVar(&addressN, "addressN", 0, "Index of the address that will issue the signature. Assume 0 if not set.")
+	signMessageCmd.Flags().StringVar(&message, "message", "", "The message that the signature claims to be signing.")
+	signMessageCmd.Flags().StringVar(&deviceType, "deviceType", "", "Device type to send instructions to, hardware wallet (USB) or emulator.")
+}
+
+
+var signMessageCmd = &cobra.Command{
 		Use:   "signMessage",
 		Short: "Ask the device to sign a message using the secret key at given index.",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			deviceType, _ := cmd.Flags().GetString("deviceType")
-			addressN, _ := cmd.Flags().GetInt("addressN")
-			message, _ := cmd.Flags().GetString("message")
+		RunE: func(_ *cobra.Command, _ []string) error {
 
 			device := skyWallet.NewDevice(skyWallet.DeviceTypeFromString(deviceType))
 			if device == nil {
@@ -95,10 +98,3 @@ func signMessageCmd() *cobra.Command {
 			return nil
 		},
 	}
-
-	cmd.Flags().Int("addressN", 0, "Index of the address that will issue the signature. Assume 0 if not set.")
-	cmd.Flags().String("message", "", "The message that the signature claims to be signing.")
-	cmd.Flags().String("deviceType", "", "Device type to send instructions to, hardware wallet (USB) or emulator.")
-
-	return cmd
-}

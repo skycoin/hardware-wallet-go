@@ -15,21 +15,23 @@ import (
 	skyWallet "github.com/skycoin/hardware-wallet-go/src/skywallet"
 )
 
-func transactionSignCmd() *cobra.Command {
-	cmd := &cobra.Command{
+func init() {
+	transactionSignCmd.Flags().StringSliceVar(&inputHash, "inputHash", []string{}, "Hash of the Input of the transaction we expect the device to sign")
+	transactionSignCmd.Flags().StringSliceVar(&prevHash, "prevHash", []string{}, "Hash of the previous transaction we expect the device to sign")
+	transactionSignCmd.Flags().IntSliceVar(&inputIndex, "inputIndex", []int{}, "Index of the input in the wallet")
+	transactionSignCmd.Flags().StringSliceVar(&outputAddress, "outputAddress", []string{}, "Addresses of the output for the transaction")
+	transactionSignCmd.Flags().Int64SliceVar(&coins, "coins", []int64{}, "Amount of coins")
+	transactionSignCmd.Flags().Int64SliceVar(&hours, "hours", []int64{}, "Number of hours")
+	transactionSignCmd.Flags().IntSliceVar(&addressIndex, "addressIndex", []int{}, "If the address is a return address tell its index in the wallet")
+	transactionSignCmd.Flags().StringVar(&deviceType, "deviceType", "USB", "Device type to send instructions to, hardware wallet (USB) or emulator.")
+	transactionSignCmd.Flags().StringVar(&coinTypeStr, "coinTypeStr", "SKY", "Coin type to use on hardware-wallet.")
+}
+
+
+var transactionSignCmd = &cobra.Command{
 		Use:   "transactionSign",
 		Short: "Ask the device to sign a transaction using the provided information.",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			inputs, _ := cmd.Flags().GetStringSlice("inputHash")
-			prevHash, _ := cmd.Flags().GetStringSlice("prevHash")
-			inputIndex, _ := cmd.Flags().GetIntSlice("inputIndex")
-			outputs, _ := cmd.Flags().GetStringSlice("outputAddress")
-			coins, _ := cmd.Flags().GetInt64Slice("coin")
-			hours, _ := cmd.Flags().GetInt64Slice("hour")
-			addressIndex, _ := cmd.Flags().GetIntSlice("addressIndex")
-			coinTypeStr, _ := cmd.Flags().GetString("coinType")
-			deviceType, _ := cmd.Flags().GetString("deviceType")
-
+		RunE: func(_ *cobra.Command, _ []string) error {
 			coinType, err := skyWallet.CoinTypeFromString(coinTypeStr)
 			if err != nil {
 				return err
@@ -77,18 +79,6 @@ func transactionSignCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringSlice("inputHash", []string{}, "Hash of the Input of the transaction we expect the device to sign")
-	cmd.Flags().StringSlice("prevHash", []string{}, "Hash of the previous transaction we expect the device to sign")
-	cmd.Flags().IntSlice("inputIndex", []int{}, "Index of the input in the wallet")
-	cmd.Flags().StringSlice("outputAddress", []string{}, "Addresses of the output for the transaction")
-	cmd.Flags().Int64Slice("coin", []int64{}, "Amount of coins")
-	cmd.Flags().Int64Slice("hour", []int64{}, "Number of hours")
-	cmd.Flags().IntSlice("addressIndex", []int{}, "If the address is a return address tell its index in the wallet")
-	cmd.Flags().String("deviceType", "", "Device type to send instructions to, hardware wallet (USB) or emulator.")
-	cmd.Flags().String("coinType", "SKY", "Coin type to use on hardware-wallet.")
-
-	return cmd
-}
 
 func transactionSkycoinSign(device *skyWallet.Device, inputs, outputs []string, coins, hours []int64, inputIndex, addressIndex []int) error {
 	if len(inputs) != len(inputIndex) {

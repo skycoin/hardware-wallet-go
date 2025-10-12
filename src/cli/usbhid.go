@@ -6,12 +6,14 @@ import (
 	skyWallet "github.com/skycoin/hardware-wallet-go/src/skywallet"
 )
 
-func getUsbDetails() *cobra.Command {
-	cmd := &cobra.Command{
+func init() {
+	getUsbDetails.Flags().StringVar(&deviceType, "deviceType", "", "Device type to send instructions to, hardware wallet (USB) or emulator.")
+}
+
+var getUsbDetails = &cobra.Command{
 		Use:   "getUsbDetails",
 		Short: "Ask host usb about details for the hardware wallet",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			deviceType, _ := cmd.Flags().GetString("deviceType")
+		RunE: func(_ *cobra.Command, _ []string) error {
 			device := skyWallet.NewDevice(skyWallet.DeviceTypeFromString(deviceType))
 			if device == nil {
 				return nil
@@ -35,7 +37,3 @@ func getUsbDetails() *cobra.Command {
 			return nil
 		},
 	}
-
-	cmd.Flags().String("deviceType", "", "Device type to send instructions to, hardware wallet (USB) or emulator.")
-	return cmd
-}

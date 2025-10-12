@@ -12,17 +12,18 @@ import (
 	skyWallet "github.com/skycoin/hardware-wallet-go/src/skywallet"
 )
 
-func addressGenCmd() *cobra.Command {
-	cmd := &cobra.Command{
+func init() {
+		addressGenCmd.Flags().IntVar(&addressN, "addressN", 1, "Number of addresses to generate. Assume 1 if not set.")
+		addressGenCmd.Flags().IntVar(&startIndex, "startIndex", 0, "Index where deterministic key generation will start from. Assume 0 if not set.")
+		addressGenCmd.Flags().BoolVar(&confirmAddress, "confirmAddress", false, "If requesting one address it will be sent only if user confirms operation by pressing device's button.")
+		addressGenCmd.Flags().StringVar(&deviceType, "deviceType", "", "Device type to send instructions to, hardware wallet (USB) or emulator.")
+		addressGenCmd.Flags().StringVar(&coinTypeStr, "coinTypeStr", "SKY", "Coin type to use on hardware-wallet.")
+
+}
+var addressGenCmd = &cobra.Command{
 		Use:   "addressGen",
 		Short: "Generate skycoin addresses using the firmware",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			addressN, _ := cmd.Flags().GetInt("addressN")
-			startIndex, _ := cmd.Flags().GetInt("startIndex")
-			confirmAddress, _ := cmd.Flags().GetBool("confirmAddress")
-			coinTypeStr, _ := cmd.Flags().GetString("coinType")
-			deviceType, _ := cmd.Flags().GetString("deviceType")
-
+		RunE: func(_ *cobra.Command, _ []string) error {
 			coinType, err := skyWallet.CoinTypeFromString(coinTypeStr)
 			if err != nil {
 				return err
@@ -96,12 +97,3 @@ func addressGenCmd() *cobra.Command {
 			return nil
 		},
 	}
-
-	cmd.Flags().Int("addressN", 1, "Number of addresses to generate. Assume 1 if not set.")
-	cmd.Flags().Int("startIndex", 0, "Index where deterministic key generation will start from. Assume 0 if not set.")
-	cmd.Flags().Bool("confirmAddress", false, "If requesting one address it will be sent only if user confirms operation by pressing device's button.")
-	cmd.Flags().String("deviceType", "", "Device type to send instructions to, hardware wallet (USB) or emulator.")
-	cmd.Flags().String("coinType", "SKY", "Coin type to use on hardware-wallet.")
-
-	return cmd
-}
