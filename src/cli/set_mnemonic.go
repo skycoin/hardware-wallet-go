@@ -10,14 +10,15 @@ import (
 	skyWallet "github.com/skycoin/hardware-wallet-go/src/skywallet"
 )
 
-func setMnemonicCmd() *cobra.Command {
-	cmd := &cobra.Command{
+func init() {
+	setMnemonicCmd.Flags().StringVar(&mnemonic, "mnemonic", "", "Mnemonic that will be stored in the device to generate addresses.")
+	setMnemonicCmd.Flags().StringVar(&deviceType, "deviceType", "USB", "Device type to send instructions to, hardware wallet (USB) or emulator.")
+}
+
+var setMnemonicCmd = &cobra.Command{
 		Use:   "setMnemonic",
 		Short: "Configure the device with a mnemonic.",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			deviceType, _ := cmd.Flags().GetString("deviceType")
-			mnemonic, _ := cmd.Flags().GetString("mnemonic")
-
+		RunE: func(_ *cobra.Command, _ []string) error {
 			device := skyWallet.NewDevice(skyWallet.DeviceTypeFromString(deviceType))
 			if device == nil {
 				return fmt.Errorf("failed to create device")
@@ -52,9 +53,3 @@ func setMnemonicCmd() *cobra.Command {
 			return nil
 		},
 	}
-
-	cmd.Flags().String("mnemonic", "", "Mnemonic that will be stored in the device to generate addresses.")
-	cmd.Flags().String("deviceType", "", "Device type to send instructions to, hardware wallet (USB) or emulator.")
-
-	return cmd
-}

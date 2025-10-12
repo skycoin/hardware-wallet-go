@@ -11,33 +11,32 @@ const (
 
 var log = logging.MustGetLogger("skycoin-hw-cli")
 
-func NewRootCommand() *cobra.Command {
-	rootCmd := &cobra.Command{
+//RootCmd is the root command
+var RootCmd = &cobra.Command{
 		Use:     "skycoin-hw-cli",
 		Short:   "the skycoin hardware wallet command line interface",
 		Version: Version,
 	}
 
-	rootCmd.AddCommand(
-		applySettingsCmd(),
-		setMnemonicCmd(),
-		featuresCmd(),
-		generateMnemonicCmd(),
-		addressGenCmd(),
-		firmwareUpdate(),
-		signMessageCmd(),
-		checkMessageSignatureCmd(),
-		setPinCode(),
-		removePinCode(),
-		wipeCmd(),
-		backupCmd(),
-		recoveryCmd(),
-		cancelCmd(),
-		transactionSignCmd(),
-		getRawEntropyCmd(),
-		getMixedEntropyCmd(),
-		getUsbDetails(),
+func init() {
+	RootCmd.AddCommand(
+		applySettingsCmd,
+		setMnemonicCmd,
+		featuresCmd,
+		generateMnemonicCmd,
+		addressGenCmd,
+		firmwareUpdate,
+		signMessageCmd,
+		checkMessageSignatureCmd,
+		setPinCode,
+		removePinCode,
+		wipeCmd,
+		backupCmd,
+		recoveryCmd,
+		cancelCmd,
+		transactionSignCmd,
+		getRawEntropyCmd,
+		getMixedEntropyCmd,
+		getUsbDetails,
 	)
-
-	return rootCmd
 }

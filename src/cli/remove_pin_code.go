@@ -9,12 +9,14 @@ import (
 	skyWallet "github.com/skycoin/hardware-wallet-go/src/skywallet"
 )
 
-func removePinCode() *cobra.Command {
-	cmd := &cobra.Command{
+func init() {
+	removePinCode.Flags().StringVar(&deviceType, "deviceType", "USB", "Device type to send instructions to, hardware wallet (USB) or emulator.")
+}
+
+var removePinCode = &cobra.Command{
 		Use:   "removePinCode",
 		Short: "Remove a PIN code on a device.",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			deviceType, _ := cmd.Flags().GetString("deviceType")
+		RunE: func(_ *cobra.Command, _ []string) error {
 			device := skyWallet.NewDevice(skyWallet.DeviceTypeFromString(deviceType))
 			if device == nil {
 				return fmt.Errorf("failed to create device")
@@ -43,7 +45,3 @@ func removePinCode() *cobra.Command {
 			return nil
 		},
 	}
-
-	cmd.Flags().String("deviceType", "", "Device type to send instructions to, hardware wallet (USB) or emulator.")
-	return cmd
-}

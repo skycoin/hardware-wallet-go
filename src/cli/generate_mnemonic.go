@@ -10,15 +10,16 @@ import (
 	skyWallet "github.com/skycoin/hardware-wallet-go/src/skywallet"
 )
 
-func generateMnemonicCmd() *cobra.Command {
-	cmd := &cobra.Command{
+func init() {
+	generateMnemonicCmd.Flags().BoolVar(&usePassphrase, "usePassphrase", false, "Configure a passphrase")
+	generateMnemonicCmd.Flags().IntVar(&wordCount, "wordCount", 12, "Use a specific (12 | 24) number of words for the Mnemonic")
+	generateMnemonicCmd.Flags().StringVar(&deviceType, "deviceType", "USB", "Device type to send instructions to, hardware wallet (USB) or emulator.")
+}
+
+var generateMnemonicCmd = &cobra.Command{
 		Use:   "generateMnemonic",
 		Short: "Ask the device to generate a mnemonic and configure itself with it.",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			usePassphrase, _ := cmd.Flags().GetBool("usePassphrase")
-			wordCount, _ := cmd.Flags().GetInt("wordCount")
-			deviceType, _ := cmd.Flags().GetString("deviceType")
-
+		RunE: func(_ *cobra.Command, _ []string) error {
 			device := skyWallet.NewDevice(skyWallet.DeviceTypeFromString(deviceType))
 			if device == nil {
 				return fmt.Errorf("failed to create device")
@@ -53,10 +54,3 @@ func generateMnemonicCmd() *cobra.Command {
 			return nil
 		},
 	}
-
-	cmd.Flags().Bool("usePassphrase", false, "Configure a passphrase")
-	cmd.Flags().Int("wordCount", 12, "Use a specific (12 | 24) number of words for the Mnemonic")
-	cmd.Flags().String("deviceType", "", "Device type to send instructions to, hardware wallet (USB) or emulator.")
-
-	return cmd
-}

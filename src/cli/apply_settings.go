@@ -10,16 +10,17 @@ import (
 	skyWallet "github.com/skycoin/hardware-wallet-go/src/skywallet"
 )
 
-func applySettingsCmd() *cobra.Command {
-	cmd := &cobra.Command{
+func init() {
+	applySettingsCmd.Flags().BoolVar(&usePassphrase, "usePassphrase", false, "Configure a passphrase (true or false)")
+	applySettingsCmd.Flags().StringVar(&label, "label", "", "Configure a device label")
+	applySettingsCmd.Flags().StringVar(&deviceType, "deviceType", "USB", "Device type to send instructions to, hardware wallet (USB) or emulator.")
+	applySettingsCmd.Flags().StringVar(&language, "language", "", "Configure a device language")
+}
+
+var applySettingsCmd = &cobra.Command{
 		Use:   "applySettings",
 		Short: "Apply settings.",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			passphrase, _ := cmd.Flags().GetString("usePassphrase")
-			label, _ := cmd.Flags().GetString("label")
-			language, _ := cmd.Flags().GetString("language")
-			deviceType, _ := cmd.Flags().GetString("deviceType")
-
+		RunE: func(_ *cobra.Command, _ []string) error {
 			device := skyWallet.NewDevice(skyWallet.DeviceTypeFromString(deviceType))
 			if device == nil {
 				return fmt.Errorf("failed to create device")
@@ -33,11 +34,7 @@ func applySettingsCmd() *cobra.Command {
 				}
 			}
 
-			usePassphrase, _err := parseBool(passphrase)
-			if _err != nil {
-				return fmt.Errorf("valid values for usePassphrase are true or false")
-			}
-			msg, err := device.ApplySettings(usePassphrase, label, language)
+			msg, err := device.ApplySettings(&usePassphrase, label, language)
 			if err != nil {
 				return err
 			}
@@ -73,11 +70,3 @@ func applySettingsCmd() *cobra.Command {
 			return nil
 		},
 	}
-
-	cmd.Flags().String("usePassphrase", "", "Configure a passphrase (true or false)")
-	cmd.Flags().String("label", "", "Configure a device label")
-	cmd.Flags().String("deviceType", "", "Device type to send instructions to, hardware wallet (USB) or emulator.")
-	cmd.Flags().String("language", "", "Configure a device language")
-
-	return cmd
-}
