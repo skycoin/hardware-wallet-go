@@ -8,119 +8,86 @@ import (
 
 	"github.com/gogo/protobuf/proto"
 
-	gcli "github.com/urfave/cli"
+	"github.com/spf13/cobra"
 
 	messages "github.com/skycoin/hardware-wallet-protob/go"
 
 	skyWallet "github.com/skycoin/hardware-wallet-go/src/skywallet"
 )
 
-func transactionSignCmd() gcli.Command {
-	name := "transactionSign"
-	return gcli.Command{
-		Name:        name,
-		Usage:       "Ask the device to sign a transaction using the provided information.",
-		Description: "",
-		Flags: []gcli.Flag{
-			gcli.StringSliceFlag{
-				Name:  "inputHash",
-				Usage: "Hash of the Input of the transaction we expect the device to sign",
-			},
-			gcli.StringSliceFlag{
-				Name:  "prevHash",
-				Usage: "Hash of the previous transaction we expect the device to sign",
-			},
-			gcli.IntSliceFlag{
-				Name:  "inputIndex",
-				Usage: "Index of the input in the wallet",
-			},
-			gcli.StringSliceFlag{
-				Name:  "outputAddress",
-				Usage: "Addresses of the output for the transaction",
-			},
-			gcli.Int64SliceFlag{
-				Name:  "coin",
-				Usage: "Amount of coins",
-			},
-			gcli.Int64SliceFlag{
-				Name:  "hour",
-				Usage: "Number of hours",
-			},
-			gcli.IntSliceFlag{
-				Name:  "addressIndex",
-				Usage: "If the address is a return address tell its index in the wallet",
-			},
-			gcli.StringFlag{
-				Name:   "deviceType",
-				Usage:  "Device type to send instructions to, hardware wallet (USB) or emulator.",
-				EnvVar: "DEVICE_TYPE",
-			},
-			gcli.StringFlag{
-				Name:   "coinType",
-				Value:  "SKY",
-				Usage:  "Coin type to use on hardware-wallet.",
-				EnvVar: "COIN_TYPE",
-			},
-		},
-		OnUsageError: onCommandUsageError(name),
-		Action: func(c *gcli.Context) {
-			inputs := c.StringSlice("inputHash")
-			prevHash := c.StringSlice("prevHash")
-			inputIndex := c.IntSlice("inputIndex")
-			outputs := c.StringSlice("outputAddress")
-			coins := c.Int64Slice("coin")
-			hours := c.Int64Slice("hour")
-			addressIndex := c.IntSlice("addressIndex")
-			coinType, err := skyWallet.CoinTypeFromString(c.String("coinType"))
+func transactionSignCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "transactionSign",
+		Short: "Ask the device to sign a transaction using the provided information.",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			inputs, _ := cmd.Flags().GetStringSlice("inputHash")
+			prevHash, _ := cmd.Flags().GetStringSlice("prevHash")
+			inputIndex, _ := cmd.Flags().GetIntSlice("inputIndex")
+			outputs, _ := cmd.Flags().GetStringSlice("outputAddress")
+			coins, _ := cmd.Flags().GetInt64Slice("coin")
+			hours, _ := cmd.Flags().GetInt64Slice("hour")
+			addressIndex, _ := cmd.Flags().GetIntSlice("addressIndex")
+			coinTypeStr, _ := cmd.Flags().GetString("coinType")
+			deviceType, _ := cmd.Flags().GetString("deviceType")
+
+			coinType, err := skyWallet.CoinTypeFromString(coinTypeStr)
 			if err != nil {
-				log.Error(err)
-				return
+				return err
 			}
 			if coinType != skyWallet.SkycoinCoinType && len(inputs) > 0 {
-				log.Error(fmt.Errorf("coin type %s doesn't need input hash", coinType))
-				return
+				return fmt.Errorf("coin type %s doesn't need input hash", coinType)
 			}
 
 			if coinType != skyWallet.BitcoinCoinType && len(prevHash) > 0 {
-				log.Error(fmt.Errorf("coin type %s doesn't need previous hash", coinType))
-				return
+				return fmt.Errorf("coin type %s doesn't need previous hash", coinType)
 			}
 
-			device := skyWallet.NewDevice(skyWallet.DeviceTypeFromString(c.String("deviceType")))
+			device := skyWallet.NewDevice(skyWallet.DeviceTypeFromString(deviceType))
 			if device == nil {
-				return
+				return fmt.Errorf("failed to create device")
 			}
 			defer device.Close()
 
 			if os.Getenv("AUTO_PRESS_BUTTONS") == "1" && device.Driver.DeviceType() == skyWallet.DeviceTypeEmulator && runtime.GOOS == "linux" {
 				err := device.SetAutoPressButton(true, skyWallet.ButtonRight)
 				if err != nil {
-					log.Error(err)
-					return
+					return err
 				}
 			}
 
 			if len(outputs) != len(coins) {
-				fmt.Println("Every given output should have a coin value")
-				return
+				return fmt.Errorf("every given output should have a coin value")
 			}
 
 			switch coinType {
 			case skyWallet.SkycoinCoinType:
 				err = transactionSkycoinSign(device, inputs, outputs, coins, hours, inputIndex, addressIndex)
 				if err != nil {
-					log.Error(err)
+					return err
 				}
 			case skyWallet.BitcoinCoinType:
 				err = transactionBitcoinSign(device, prevHash, outputs, coins, inputIndex, addressIndex)
 				if err != nil {
-					log.Error(err)
+					return err
 				}
 			default:
-				log.Error(fmt.Errorf("TransactionSign is not implemented for %s yet", coinType))
+				return fmt.Errorf("TransactionSign is not implemented for %s yet", coinType)
 			}
+			return nil
 		},
 	}
+
+	cmd.Flags().StringSlice("inputHash", []string{}, "Hash of the Input of the transaction we expect the device to sign")
+	cmd.Flags().StringSlice("prevHash", []string{}, "Hash of the previous transaction we expect the device to sign")
+	cmd.Flags().IntSlice("inputIndex", []int{}, "Index of the input in the wallet")
+	cmd.Flags().StringSlice("outputAddress", []string{}, "Addresses of the output for the transaction")
+	cmd.Flags().Int64Slice("coin", []int64{}, "Amount of coins")
+	cmd.Flags().Int64Slice("hour", []int64{}, "Number of hours")
+	cmd.Flags().IntSlice("addressIndex", []int{}, "If the address is a return address tell its index in the wallet")
+	cmd.Flags().String("deviceType", "", "Device type to send instructions to, hardware wallet (USB) or emulator.")
+	cmd.Flags().String("coinType", "SKY", "Coin type to use on hardware-wallet.")
+
+	return cmd
 }
 
 func transactionSkycoinSign(device *skyWallet.Device, inputs, outputs []string, coins, hours []int64, inputIndex, addressIndex []int) error {
@@ -203,5 +170,5 @@ func transactionBitcoinSign(device *skyWallet.Device, prevHashes, outputs []stri
 		return err
 	}
 	fmt.Println(signatures)
-	return err
+	return nil
 }

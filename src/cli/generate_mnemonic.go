@@ -6,75 +6,57 @@ import (
 	"runtime"
 
 	messages "github.com/skycoin/hardware-wallet-protob/go"
-
-	gcli "github.com/urfave/cli"
-
+	"github.com/spf13/cobra"
 	skyWallet "github.com/skycoin/hardware-wallet-go/src/skywallet"
 )
 
-func generateMnemonicCmd() gcli.Command {
-	name := "generateMnemonic"
-	return gcli.Command{
-		Name:        name,
-		Usage:       "Ask the device to generate a mnemonic and configure itself with it.",
-		Description: "",
-		Flags: []gcli.Flag{
-			gcli.BoolFlag{
-				Name:  "usePassphrase",
-				Usage: "Configure a passphrase",
-			},
-			gcli.IntFlag{
-				Name:  "wordCount",
-				Usage: "Use a specific (12 | 24) number of words for the Mnemonic",
-				Value: 12,
-			},
-			gcli.StringFlag{
-				Name:   "deviceType",
-				Usage:  "Device type to send instructions to, hardware wallet (USB) or emulator.",
-				EnvVar: "DEVICE_TYPE",
-			},
-		},
-		OnUsageError: onCommandUsageError(name),
-		Action: func(c *gcli.Context) {
-			usePassphrase := c.Bool("usePassphrase")
-			wordCount := uint32(c.Uint64("wordCount"))
+func generateMnemonicCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "generateMnemonic",
+		Short: "Ask the device to generate a mnemonic and configure itself with it.",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			usePassphrase, _ := cmd.Flags().GetBool("usePassphrase")
+			wordCount, _ := cmd.Flags().GetInt("wordCount")
+			deviceType, _ := cmd.Flags().GetString("deviceType")
 
-			device := skyWallet.NewDevice(skyWallet.DeviceTypeFromString(c.String("deviceType")))
+			device := skyWallet.NewDevice(skyWallet.DeviceTypeFromString(deviceType))
 			if device == nil {
-				return
+				return fmt.Errorf("failed to create device")
 			}
 			defer device.Close()
 
 			if os.Getenv("AUTO_PRESS_BUTTONS") == "1" && device.Driver.DeviceType() == skyWallet.DeviceTypeEmulator && runtime.GOOS == "linux" {
 				err := device.SetAutoPressButton(true, skyWallet.ButtonRight)
 				if err != nil {
-					log.Error(err)
-					return
+					return err
 				}
 			}
 
-			msg, err := device.GenerateMnemonic(wordCount, usePassphrase)
+			msg, err := device.GenerateMnemonic(uint32(wordCount), usePassphrase)
 			if err != nil {
-				log.Error(err)
-				return
+				return err
 			}
 
 			if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-				// Send ButtonAck
 				msg, err = device.ButtonAck()
 				if err != nil {
-					log.Error(err)
-					return
+					return err
 				}
 			}
 
 			responseMsg, err := skyWallet.DecodeSuccessOrFailMsg(msg)
 			if err != nil {
-				log.Error(err)
-				return
+				return err
 			}
 
 			fmt.Println(responseMsg)
+			return nil
 		},
 	}
+
+	cmd.Flags().Bool("usePassphrase", false, "Configure a passphrase")
+	cmd.Flags().Int("wordCount", 12, "Use a specific (12 | 24) number of words for the Mnemonic")
+	cmd.Flags().String("deviceType", "", "Device type to send instructions to, hardware wallet (USB) or emulator.")
+
+	return cmd
 }

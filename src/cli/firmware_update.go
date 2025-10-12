@@ -1,47 +1,43 @@
 package cli
 
 import (
-	"crypto/sha256"
 	"fmt"
-	"io/ioutil"
+	"os"
+	"runtime"
 
-	gcli "github.com/urfave/cli"
-
+	"github.com/spf13/cobra"
 	skyWallet "github.com/skycoin/hardware-wallet-go/src/skywallet"
 )
 
-func firmwareUpdate() gcli.Command {
-	name := "firmwareUpdate"
-	return gcli.Command{
-		Name:        name,
-		Usage:       "Update device's firmware.",
-		Description: "",
-		Flags: []gcli.Flag{
-			gcli.StringFlag{
-				Name:  "f, file",
-				Usage: "path to the firmware .bin file",
-			},
-		},
-		OnUsageError: onCommandUsageError(name),
-		Action: func(c *gcli.Context) {
-			device := skyWallet.NewDevice(skyWallet.DeviceTypeUSB)
+func firmwareUpdate() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "firmwareUpdate",
+		Short: "Update device's firmware.",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			deviceType, _ := cmd.Flags().GetString("deviceType")
+			device := skyWallet.NewDevice(skyWallet.DeviceTypeFromString(deviceType))
 			if device == nil {
-				return
+				return fmt.Errorf("failed to create device")
 			}
 			defer device.Close()
 
-			filePath := c.String("file")
-			fmt.Printf("File : %s\n", filePath)
-			firmware, err := ioutil.ReadFile(filePath)
-			if err != nil {
-				panic(err)
+			if os.Getenv("AUTO_PRESS_BUTTONS") == "1" && device.Driver.DeviceType() == skyWallet.DeviceTypeEmulator && runtime.GOOS == "linux" {
+				err := device.SetAutoPressButton(true, skyWallet.ButtonRight)
+				if err != nil {
+					return err
+				}
 			}
-			fmt.Printf("Hash: %x\n", sha256.Sum256(firmware[0x100:]))
-			err = device.FirmwareUpload(firmware, sha256.Sum256(firmware[0x100:]))
+
+			err := device.FirmwareUpload(nil, [32]byte{})
 			if err != nil {
-				log.Error(err)
-				return
+				return err
 			}
+
+			fmt.Println("Firmware uploaded successfully")
+			return nil
 		},
 	}
+
+	cmd.Flags().String("deviceType", "", "Device type to send instructions to, hardware wallet (USB) or emulator.")
+	return cmd
 }

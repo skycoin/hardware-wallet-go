@@ -5,77 +5,45 @@ import (
 	"os"
 	"runtime"
 
-	gcli "github.com/urfave/cli"
-
-	messages "github.com/skycoin/hardware-wallet-protob/go"
-
+	"github.com/spf13/cobra"
 	skyWallet "github.com/skycoin/hardware-wallet-go/src/skywallet"
 )
 
-func removePinCode() gcli.Command {
-	name := "removePinCode"
-	return gcli.Command{
-		Name:        name,
-		Usage:       "Remove a PIN code on a device.",
-		Description: "",
-		Flags: []gcli.Flag{
-			gcli.StringFlag{
-				Name:   "deviceType",
-				Usage:  "Device type to send instructions to, hardware wallet (USB) or emulator.",
-				EnvVar: "DEVICE_TYPE",
-			},
-		},
-		OnUsageError: onCommandUsageError(name),
-		Action: func(c *gcli.Context) {
-			device := skyWallet.NewDevice(skyWallet.DeviceTypeFromString(c.String("deviceType")))
+func removePinCode() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "removePinCode",
+		Short: "Remove a PIN code on a device.",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			deviceType, _ := cmd.Flags().GetString("deviceType")
+			device := skyWallet.NewDevice(skyWallet.DeviceTypeFromString(deviceType))
 			if device == nil {
-				return
+				return fmt.Errorf("failed to create device")
 			}
 			defer device.Close()
 
 			if os.Getenv("AUTO_PRESS_BUTTONS") == "1" && device.Driver.DeviceType() == skyWallet.DeviceTypeEmulator && runtime.GOOS == "linux" {
 				err := device.SetAutoPressButton(true, skyWallet.ButtonRight)
 				if err != nil {
-					log.Error(err)
-					return
+					return err
 				}
 			}
 
-			var pinEnc string
-			removePin := new(bool)
-			*removePin = true
-			msg, err := device.ChangePin(removePin)
+			removePin := true
+			msg, err := device.ChangePin(&removePin)
 			if err != nil {
-				log.Error(err)
-				return
+				return err
 			}
 
-			if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-				msg, err = device.ButtonAck()
-				if err != nil {
-					log.Error(err)
-					return
-				}
-			}
-
-			for msg.Kind == uint16(messages.MessageType_MessageType_PinMatrixRequest) {
-				fmt.Printf("PinMatrixRequest response: ")
-				fmt.Scanln(&pinEnc)
-				msg, err = device.PinMatrixAck(pinEnc)
-				if err != nil {
-					log.Error(err)
-					return
-				}
-			}
-
-			// handle success or failure msg
-			respMsg, err := skyWallet.DecodeSuccessOrFailMsg(msg)
+			responseMsg, err := skyWallet.DecodeSuccessOrFailMsg(msg)
 			if err != nil {
-				log.Error(err)
-				return
+				return err
 			}
 
-			fmt.Println(respMsg)
+			fmt.Println(responseMsg)
+			return nil
 		},
 	}
+
+	cmd.Flags().String("deviceType", "", "Device type to send instructions to, hardware wallet (USB) or emulator.")
+	return cmd
 }

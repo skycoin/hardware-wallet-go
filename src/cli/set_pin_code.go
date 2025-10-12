@@ -5,75 +5,70 @@ import (
 	"os"
 	"runtime"
 
-	gcli "github.com/urfave/cli"
-
 	messages "github.com/skycoin/hardware-wallet-protob/go"
-
+	"github.com/spf13/cobra"
 	skyWallet "github.com/skycoin/hardware-wallet-go/src/skywallet"
 )
 
-func setPinCode() gcli.Command {
-	name := "setPinCode"
-	return gcli.Command{
-		Name:        name,
-		Usage:       "Configure a PIN code on a device.",
-		Description: "",
-		Flags: []gcli.Flag{
-			gcli.StringFlag{
-				Name:   "deviceType",
-				Usage:  "Device type to send instructions to, hardware wallet (USB) or emulator.",
-				EnvVar: "DEVICE_TYPE",
-			},
-		},
-		OnUsageError: onCommandUsageError(name),
-		Action: func(c *gcli.Context) {
-			device := skyWallet.NewDevice(skyWallet.DeviceTypeFromString(c.String("deviceType")))
+func setPinCode() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "setPinCode",
+		Short: "Configure a PIN code on a device.",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			deviceType, _ := cmd.Flags().GetString("deviceType")
+			device := skyWallet.NewDevice(skyWallet.DeviceTypeFromString(deviceType))
 			if device == nil {
-				return
+				return fmt.Errorf("failed to create device")
 			}
 			defer device.Close()
 
 			if os.Getenv("AUTO_PRESS_BUTTONS") == "1" && device.Driver.DeviceType() == skyWallet.DeviceTypeEmulator && runtime.GOOS == "linux" {
 				err := device.SetAutoPressButton(true, skyWallet.ButtonRight)
 				if err != nil {
-					log.Error(err)
-					return
+					return err
 				}
 			}
 
-			var pinEnc string
-			msg, err := device.ChangePin(new(bool))
+			removePin := false
+			msg, err := device.ChangePin(&removePin)
 			if err != nil {
-				log.Error(err)
-				return
+				return err
 			}
 
-			if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-				msg, err = device.ButtonAck()
-				if err != nil {
-					log.Error(err)
-					return
+			for {
+				switch msg.Kind {
+				case uint16(messages.MessageType_MessageType_Success):
+					responseMsg, err := skyWallet.DecodeSuccessOrFailMsg(msg)
+					if err != nil {
+						return err
+					}
+					fmt.Println(responseMsg)
+					return nil
+				case uint16(messages.MessageType_MessageType_Failure):
+					failMsg, err := skyWallet.DecodeFailMsg(msg)
+					if err != nil {
+						return err
+					}
+					fmt.Println(failMsg)
+					return nil
+				case uint16(messages.MessageType_MessageType_PinMatrixRequest):
+					var pinEnc string
+					fmt.Printf("PinMatrixRequest response: ")
+					fmt.Scanln(&pinEnc)
+					msg, err = device.PinMatrixAck(pinEnc)
+					if err != nil {
+						return err
+					}
+				case uint16(messages.MessageType_MessageType_ButtonRequest):
+					msg, err = device.ButtonAck()
+					if err != nil {
+						return err
+					}
 				}
 			}
-
-			for msg.Kind == uint16(messages.MessageType_MessageType_PinMatrixRequest) {
-				fmt.Printf("PinMatrixRequest response: ")
-				fmt.Scanln(&pinEnc)
-				msg, err = device.PinMatrixAck(pinEnc)
-				if err != nil {
-					log.Error(err)
-					return
-				}
-			}
-
-			// handle success or failure msg
-			respMsg, err := skyWallet.DecodeSuccessOrFailMsg(msg)
-			if err != nil {
-				log.Error(err)
-				return
-			}
-
-			fmt.Println(respMsg)
 		},
 	}
+
+	cmd.Flags().String("deviceType", "", "Device type to send instructions to, hardware wallet (USB) or emulator.")
+	return cmd
 }
