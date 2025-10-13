@@ -7,6 +7,8 @@ import (
 	"sync"
 	"sync/atomic"
 
+	"github.com/google/gousb"
+
 	lowlevel "github.com/skycoin/hardware-wallet-go/src/usb/lowlevel/libusb"
 )
 
@@ -128,22 +130,22 @@ func (b *LibUSB) Enumerate(vendorID, productID uint16) ([]Info, error) {
 				appendInfo := func() {
 					infos = append(infos, Info{
 						Path:      path,
-						VendorID:  int(dd.IdVendor),
-						ProductID: int(dd.IdProduct),
+						VendorID:  int(dd.Vendor),
+						ProductID: int(dd.Product),
 						Type:      t,
 					})
 					paths[path] = true
 				}
 				if vendorID != 0 && productID != 0 {
-					if dd.IdVendor == vendorID && dd.IdProduct == productID {
+					if dd.Vendor == gousb.ID(vendorID) && dd.Product == gousb.ID(productID) {
 						appendInfo()
 					}
 				} else if vendorID != 0 {
-					if dd.IdVendor == vendorID {
+					if dd.Vendor == gousb.ID(vendorID) {
 						appendInfo()
 					}
 				} else if productID != 0 {
-					if dd.IdProduct == productID {
+					if dd.Product == gousb.ID(productID) {
 						appendInfo()
 					}
 				} else {
@@ -268,20 +270,20 @@ func (b *LibUSB) connect(dev lowlevel.Device) (*LibUSBDevice, error) {
 	}, nil
 }
 
-func matchType(dd *lowlevel.Device_Descriptor) DeviceType {
-	if dd.IdProduct == ProductT1Firmware {
+func matchType(dd *gousb.DeviceDesc) DeviceType {
+	if dd.Product == gousb.ID(ProductT1Firmware) {
 		// this is HID, in platforms where we don't use hidapi (linux, bsd)
 		return TypeT1Hid
 	}
 
-	if dd.IdProduct == ProductT2Bootloader {
-		if int(dd.BcdDevice>>8) == 1 {
+	if dd.Product == gousb.ID(ProductT2Bootloader) {
+		if int(dd.Device>>8) == 1 {
 			return TypeT1WebusbBoot
 		}
 		return TypeT2Boot
 	}
 
-	if int(dd.BcdDevice>>8) == 1 {
+	if int(dd.Device>>8) == 1 {
 		return TypeT1Webusb
 	}
 
@@ -295,9 +297,9 @@ func (b *LibUSB) match(dev lowlevel.Device) (bool, DeviceType) {
 		return false, 0
 	}
 
-	vid := dd.IdVendor
-	pid := dd.IdProduct
-	if !b.matchVidPid(vid, pid) {
+	vid := dd.Vendor
+	pid := dd.Product
+	if !b.matchVidPid(uint16(vid), uint16(pid)) {
 		return false, 0
 	}
 
@@ -481,5 +483,4 @@ func (d *LibUSBDevice) Read(buf []byte) (c int, err error) {
 		}
 		return c, err
 	}
-	return c, err
 }

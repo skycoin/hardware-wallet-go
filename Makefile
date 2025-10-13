@@ -26,7 +26,7 @@ mocks: ## Create all mock files for unit tests
 	mockery -name DeviceDriver -dir ./src/skywallet -case underscore -inpkg -testonly
 
 test-unit: ## Run unit tests
-	go test -v github.com/SkycoinProject/hardware-wallet-go/src/skywallet
+	go test -v github.com/skycoin/hardware-wallet-go/src/skywallet
 
 test-integration-emulator: ## Run emulator integration tests
 	./ci-scripts/integration-test.sh -a -m EMULATOR -n emulator-integration

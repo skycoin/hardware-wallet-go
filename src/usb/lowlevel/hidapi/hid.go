@@ -13,7 +13,7 @@ package hidapi
 /*
 extern void goHidLog(const char *s);
 
-#cgo CFLAGS: -I./c
+#cgo CFLAGS: -I${SRCDIR}/c
 
 #cgo darwin CFLAGS: -DOS_DARWIN
 #cgo darwin LDFLAGS: -framework CoreFoundation -framework IOKit
