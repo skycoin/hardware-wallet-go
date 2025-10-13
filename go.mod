@@ -9,7 +9,10 @@ require (
 	github.com/stretchr/testify v1.11.1
 )
 
-require github.com/spf13/cobra v1.10.1
+require (
+	github.com/google/gousb v1.1.3
+	github.com/spf13/cobra v1.10.1
+)
 
 require (
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
