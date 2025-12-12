@@ -8,6 +8,7 @@
 
 <!-- MarkdownTOC levels="1,2,3,4,5" autolink="true" bracket="round" -->
 - [Installation](#installation)
+- [Linux Setup](#linux-setup)
 - [Usage](#usage)
   - [Download source code](#download-source-code)
   - [Dependancies management](#dependancies-management)
@@ -27,6 +28,27 @@
 ### Install golang
 
 https://github.com/golang/go/wiki/Ubuntu
+
+## Linux Setup
+
+**Linux users must configure USB permissions to use SkyWallet without root privileges.**
+
+See [LINUX-SETUP.md](LINUX-SETUP.md) for complete instructions including:
+- Installing udev rules for USB device permissions
+- Kernel driver management (resolving "libusb: bad access" errors)
+- Troubleshooting common Linux USB issues
+
+**Quick setup:**
+```sh
+# Install udev rules
+sudo cp udev/51-skywallet.rules /etc/udev/rules.d/
+sudo udevadm control --reload-rules
+sudo udevadm trigger
+
+# Unplug and replug your device
+```
+
+For detailed troubleshooting and advanced options, see [LINUX-SETUP.md](LINUX-SETUP.md).
 
 ## Usage
 

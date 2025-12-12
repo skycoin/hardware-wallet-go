@@ -1,0 +1,19 @@
+# SkyWallet Hardware Wallet udev rules
+# This file grants permission to access the SkyWallet hardware wallet device
+# 
+# Installation:
+#   sudo cp 51-skywallet.rules /etc/udev/rules.d/
+#   sudo udevadm control --reload-rules
+#   sudo udevadm trigger
+#   
+# Then unplug and replug the device
+#
+# Verify it worked:
+#   lsusb | grep -i skywallet
+#   ls -l /dev/bus/usb/XXX/YYY  (use bus/device numbers from lsusb output)
+#   The device file should be world-writable (mode 0666)
+
+# SkyWallet (Vendor ID: 313a, Product ID: 0001)
+# MODE="0666" allows any user to access the device
+# TAG+="uaccess" grants access to currently logged-in users on systemd systems
+SUBSYSTEM=="usb", ATTR{idVendor}=="313a", ATTR{idProduct}=="0001", MODE="0666", TAG+="uaccess"
