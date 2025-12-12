@@ -11,7 +11,7 @@ require (
 
 require (
 	github.com/google/gousb v1.1.3
-	github.com/spf13/cobra v1.10.1
+	github.com/spf13/cobra v1.10.2
 )
 
 require (
@@ -25,8 +25,29 @@ require (
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/stretchr/objx v0.5.3 // indirect
-	golang.org/x/crypto v0.43.0 // indirect
-	golang.org/x/sys v0.37.0 // indirect
-	golang.org/x/term v0.36.0 // indirect
+	golang.org/x/crypto v0.46.0 // indirect
+	golang.org/x/sys v0.39.0 // indirect
+	golang.org/x/term v0.38.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+// IT IS FORBIDDEN TO USE REPLACE DIRECTIVES
+
+// [error] The go.mod file for the module providing named packages contains one or
+//	more replace directives. It must not contain directives that would cause
+//	it to be interpreted differently than if it were the main module.
+
+// Uncomment for tests with local sources
+//replace github.com/skycoin/hardware-wallet-protob => ../hardware-wallet-protob
+//replace github.com/skycoin/skycoin => ../skycoin
+
+// Below should reflect current versions of the following deps
+// To update deps to specific commit hash:
+// 1) Uncomment one of the following lines and substituite version with desired commit hash:
+//replace github.com/skycoin/skycoin => github.com/skycoin/skycoin v0.28.1-0.20251205225511-c088af7bbed1
+//replace github.com/skycoin/hardware-wallet-protob => github.com/skycoin/hardware-wallet-protob v0.0.0-20250805154629-410561e1bc2f
+// 2) Run `go mod tidy && go mod vendor`
+// 3) Copy the populated version string to the correct place in require(...) above - replacing the specified version string
+// 4) Re-comment the uncommented replace directive above
+// 5) Save this file.
+// 6) Run `go mod tidy && go mod vendor`
