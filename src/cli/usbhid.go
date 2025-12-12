@@ -1,29 +1,22 @@
 package cli
 
 import (
-	gcli "github.com/urfave/cli"
 
-	skyWallet "github.com/SkycoinProject/hardware-wallet-go/src/skywallet"
+	"github.com/spf13/cobra"
+	skyWallet "github.com/skycoin/hardware-wallet-go/src/skywallet"
 )
 
-func getUsbDetails() gcli.Command {
-	name := "getUsbDetails"
-	return gcli.Command{
-		Name:         name,
-		Usage:        "Ask host usb about details for the hardware wallet",
-		Description:  "",
-		OnUsageError: onCommandUsageError(name),
-		Flags: []gcli.Flag{
-			gcli.StringFlag{
-				Name:   "deviceType",
-				Usage:  "Device type to send instructions to, hardware wallet (USB) or emulator.",
-				EnvVar: "DEVICE_TYPE",
-			},
-		},
-		Action: func(c *gcli.Context) {
-			device := skyWallet.NewDevice(skyWallet.DeviceTypeFromString(c.String("deviceType")))
+func init() {
+	getUsbDetails.Flags().StringVar(&deviceType, "deviceType", "USB", "Device type to send instructions to, hardware wallet (USB) or emulator.")
+}
+
+var getUsbDetails = &cobra.Command{
+		Use:   "getUsbDetails",
+		Short: "Ask host usb about details for the hardware wallet",
+		RunE: func(_ *cobra.Command, _ []string) error {
+			device := skyWallet.NewDevice(skyWallet.DeviceTypeFromString(deviceType))
 			if device == nil {
-				return
+				return nil
 			}
 			defer device.Close()
 
@@ -41,6 +34,6 @@ func getUsbDetails() gcli.Command {
 				}
 				log.Printf("%-13s%-5s%s", "Device path", "==>", infos[infoIdx].Path)
 			}
+			return nil
 		},
 	}
-}

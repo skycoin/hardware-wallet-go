@@ -5,76 +5,47 @@ import (
 	"os"
 	"runtime"
 
-	messages "github.com/SkycoinProject/hardware-wallet-protob/go"
+	messages "github.com/skycoin/hardware-wallet-protob/go"
 
-	gcli "github.com/urfave/cli"
+	"github.com/spf13/cobra"
 
-	skyWallet "github.com/SkycoinProject/hardware-wallet-go/src/skywallet"
+	skyWallet "github.com/skycoin/hardware-wallet-go/src/skywallet"
 )
 
-func addressGenCmd() gcli.Command {
-	name := "addressGen"
-	return gcli.Command{
-		Name:        name,
-		Usage:       "Generate skycoin addresses using the firmware",
-		Description: "",
-		Flags: []gcli.Flag{
-			gcli.IntFlag{
-				Name:  "addressN",
-				Value: 1,
-				Usage: "Number of addresses to generate. Assume 1 if not set.",
-			},
-			gcli.IntFlag{
-				Name:  "startIndex",
-				Value: 0,
-				Usage: "Index where deterministic key generation will start from. Assume 0 if not set.",
-			},
-			gcli.BoolFlag{
-				Name:  "confirmAddress",
-				Usage: "If requesting one address it will be sent only if user confirms operation by pressing device's button.",
-			},
-			gcli.StringFlag{
-				Name:   "deviceType",
-				Usage:  "Device type to send instructions to, hardware wallet (USB) or emulator.",
-				EnvVar: "DEVICE_TYPE",
-			},
-			gcli.StringFlag{
-				Name:   "coinType",
-				Value:  "SKY",
-				Usage:  "Coin type to use on hardware-wallet.",
-				EnvVar: "COIN_TYPE",
-			},
-		},
-		OnUsageError: onCommandUsageError(name),
-		Action: func(c *gcli.Context) {
-			addressN := c.Int("addressN")
-			startIndex := c.Int("startIndex")
-			confirmAddress := c.Bool("confirmAddress")
-			coinType, err := skyWallet.CoinTypeFromString(c.String("coinType"))
+func init() {
+		addressGenCmd.Flags().IntVar(&addressN, "addressN", 1, "Number of addresses to generate. Assume 1 if not set.")
+		addressGenCmd.Flags().IntVar(&startIndex, "startIndex", 0, "Index where deterministic key generation will start from. Assume 0 if not set.")
+		addressGenCmd.Flags().BoolVar(&confirmAddress, "confirmAddress", false, "If requesting one address it will be sent only if user confirms operation by pressing device's button.")
+		addressGenCmd.Flags().StringVar(&deviceType, "deviceType", "USB", "Device type to send instructions to, hardware wallet (USB) or emulator.")
+		addressGenCmd.Flags().StringVar(&coinTypeStr, "coinTypeStr", "SKY", "Coin type to use on hardware-wallet.")
+
+}
+var addressGenCmd = &cobra.Command{
+		Use:   "addressGen",
+		Short: "Generate skycoin addresses using the firmware",
+		RunE: func(_ *cobra.Command, _ []string) error {
+			coinType, err := skyWallet.CoinTypeFromString(coinTypeStr)
 			if err != nil {
-				log.Error(err)
-				return
+				return err
 			}
 
-			device := skyWallet.NewDevice(skyWallet.DeviceTypeFromString(c.String("deviceType")))
+			device := skyWallet.NewDevice(skyWallet.DeviceTypeFromString(deviceType))
 			if device == nil {
-				return
+				return fmt.Errorf("failed to create device")
 			}
 			defer device.Close()
 
 			if os.Getenv("AUTO_PRESS_BUTTONS") == "1" && device.Driver.DeviceType() == skyWallet.DeviceTypeEmulator && runtime.GOOS == "linux" {
 				err := device.SetAutoPressButton(true, skyWallet.ButtonRight)
 				if err != nil {
-					log.Error(err)
-					return
+					return err
 				}
 			}
 
 			var pinEnc string
 			msg, err := device.AddressGen(uint32(addressN), uint32(startIndex), confirmAddress, coinType)
 			if err != nil {
-				log.Error(err)
-				return
+				return err
 			}
 
 			for msg.Kind != uint16(messages.MessageType_MessageType_ResponseSkycoinAddress) && msg.Kind != uint16(messages.MessageType_MessageType_Failure) {
@@ -83,8 +54,7 @@ func addressGenCmd() gcli.Command {
 					fmt.Scanln(&pinEnc)
 					pinAckResponse, err := device.PinMatrixAck(pinEnc)
 					if err != nil {
-						log.Error(err)
-						return
+						return err
 					}
 					log.Infof("PinMatrixAck response: %s", pinAckResponse)
 					continue
@@ -96,8 +66,7 @@ func addressGenCmd() gcli.Command {
 					fmt.Scanln(&passphrase)
 					passphraseAckResponse, err := device.PassphraseAck(passphrase)
 					if err != nil {
-						log.Error(err)
-						return
+						return err
 					}
 					log.Infof("PinMatrixAck response: %s", passphraseAckResponse)
 					continue
@@ -106,8 +75,7 @@ func addressGenCmd() gcli.Command {
 				if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
 					msg, err = device.ButtonAck()
 					if err != nil {
-						log.Error(err)
-						return
+						return err
 					}
 					continue
 				}
@@ -116,19 +84,16 @@ func addressGenCmd() gcli.Command {
 			if msg.Kind == uint16(messages.MessageType_MessageType_ResponseSkycoinAddress) {
 				addresses, err := skyWallet.DecodeResponseSkycoinAddress(msg)
 				if err != nil {
-					log.Error(err)
-					return
+					return err
 				}
 				fmt.Println(addresses)
 			} else {
 				failMsg, err := skyWallet.DecodeFailMsg(msg)
 				if err != nil {
-					log.Error(err)
-					return
+					return err
 				}
-				fmt.Println("Failed with code: ", failMsg)
-				return
+				return fmt.Errorf("failed with code: %s", failMsg)
 			}
+			return nil
 		},
 	}
-}

@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/SkycoinProject/skycoin/src/cipher"
+	"github.com/skycoin/skycoin/src/cipher"
 	"github.com/gogo/protobuf/proto"
 
-	messages "github.com/SkycoinProject/hardware-wallet-protob/go"
+	messages "github.com/skycoin/hardware-wallet-protob/go"
 )
 
 // MessageCancel prepare Cancel request
@@ -329,6 +329,8 @@ func MessageSignTx(outputsCount int, inputsCount int, coinName string, version i
 		LockTime:     proto.Uint32(uint32(lockTime)),
 		TxHash:       proto.String(txHash),
 	}
+	log.Println(signTxMessage)
+
 	data, err := proto.Marshal(signTxMessage)
 	if err != nil {
 		return [][64]byte{}, err

@@ -1,0 +1,71 @@
+# github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc
+## explicit
+github.com/davecgh/go-spew/spew
+# github.com/gogo/protobuf v1.3.2
+## explicit; go 1.15
+github.com/gogo/protobuf/proto
+# github.com/google/gousb v1.1.3
+## explicit; go 1.16
+github.com/google/gousb
+# github.com/inconshreveable/mousetrap v1.1.0
+## explicit; go 1.18
+github.com/inconshreveable/mousetrap
+# github.com/kr/pretty v0.3.1
+## explicit; go 1.12
+# github.com/mattn/go-colorable v0.1.14
+## explicit; go 1.18
+github.com/mattn/go-colorable
+# github.com/mattn/go-isatty v0.0.20
+## explicit; go 1.15
+github.com/mattn/go-isatty
+# github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d
+## explicit
+github.com/mgutz/ansi
+# github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2
+## explicit
+github.com/pmezard/go-difflib/difflib
+# github.com/sirupsen/logrus v1.9.3
+## explicit; go 1.13
+github.com/sirupsen/logrus
+# github.com/skycoin/hardware-wallet-protob v0.0.0-20250805154629-410561e1bc2f
+## explicit; go 1.24.5
+github.com/skycoin/hardware-wallet-protob/go
+github.com/skycoin/hardware-wallet-protob/go/google/protobuf
+# github.com/skycoin/skycoin v0.28.1-0.20251012182647-a1a88ea0df8f
+## explicit; go 1.25.1
+github.com/skycoin/skycoin/src/cipher
+github.com/skycoin/skycoin/src/cipher/base58
+github.com/skycoin/skycoin/src/cipher/ripemd160
+github.com/skycoin/skycoin/src/cipher/secp256k1-go
+github.com/skycoin/skycoin/src/cipher/secp256k1-go/secp256k1-go2
+github.com/skycoin/skycoin/src/util/logging
+# github.com/spf13/cobra v1.10.1
+## explicit; go 1.15
+github.com/spf13/cobra
+# github.com/spf13/pflag v1.0.10
+## explicit; go 1.12
+github.com/spf13/pflag
+# github.com/stretchr/objx v0.5.3
+## explicit; go 1.20
+github.com/stretchr/objx
+# github.com/stretchr/testify v1.11.1
+## explicit; go 1.17
+github.com/stretchr/testify/assert
+github.com/stretchr/testify/assert/yaml
+github.com/stretchr/testify/mock
+github.com/stretchr/testify/require
+github.com/stretchr/testify/suite
+# golang.org/x/crypto v0.43.0
+## explicit; go 1.24.0
+golang.org/x/crypto/ssh/terminal
+# golang.org/x/sys v0.37.0
+## explicit; go 1.24.0
+golang.org/x/sys/plan9
+golang.org/x/sys/unix
+golang.org/x/sys/windows
+# golang.org/x/term v0.36.0
+## explicit; go 1.24.0
+golang.org/x/term
+# gopkg.in/yaml.v3 v3.0.1
+## explicit
+gopkg.in/yaml.v3

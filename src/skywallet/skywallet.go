@@ -7,13 +7,15 @@ import (
 	"sync"
 	"time"
 
-	"github.com/SkycoinProject/hardware-wallet-go/src/skywallet/usb"
+	"github.com/gogo/protobuf/proto"
 
-	"github.com/SkycoinProject/skycoin/src/util/logging"
+	"github.com/skycoin/hardware-wallet-go/src/skywallet/usb"
 
-	messages "github.com/SkycoinProject/hardware-wallet-protob/go"
+	"github.com/skycoin/skycoin/src/util/logging"
 
-	"github.com/SkycoinProject/hardware-wallet-go/src/skywallet/wire"
+	messages "github.com/skycoin/hardware-wallet-protob/go"
+
+	"github.com/skycoin/hardware-wallet-go/src/skywallet/wire"
 )
 
 var (
@@ -68,6 +70,7 @@ type Devicer interface {
 	Recovery(wordCount uint32, usePassphrase *bool, dryRun bool) (wire.Message, error)
 	SetMnemonic(mnemonic string) (wire.Message, error)
 	TransactionSign(inputs []*messages.SkycoinTransactionInput, outputs []*messages.SkycoinTransactionOutput) (wire.Message, error)
+	GeneralTransactionSign(signer TransactionSigner) ([]string, error)
 	SignMessage(addressIndex int, message string) (wire.Message, error)
 	Wipe() (wire.Message, error)
 	PinMatrixAck(p string) (wire.Message, error)
@@ -755,12 +758,54 @@ func (d *Device) TransactionSign(inputs []*messages.SkycoinTransactionInput, out
 	}
 	defer d.Disconnect()
 
-	transactionSignChunks, err := MessageTransactionSign(inputs, outputs)
+	var transactionInputs []*messages.TxAck_TransactionType_TxInputType
+	var transactionOutputs []*messages.TxAck_TransactionType_TxOutputType
+
+	for _, input := range inputs {
+		transactionInputs = append(transactionInputs, &messages.TxAck_TransactionType_TxInputType{
+			AddressN: make([]uint32, *input.Index),
+			HashIn:   input.HashIn,
+		})
+	}
+	for _, output := range outputs {
+		transactionOutputs = append(transactionOutputs, &messages.TxAck_TransactionType_TxOutputType{
+			Address: output.Address,
+			Coins:   output.Coin,
+			Hours:   output.Hour,
+		})
+		if output.AddressIndex != nil {
+			transactionOutputs[len(transactionOutputs)-1].AddressN = make([]uint32, *output.AddressIndex)
+		}
+	}
+	signer := SkycoinTransactionSigner{
+		Device:   d,
+		Inputs:   transactionInputs,
+		Outputs:  transactionOutputs,
+		Version:  1,
+		LockTime: 0,
+	}
+	signatures, err := signer.Sign()
 	if err != nil {
 		return wire.Message{}, err
 	}
+	padding := false
+	data, err := proto.Marshal(&messages.ResponseTransactionSign{
+		Padding:    &padding,
+		Signatures: signatures,
+	})
+	if err != nil {
+		return wire.Message{}, err
+	}
+	return wire.Message{
+		Kind: uint16(messages.MessageType_MessageType_ResponseTransactionSign),
+		Data: data,
+	}, nil
+}
 
-	return d.Driver.SendToDevice(d.dev, transactionSignChunks)
+// GeneralTransactionSign Ask the device to sign a transaction using the given TransactionSigner
+func (d *Device) GeneralTransactionSign(signer TransactionSigner) ([]string, error) {
+	signer.SetDevice(d)
+	return signer.Sign()
 }
 
 // SignTx Ask the device to sign a long transaction using the given information.

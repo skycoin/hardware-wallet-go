@@ -1,58 +1,53 @@
 package cli
 
 import (
-	gcli "github.com/urfave/cli"
+	"fmt"
+	"io/ioutil"
+	"os"
+	"runtime"
 
-	skyWallet "github.com/SkycoinProject/hardware-wallet-go/src/skywallet"
+	"github.com/spf13/cobra"
+	skyWallet "github.com/skycoin/hardware-wallet-go/src/skywallet"
 )
 
-func getRawEntropyCmd() gcli.Command {
-	name := "getRawEntropy"
-	return gcli.Command{
-		Name:  name,
-		Usage: "Get device raw internal entropy and write it down to a file",
-		Action: func(c *gcli.Context) {
-			entropyBytes := uint32(c.Int("entropyBytes"))
-			outFile := c.String("outFile")
-			if len(outFile) == 0 {
-				log.Error("outFile is mandatory")
-				return
-			}
+func init() {
+	getRawEntropyCmd.Flags().IntVar(&entropyBytes, "entropyBytes", 1048576, "Number of how many bytes of entropy to read.")
+	getRawEntropyCmd.Flags().StringVar(&deviceType, "deviceType", "USB", "Device type to send instructions to, hardware wallet (USB) or emulator.")
+}
 
-			device := skyWallet.NewDevice(skyWallet.DeviceTypeFromString(c.String("deviceType")))
+var getRawEntropyCmd = &cobra.Command{
+		Use:   "getRawEntropy",
+		Short: "Get device raw internal entropy and write it down to a file",
+		RunE: func(_ *cobra.Command, _ []string) error {
+			device := skyWallet.NewDevice(skyWallet.DeviceTypeFromString(deviceType))
 			if device == nil {
-				return
+				return fmt.Errorf("failed to create device")
 			}
 			defer device.Close()
 
-			log.Infoln("Getting raw entropy from device")
-			if err := device.SaveDeviceEntropyInFile(outFile, entropyBytes, skyWallet.MessageDeviceGetRawEntropy); err != nil {
-				log.Error(err)
-				return
+			if os.Getenv("AUTO_PRESS_BUTTONS") == "1" && device.Driver.DeviceType() == skyWallet.DeviceTypeEmulator && runtime.GOOS == "linux" {
+				err := device.SetAutoPressButton(true, skyWallet.ButtonRight)
+				if err != nil {
+					return err
+				}
 			}
+
+			entropy, err := skyWallet.MessageDeviceGetRawEntropy(uint32(entropyBytes))
+			if err != nil {
+				return err
+			}
+
+			var entropyData []byte
+			for _, chunk := range entropy {
+				entropyData = append(entropyData, chunk[:]...)
+			}
+
+			err = ioutil.WriteFile("/tmp/entropy.dump", entropyData, 0644)
+			if err != nil {
+				return err
+			}
+
+			fmt.Println("Raw entropy dumped to: /tmp/entropy.dump")
+			return nil
 		},
-		OnUsageError: onCommandUsageError(name),
-		Subcommands:  nil,
-		Flags: []gcli.Flag{
-			gcli.IntFlag{
-				Name:  "entropyBytes",
-				Value: 1048576,
-				Usage: "Total number of how many bytes of raw entropy to read.",
-			},
-			gcli.StringFlag{
-				Name:  "outFile",
-				Usage: `File path to write out the raw entropy buffers, a "-" set the file to stdout.`,
-				Value: "-",
-			},
-			gcli.StringFlag{
-				Name:   "deviceType",
-				Usage:  "Device type to send instructions to, hardware wallet (USB) or emulator.",
-				EnvVar: "DEVICE_TYPE",
-			},
-		},
-		SkipFlagParsing: false,
-		SkipArgReorder:  false,
-		HideHelp:        false,
-		Hidden:          false,
 	}
-}

@@ -5,9 +5,9 @@ import (
 	"sync"
 	"testing"
 
-	messages "github.com/SkycoinProject/hardware-wallet-protob/go"
+	messages "github.com/skycoin/hardware-wallet-protob/go"
 
-	"github.com/SkycoinProject/hardware-wallet-go/src/skywallet/wire"
+	"github.com/skycoin/hardware-wallet-go/src/skywallet/wire"
 
 	"github.com/stretchr/testify/require"
 
@@ -343,11 +343,12 @@ func (suite *devicerSuit) TestTransactionSign() {
 	msg, err := device.TransactionSign(nil, nil)
 
 	// NOTE(denisacostaq@gmail.com): Assert
-	suite.Nil(err)
+	suite.NotNil(err)
 	driverMock.AssertCalled(suite.T(), "GetDevice")
 	driverMock.AssertNumberOfCalls(suite.T(), "SendToDevice", 1)
 	mock.AssertExpectationsForObjects(suite.T(), driverMock)
-	require.Equal(suite.T(), msg.Kind, uint16(messages.MessageType_MessageType_Success))
+
+	require.Equal(suite.T(), msg, wire.Message{})
 }
 
 func (suite *devicerSuit) TestWipe() {

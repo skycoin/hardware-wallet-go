@@ -7,46 +7,37 @@ import (
 	"runtime"
 
 	"github.com/gogo/protobuf/proto"
-	gcli "github.com/urfave/cli"
+	"github.com/spf13/cobra"
 
-	messages "github.com/SkycoinProject/hardware-wallet-protob/go"
+	messages "github.com/skycoin/hardware-wallet-protob/go"
 
-	skyWallet "github.com/SkycoinProject/hardware-wallet-go/src/skywallet"
+	skyWallet "github.com/skycoin/hardware-wallet-go/src/skywallet"
 )
 
-func featuresCmd() gcli.Command {
-	name := "features"
-	return gcli.Command{
-		Name:         name,
-		Usage:        "Ask the device Features.",
-		Description:  "",
-		OnUsageError: onCommandUsageError(name),
-		Flags: []gcli.Flag{
-			gcli.StringFlag{
-				Name:   "deviceType",
-				Usage:  "Device type to send instructions to, hardware wallet (USB) or emulator.",
-				EnvVar: "DEVICE_TYPE",
-			},
-		},
-		Action: func(c *gcli.Context) {
-			device := skyWallet.NewDevice(skyWallet.DeviceTypeFromString(c.String("deviceType")))
+func init() {
+	featuresCmd.Flags().StringVar(&deviceType, "deviceType", "USB", "Device type to send instructions to, hardware wallet (USB) or emulator.")
+}
+
+var featuresCmd = &cobra.Command{
+		Use:   "features",
+		Short: "Ask the device Features.",
+		RunE: func(_ *cobra.Command, _ []string) error {
+			device := skyWallet.NewDevice(skyWallet.DeviceTypeFromString(deviceType))
 			if device == nil {
-				return
+				return fmt.Errorf("failed to create device")
 			}
 			defer device.Close()
 
 			if os.Getenv("AUTO_PRESS_BUTTONS") == "1" && device.Driver.DeviceType() == skyWallet.DeviceTypeEmulator && runtime.GOOS == "linux" {
 				err := device.SetAutoPressButton(true, skyWallet.ButtonRight)
 				if err != nil {
-					log.Error(err)
-					return
+					return err
 				}
 			}
 
 			msg, err := device.GetFeatures()
 			if err != nil {
-				log.Error(err)
-				return
+				return err
 			}
 
 			switch msg.Kind {
@@ -54,33 +45,28 @@ func featuresCmd() gcli.Command {
 				features := &messages.Features{}
 				err = proto.Unmarshal(msg.Data, features)
 				if err != nil {
-					log.Error(err)
-					return
+					return err
 				}
 
 				enc := json.NewEncoder(os.Stdout)
 				if err = enc.Encode(features); err != nil {
-					log.Errorln(err)
-					return
+					return err
 				}
 				ff := skyWallet.NewFirmwareFeatures(uint64(*features.FirmwareFeatures))
 				if err := ff.Unmarshal(); err != nil {
-					log.Errorln(err)
-					return
+					return err
 				}
 				log.Printf("\n\nFirmware features:\n%s", ff)
-			// TODO: figure out if this method can even return success or failure msg.
 			case uint16(messages.MessageType_MessageType_Failure), uint16(messages.MessageType_MessageType_Success):
 				msgData, err := skyWallet.DecodeSuccessOrFailMsg(msg)
 				if err != nil {
-					log.Error(err)
-					return
+					return err
 				}
 
 				fmt.Println(msgData)
 			default:
-				log.Errorf("received unexpected message type: %s", messages.MessageType(msg.Kind))
+				return fmt.Errorf("received unexpected message type: %s", messages.MessageType(msg.Kind))
 			}
+			return nil
 		},
-	}
 }

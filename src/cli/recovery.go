@@ -5,74 +5,49 @@ import (
 	"os"
 	"runtime"
 
-	gcli "github.com/urfave/cli"
-
-	messages "github.com/SkycoinProject/hardware-wallet-protob/go"
-
-	skyWallet "github.com/SkycoinProject/hardware-wallet-go/src/skywallet"
+	messages "github.com/skycoin/hardware-wallet-protob/go"
+	"github.com/spf13/cobra"
+	skyWallet "github.com/skycoin/hardware-wallet-go/src/skywallet"
 )
 
-func recoveryCmd() gcli.Command {
-	name := "recovery"
-	return gcli.Command{
-		Name:        name,
-		Usage:       "Ask the device to perform the seed recovery procedure.",
-		Description: "",
-		Flags: []gcli.Flag{
-			gcli.StringFlag{
-				Name:  "usePassphrase",
-				Usage: "Configure a passphrase",
-			},
-			gcli.BoolFlag{
-				Name:  "dryRun",
-				Usage: "perform dry-run recovery workflow (for safe mnemonic validation)",
-			},
-			gcli.IntFlag{
-				Name:  "wordCount",
-				Usage: "Use a specific (12 | 24) number of words for the Mnemonic recovery",
-				Value: 12,
-			},
-			gcli.StringFlag{
-				Name:   "deviceType",
-				Usage:  "Device type to send instructions to, hardware wallet (USB) or emulator.",
-				EnvVar: "DEVICE_TYPE",
-			},
-		},
-		OnUsageError: onCommandUsageError(name),
-		Action: func(c *gcli.Context) {
-			device := skyWallet.NewDevice(skyWallet.DeviceTypeFromString(c.String("deviceType")))
+func init() {
+	recoveryCmd.Flags().StringVar(&deviceType, "deviceType", "USB", "Device type to send instructions to, hardware wallet (USB) or emulator.")
+}
+
+var recoveryCmd = &cobra.Command{
+		Use:   "recovery",
+		Short: "Ask the device to perform the seed recovery procedure.",
+		RunE: func(_ *cobra.Command, _ []string) error {
+			device := skyWallet.NewDevice(skyWallet.DeviceTypeFromString(deviceType))
 			if device == nil {
-				return
+				return fmt.Errorf("failed to create device")
 			}
 			defer device.Close()
 
 			if os.Getenv("AUTO_PRESS_BUTTONS") == "1" && device.Driver.DeviceType() == skyWallet.DeviceTypeEmulator && runtime.GOOS == "linux" {
 				err := device.SetAutoPressButton(true, skyWallet.ButtonRight)
 				if err != nil {
-					log.Error(err)
-					return
+					return err
 				}
 			}
 
-			passphrase := c.String("usePassphrase")
-			usePassphrase, _err := parseBool(passphrase)
-			if _err != nil {
-				log.Errorln("Valid values for usePassphrase are true or false")
-				return
-			}
-			dryRun := c.Bool("dryRun")
-			wordCount := uint32(c.Uint64("wordCount"))
-			msg, err := device.Recovery(wordCount, usePassphrase, dryRun)
+			var wordCount uint32
+			fmt.Printf("Word count (12, 24): ")
+			_, err := fmt.Scan(&wordCount)
 			if err != nil {
-				log.Error(err)
-				return
+				return err
 			}
 
-			if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
+			usePassphrase := false
+			msg, err := device.Recovery(wordCount, &usePassphrase, false)
+			if err != nil {
+				return err
+			}
+
+			for msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
 				msg, err = device.ButtonAck()
 				if err != nil {
-					log.Error(err)
-					return
+					return err
 				}
 			}
 
@@ -82,28 +57,16 @@ func recoveryCmd() gcli.Command {
 				fmt.Scanln(&word)
 				msg, err = device.WordAck(word)
 				if err != nil {
-					log.Error(err.Error())
-					os.Exit(1)
-					return
-				}
-			}
-
-			if msg.Kind == uint16(messages.MessageType_MessageType_ButtonRequest) {
-				// Send ButtonAck
-				msg, err = device.ButtonAck()
-				if err != nil {
-					log.Error(err)
-					return
+					return err
 				}
 			}
 
 			responseMsg, err := skyWallet.DecodeSuccessOrFailMsg(msg)
 			if err != nil {
-				log.Error(err)
-				return
+				return err
 			}
 
 			fmt.Println(responseMsg)
+			return nil
 		},
 	}
-}
