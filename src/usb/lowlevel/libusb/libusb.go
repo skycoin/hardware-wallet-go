@@ -82,15 +82,19 @@ func Exit(ctx Context) {
 // This avoids permission errors by only opening devices we actually need
 func Get_Device_List_Filtered(ctx Context, vendorID, productID uint16) ([]*gousb.Device, error) {
 	devices, err := ctx.OpenDevices(func(desc *gousb.DeviceDesc) bool {
+		match := true
 		if vendorID != 0 && uint16(desc.Vendor) != vendorID {
-			return false
+			match = false
 		}
 		if productID != 0 && uint16(desc.Product) != productID {
-			return false
+			match = false
 		}
-		return true
+		return match
 	})
-	if err != nil {
+	// OpenDevices returns (devices, error) where devices contains successfully opened devices
+	// and error is only set if NO devices could be opened at all
+	// Individual device open failures are logged but don't prevent returning other devices
+	if len(devices) == 0 && err != nil {
 		return nil, err
 	}
 	return devices, nil
@@ -217,10 +221,10 @@ func Get_Configuration(handle Device_Handle) (int, error) {
 	return cfg, err
 }
 
-// Set_Configuration sets the configuration value
-func Set_Configuration(handle Device_Handle, config int) error {
-	_, err := handle.Config(config)
-	return err
+// Set_Configuration sets the configuration value and returns the config object
+// IMPORTANT: The returned *gousb.Config must be kept alive to maintain the interface claim
+func Set_Configuration(handle Device_Handle, config int) (*gousb.Config, error) {
+	return handle.Config(config)
 }
 
 // Claim_Interface claims an interface
@@ -256,22 +260,11 @@ func Attach_Kernel_Driver(handle Device_Handle, iface int) error {
 }
 
 // Interrupt_Transfer performs an interrupt transfer
-func Interrupt_Transfer(handle Device_Handle, endpoint uint8, data []byte, timeout int) ([]byte, error) {
-	if handle == nil {
-		return nil, fmt.Errorf("device handle is nil")
+// intf must be a valid Interface obtained from Config.Interface() and kept alive by caller
+func Interrupt_Transfer(intf *gousb.Interface, endpoint uint8, data []byte, timeout int) ([]byte, error) {
+	if intf == nil {
+		return nil, fmt.Errorf("interface is nil")
 	}
-	
-	// Get the interface and endpoint
-	cfg, err := handle.Config(1)
-	if err != nil {
-		return nil, err
-	}
-	
-	intf, err := cfg.Interface(0, 0)
-	if err != nil {
-		return nil, err
-	}
-	defer intf.Close()
 	
 	// Determine if this is an IN or OUT endpoint
 	isIn := (endpoint & 0x80) != 0
