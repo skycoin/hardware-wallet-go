@@ -78,7 +78,26 @@ func Exit(ctx Context) {
 	}
 }
 
-// Get_Device_List returns a list of USB devices
+// Get_Device_List_Filtered returns a list of USB devices matching VID/PID
+// This avoids permission errors by only opening devices we actually need
+func Get_Device_List_Filtered(ctx Context, vendorID, productID uint16) ([]*gousb.Device, error) {
+	devices, err := ctx.OpenDevices(func(desc *gousb.DeviceDesc) bool {
+		if vendorID != 0 && uint16(desc.Vendor) != vendorID {
+			return false
+		}
+		if productID != 0 && uint16(desc.Product) != productID {
+			return false
+		}
+		return true
+	})
+	if err != nil {
+		return nil, err
+	}
+	return devices, nil
+}
+
+// Get_Device_List returns a list of all USB devices
+// Prefer Get_Device_List_Filtered when possible to avoid permission errors
 func Get_Device_List(ctx Context) ([]*gousb.Device, error) {
 	devices, err := ctx.OpenDevices(func(desc *gousb.DeviceDesc) bool {
 		return true // Return all devices
@@ -114,17 +133,32 @@ func Get_Config_Descriptor(dev Device, index uint8) (*Config_Descriptor, error) 
 	}
 	
 	desc := dev.Desc
-	if int(index) >= len(desc.Configs) {
-		return nil, fmt.Errorf("config index out of range")
+	if desc == nil {
+		return nil, fmt.Errorf("device descriptor is nil")
 	}
 	
-	cfg := desc.Configs[int(index)]
+	if len(desc.Configs) == 0 {
+		return nil, fmt.Errorf("device has no configs in descriptor")
+	}
+	
+	// gousb uses map[int]ConfigDesc where key is config number (usually 1-based)
+	// For index 0, we want config number 1 (the default/first config)
+	configNum := int(index) + 1
+	cfg, ok := desc.Configs[configNum]
+	if !ok {
+		// Fallback: try index as direct key
+		cfg, ok = desc.Configs[int(index)]
+		if !ok {
+			return nil, fmt.Errorf("config index %d (or %d) not found", index, configNum)
+		}
+	}
 	
 	result := &Config_Descriptor{
 		BNumInterfaces: uint8(len(cfg.Interfaces)),
 		Interface:      make([]Interface, len(cfg.Interfaces)),
 	}
 	
+	// Build interface descriptors
 	for i, iface := range cfg.Interfaces {
 		result.Interface[i] = Interface{
 			Num_altsetting: len(iface.AltSettings),
@@ -132,17 +166,24 @@ func Get_Config_Descriptor(dev Device, index uint8) (*Config_Descriptor, error) 
 		}
 		
 		for j, alt := range iface.AltSettings {
+			numEndpoints := len(alt.Endpoints)
 			result.Interface[i].Altsetting[j] = Interface_Descriptor{
 				BInterfaceNumber:  uint8(alt.Number),
 				BAlternateSetting: uint8(alt.Alternate),
-				BNumEndpoints:     uint8(len(alt.Endpoints)),
+				BNumEndpoints:     uint8(numEndpoints),
 				BInterfaceClass:   uint8(alt.Class),
-				Endpoint:          make([]Endpoint_Descriptor, len(alt.Endpoints)),
+				Endpoint:          make([]Endpoint_Descriptor, numEndpoints),
 			}
 			
-			for k, ep := range alt.Endpoints {
-				result.Interface[i].Altsetting[j].Endpoint[k] = Endpoint_Descriptor{
-					BEndpointAddress: uint8(ep.Address),
+			// Populate endpoint descriptors from map
+			// Endpoints is map[EndpointAddress]EndpointDesc
+			epIdx := 0
+			for epAddr := range alt.Endpoints {
+				if epIdx < numEndpoints {
+					result.Interface[i].Altsetting[j].Endpoint[epIdx] = Endpoint_Descriptor{
+						BEndpointAddress: uint8(epAddr), // epAddr is the EndpointAddress key
+					}
+					epIdx++
 				}
 			}
 		}

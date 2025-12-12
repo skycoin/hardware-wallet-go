@@ -98,7 +98,9 @@ func detectOldBL(dev lowlevel.Device) (bool, error) {
 }
 
 func (b *LibUSB) Enumerate(vendorID, productID uint16) ([]Info, error) {
-	list, err := lowlevel.Get_Device_List(b.usb)
+	// Use filtered device list to only open devices matching our VID/PID
+	// This avoids permission errors when trying to open all USB devices
+	list, err := lowlevel.Get_Device_List_Filtered(b.usb, vendorID, productID)
 
 	if err != nil {
 		return nil, err
@@ -256,6 +258,10 @@ func (b *LibUSB) connect(dev lowlevel.Device) (*LibUSBDevice, error) {
 		return nil, err
 	}
 
+	// Note: Kernel driver detachment is handled by gousb automatically when
+	// Config() or Interface() is called. SetAutoDetach() requires elevated
+	// privileges and is not needed for basic operation.
+
 	b.setConfiguration(d)
 	attach, err := b.claimInterface(d)
 	if err != nil {
@@ -332,15 +338,20 @@ func (b *LibUSB) match(dev lowlevel.Device) (bool, DeviceType) {
 }
 
 func (b *LibUSB) matchVidPid(vid uint16, pid uint16) bool {
-	// Note: Trezor1 libusb will actually have the T2 vid/pid
+	// Check for Skycoin/Trezor1 devices (VID 0x313a)
+	skycoin := vid == VendorT1 && (pid == ProductT1Firmware)
+	// Check for Trezor2 devices (VID 0x1209)
 	trezor2 := vid == VendorT2 && (pid == ProductT2Firmware || pid == ProductT2Bootloader)
 
 	if b.only {
-		trezor1 := vid == VendorT1 && (pid == ProductT1Firmware)
-		return trezor1 || trezor2
+		// When only using libusb (not HID), accept both
+		return skycoin || trezor2
 	}
 
-	return trezor2
+	// When using both libusb and HID, we still need to accept Skycoin devices
+	// because they use libusb on Linux. Original code only checked trezor2,
+	// which caused Skycoin devices to be rejected.
+	return skycoin || trezor2
 }
 
 func (b *LibUSB) identify(dev lowlevel.Device) string {
