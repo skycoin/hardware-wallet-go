@@ -25,6 +25,23 @@
 
 ## Installation
 
+### System Requirements
+
+**All Platforms:**
+- Go 1.21 or later
+- Git
+
+**Platform-Specific USB Libraries:**
+
+- **Linux**: libusb-1.0 (usually pre-installed or available via package manager)
+  - See [LINUX-SETUP.md](LINUX-SETUP.md) for detailed Linux setup and udev rules
+  
+- **macOS**: libusb-1.0 and HIDAPI via Homebrew
+  - See [MACOS-WINDOWS-SETUP.md](MACOS-WINDOWS-SETUP.md) for detailed macOS instructions
+  
+- **Windows**: libusb-1.0.dll and hidapi.dll
+  - See [MACOS-WINDOWS-SETUP.md](MACOS-WINDOWS-SETUP.md) for detailed Windows instructions
+
 ### Install golang
 
 https://github.com/golang/go/wiki/Ubuntu
