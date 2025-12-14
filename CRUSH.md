@@ -1,0 +1,26 @@
+CRUSH playbook for hardware-wallet-go (Go)
+
+- Build
+  - make build (outputs $GOPATH/bin/skycoin-hw-cli); ensure $GOPATH/bin is on PATH
+  - go run cmd/cli/cli.go to run the CLI locally
+  - make check runs lint + tests; make help lists available targets
+- Lint/format
+  - make install-linters (installs vendorcheck, golangci-lint, goimports)
+  - make lint runs vendorcheck and golangci-lint -c .golangci.yml ./...
+  - make format uses goimports -w -local github.com/skycoin/hardware-wallet-go ./cmd ./src
+- Test
+  - make test runs unit + emulator integration; make test-unit runs skywallet unit tests
+  - make test-integration-emulator / make test-integration-wallet use ci-scripts/integration-test.sh
+  - Run a single unit test: go test -v -count=1 ./src/skywallet -run '^TestName$'
+  - Run a single integration test: go test -v -count=1 ./src/cli/integration -run '^TestName$'
+- Code style (enforced via .golangci.yml)
+  - Imports: use goimports; group std/third-party/local; local prefix is github.com/skycoin/hardware-wallet-go
+  - Formatting: gofmt -s; soft line length <= 120 chars (lll); run make format before committing
+  - Naming/comments: idiomatic Go names; exported identifiers should have GoDoc-style comments
+  - Errors: return errors (no panics in library code); check errors (errcheck); wrap with fmt.Errorf("%w", err) and use errors.Is/As; do NOT add github.com/pkg/errors (blocked by depguard)
+  - Complexity/flow: keep funcs small (gocyclo threshold 10), avoid shadowing (govet check-shadowing), avoid naked returns in functions > 30 lines
+  - Security: gosec enabled; avoid hardcoded secrets and validate external input; some rules (G304/G204/G104) are excluded but follow best practices
+  - Spelling: US English (misspell)
+- Notes
+  - Module path is github.com/skycoin/hardware-wallet-go; let goimports manage import grouping with local prefix above
+  - No Cursor or Copilot rules found (.cursor/rules/, .cursorrules, .github/copilot-instructions.md)
